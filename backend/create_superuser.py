@@ -12,7 +12,6 @@ import getpass
 import sys
 import uuid
 
-import asyncpg
 import bcrypt
 
 from app.config import settings
@@ -39,73 +38,54 @@ def validate_password(password: str) -> None:
 # ── Logique principale ────────────────────────────────────────────────────────
 
 async def create_superuser(email: str, name: str, password: str) -> None:
-    # Convertir l'URL asyncpg (retirer le préfixe SQLAlchemy si présent)
-    db_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
+    """Crée (ou promeut) un administrateur via les modèles de l'application :
+    toutes les valeurs par défaut des colonnes s'appliquent, et tout est fait
+    dans une seule transaction (pas de compte à moitié créé en cas d'erreur)."""
+    import main  # noqa: F401 — enregistre tous les modèles (relations SQLAlchemy)
+    from sqlalchemy import select
 
-    conn = await asyncpg.connect(db_url)
+    from app.database import AsyncSessionLocal, engine
+    from app.models.user import User, UserPreferences, UserStats
+
     try:
-        # Vérifier si l'email existe déjà
-        existing = await conn.fetchrow("SELECT id, role FROM users WHERE email = $1", email)
+        async with AsyncSessionLocal() as db, db.begin():
+            user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
 
-        if existing:
-            if existing["role"] == "admin":
+            if user and user.role == "admin":
                 print(f"\n  ⚠  L'utilisateur '{email}' est déjà administrateur.")
-            else:
-                # Promouvoir le compte existant
-                await conn.execute(
-                    "UPDATE users SET role='admin', is_active=true, is_verified=true, "
-                    "password_hash=$1 WHERE email=$2",
-                    hash_password(password), email,
-                )
+                return
+
+            if user:
+                user.role = "admin"
+                user.is_active = True
+                user.is_verified = True
+                user.password_hash = hash_password(password)
                 print(f"\n  ✓  Le compte '{email}' a été promu administrateur.")
-        else:
-            # Créer le nouveau compte admin
-            user_id = uuid.uuid4()
-            password_hash = hash_password(password)
+                return
 
-            await conn.execute(
-                """
-                INSERT INTO users (id, email, name, password_hash, auth_provider,
-                                   language, role, is_active, is_verified, created_at, updated_at)
-                VALUES ($1, $2, $3, $4, 'local', 'fr', 'admin', true, true,
-                        NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC')
-                """,
-                user_id, email, name, password_hash,
+            user = User(
+                id=uuid.uuid4(),
+                email=email,
+                name=name,
+                password_hash=hash_password(password),
+                auth_provider="local",
+                role="admin",
+                is_active=True,
+                is_verified=True,
+                profile_completed=True,
             )
+            db.add(user)
+            await db.flush()
+            db.add(UserPreferences(user_id=user.id))
+            db.add(UserStats(user_id=user.id))
 
-            # Créer les entrées user_preferences avec toutes les valeurs par défaut
-            await conn.execute(
-                """
-                INSERT INTO user_preferences (
-                    user_id, save_conversations, enable_notifications, auto_save_chat,
-                    theme, compact_mode, session_timeout, two_factor_auth,
-                    email_notifications, push_notifications, share_analytics,
-                    show_online_status, newsletter
-                ) VALUES ($1, true, true, true, 'light', false, 30, false, true, false, true, true, false)
-                ON CONFLICT DO NOTHING
-                """,
-                user_id,
-            )
-            # Créer les entrées user_stats avec toutes les valeurs par défaut
-            await conn.execute(
-                """
-                INSERT INTO user_stats (
-                    user_id, conversations_count, questions_count,
-                    agents_used_count, documents_count
-                ) VALUES ($1, 0, 0, 0, 0)
-                ON CONFLICT DO NOTHING
-                """,
-                user_id,
-            )
-
-            print(f"\n  ✓  Superuser créé avec succès !")
-            print(f"     ID    : {user_id}")
-            print(f"     Email : {email}")
-            print(f"     Nom   : {name}")
-            print(f"     Rôle  : admin")
-
+        print("\n  ✓  Superuser créé avec succès !")
+        print(f"     ID    : {user.id}")
+        print(f"     Email : {email}")
+        print(f"     Nom   : {name}")
+        print("     Rôle  : admin")
     finally:
-        await conn.close()
+        await engine.dispose()
 
 
 # ── Point d'entrée ────────────────────────────────────────────────────────────
@@ -148,7 +128,7 @@ def main() -> None:
 
     print("\n  Création en cours...")
     asyncio.run(create_superuser(email, name, password))
-    print("\n  Connectez-vous sur http://localhost:4200/connexion")
+    print(f"\n  Connectez-vous sur {settings.FRONTEND_URL.rstrip('/')}/login")
     print("═" * 50 + "\n")
 
 

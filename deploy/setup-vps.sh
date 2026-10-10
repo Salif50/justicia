@@ -108,7 +108,14 @@ PubkeyAuthentication yes
 MaxAuthTries 4
 X11Forwarding no
 SSHD
-  sshd -t && systemctl reload ssh
+  # Ubuntu 24.04 : SSH est activé à la demande, /run/sshd peut ne pas exister encore
+  mkdir -p /run/sshd && chmod 755 /run/sshd
+  if sshd -t; then
+    systemctl reload ssh 2>/dev/null || systemctl restart ssh
+  else
+    echo "✗ Configuration SSH invalide : durcissement annulé"
+    rm -f /etc/ssh/sshd_config.d/00-justicia.conf
+  fi
 fi
 
 touch /etc/justicia-setup-done
