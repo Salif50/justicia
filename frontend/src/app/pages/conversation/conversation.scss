@@ -44,19 +44,7 @@
   min-width: 0;
 }
 
-.ch-mark,
-.bot-mark {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  background: var(--ink);
-  color: #FF8A00;
-  font-family: var(--chat-font);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.ch-mark { width: 34px; height: 34px; border-radius: 8px; font-size: 1.15rem; }
+.ch-mark { width: 34px; height: 34px; border-radius: 9px; }
 
 .ch-titles {
   display: flex;
@@ -306,7 +294,7 @@
   margin-bottom: .75rem;
 }
 
-.bot-mark { width: 24px; height: 24px; border-radius: 6px; font-size: .85rem; }
+.bot-mark { width: 26px; height: 26px; border-radius: 7px; }
 
 .bot-name { font-size: .85rem; font-weight: 600; color: var(--text-primary); }
 

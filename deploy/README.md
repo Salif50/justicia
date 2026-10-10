@@ -15,6 +15,10 @@ deploy/
 ├── up.sh                     construire + démarrer (local et VPS)
 ├── stop.sh                   tout arrêter (données conservées)
 ├── restart.sh                redémarrer l'API (--all : tout · --build : reconstruire)
+├── deploy.sh                 (Mac) déployer / mettre à jour le VPS en une commande
+├── setup-vps.sh              préparer un VPS Ubuntu neuf (appelé par deploy.sh)
+├── init-env.sh               créer le .env de production (appelé par deploy.sh)
+├── backup.sh                 sauvegarder base + fichiers déposés
 ├── sync-model.sh             envoyer model/ vers le VPS
 └── seed-hf-cache.sh          (local) réutiliser les modèles déjà téléchargés sur le Mac
 ```
@@ -36,8 +40,8 @@ curl http://localhost:8000/health      # "rag": {"ready": true}
 
 Si un backend tourne déjà sur le port 8000 (`run_dev.sh`), mettre `API_PORT=8001` dans `.env`.
 
-Premier démarrage : à la première question, l'API télécharge ~2,5 Go de modèles
-d'embedding. Sur une connexion lente, copiez plutôt ceux déjà présents sur le Mac :
+Premier démarrage : l'API télécharge ~2,5 Go de modèles d'embedding puis les
+charge en mémoire (préchauffage au démarrage). Sur une connexion lente, copiez plutôt ceux déjà présents sur le Mac :
 `./seed-hf-cache.sh` (une seule fois, ils restent dans le volume `hf_cache`).
 
 | Action                                  | Commande (depuis `deploy/`)   |
@@ -50,41 +54,31 @@ d'embedding. Sur une connexion lente, copiez plutôt ceux déjà présents sur l
 | Logs de l'API                           | `docker compose logs -f api`  |
 | Effacer la base   | `docker compose down -v` ⚠️ irréversible |
 
-## Sur le VPS
+## Sur le VPS (production)
 
-Prérequis : Docker + Docker Compose, **4 Go de RAM** minimum, un nom de domaine pour l'API.
+Guide complet (sous-domaines Hostinger, Vercel, Google, vérifications, dépannage) :
+**[docs/DOMAINE_ET_DEPLOIEMENT.md](../docs/DOMAINE_ET_DEPLOIEMENT.md)**.
 
-1. **DNS** : créer un enregistrement `A` `api.votre-domaine.com` → IP du VPS.
-   Ouvrir les ports 80 et 443 (pas besoin d'ouvrir 8000).
-2. **Code** : cloner le dépôt sur le VPS, par exemple dans `/opt/JusticIA` :
-   ```bash
-   git clone git@github.com:<compte>/JusticIA.git /opt/JusticIA
-   ```
-3. **Index du moteur IA** (exclu de Git car trop lourd : ~540 Mo) — depuis votre Mac :
-   ```bash
-   ./deploy/sync-model.sh user@ip-du-vps:/opt/JusticIA
-   ```
-4. **Configuration** sur le VPS :
-   ```bash
-   cd /opt/JusticIA/deploy
-   cp .env.example .env
-   ```
-   Renseigner : mots de passe, `SECRET_KEY` (`openssl rand -hex 32`), clé LLM, et
-   - `API_DOMAIN=api.votre-domaine.com` → active HTTPS
-   - `FRONTEND_URL`, `APP_PUBLIC_FRONTEND_URL`, `CORS_ORIGINS` = URL Vercel
-   - `BACKEND_URL`, `APP_PUBLIC_BACKEND_URL` = `https://api.votre-domaine.com`
-5. **Lancer** : `./up.sh`, puis vérifier `https://api.votre-domaine.com/health`.
-6. **Vercel** : définir `API_URL=https://api.votre-domaine.com` dans le projet frontend.
+Production : API `https://justiciaapi.mosagix.com` (ce VPS) · site
+`https://justicia.mosagix.com` (Vercel). Une fois le DNS créé, tout se fait depuis le Mac :
 
-### Mettre à jour
+```bash
+./deploy/deploy.sh root@IP_DU_VPS --admin    # 1re fois (+ compte administrateur)
+./deploy/deploy.sh root@IP_DU_VPS            # chaque mise à jour (code, lois, index)
+```
 
-- Code backend : `git pull` puis `./up.sh` (reconstruit l'image).
-- Lois / index : réindexer en local (`model/scripts/ingest.sh`), puis
-  `./deploy/sync-model.sh …` et `docker compose restart api` sur le VPS.
+`deploy.sh` installe la clé SSH, prépare le serveur (`setup-vps.sh`), envoie
+`backend/`, `deploy/` et `model/`, crée le `.env` de production (`init-env.sh`, secrets
+générés sur le serveur), lance `up.sh`, programme `backup.sh` à 3 h et vérifie HTTPS.
+Rien n'est à faire à la main sur le serveur. Les données (`.env`, base, fichiers
+déposés, sauvegardes) ne sont jamais écrasées par une mise à jour.
+
+Minimum : 4 vCPU, 8 Go de RAM, 40 Go de disque. Les réponses sont rédigées par
+OpenAI : pas de GPU ni d'Ollama sur le VPS.
 
 ## Bon à savoir
 
-- Le premier démarrage télécharge les modèles d'embedding (~1–2 Go), conservés
+- Le premier démarrage télécharge les modèles d'embedding (~2,6 Go), conservés
   ensuite dans le volume `hf_cache`.
 - L'API tourne avec **1 worker** : les modèles de recherche sont chargés en mémoire.
 - PostgreSQL n'est pas exposé à l'extérieur : seule l'API y accède.

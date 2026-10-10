@@ -30,4 +30,7 @@ sys.exit(1)
 PY
 
 echo "→ Démarrage JusticIA API (1 worker — le RAG charge les modèles en mémoire)"
-exec uvicorn main:app --host 0.0.0.0 --port "${PORT:-8000}" --workers 1
+# --proxy-headers : derrière Caddy, la vraie IP du visiteur vient de X-Forwarded-For
+# (indispensable au rate limiting). Seuls Caddy et l'hôte peuvent joindre ce port.
+exec uvicorn main:app --host 0.0.0.0 --port "${PORT:-8000}" --workers 1 \
+  --proxy-headers --forwarded-allow-ips "*" --no-server-header

@@ -128,3 +128,10 @@
   .faq-section { padding-top: 80px; }
   .faq-answer { padding-right: 0; }
 }
+
+/* Codex vivant : bloc des canaux arrondi */
+.channels {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -28px rgba(20, 18, 16, 0.3);
+}

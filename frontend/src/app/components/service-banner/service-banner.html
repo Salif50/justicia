@@ -1,0 +1,14 @@
+<div class="sb" role="status" aria-live="polite">
+  @if (status.down()) {
+    <div class="sb-card">
+      <span class="sb-dot" aria-hidden="true"></span>
+      <p class="sb-text">
+        <strong>Service momentanément indisponible.</strong>
+        <span>Revenez dans quelques instants : la page se rétablira d'elle-même.</span>
+      </p>
+      <button type="button" class="sb-retry" (click)="retry()" [disabled]="status.checking()">
+        {{ status.checking() ? 'Vérification…' : 'Réessayer' }}
+      </button>
+    </div>
+  }
+</div>

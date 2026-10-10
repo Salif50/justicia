@@ -1,0 +1,70 @@
+<div class="cx">
+  <header class="cx-head">
+    <span class="cx-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
+    <div class="cx-id">
+      <strong>JusticIA</strong>
+      <span><i class="cx-dot" aria-hidden="true"></i>Assistant juridique · droit guinéen</span>
+    </div>
+    <span class="cx-tag">Démo</span>
+  </header>
+
+  <div class="cx-scroll" #scroller role="log" aria-live="polite" aria-label="Conversation de démonstration">
+    @for (m of messages(); track m.id) {
+      @if (m.from === 'user') {
+        <div class="cx-row cx-row--user"><p class="cx-bubble">{{ m.text }}</p></div>
+      } @else {
+        <div class="cx-row cx-row--bot">
+          <span class="cx-avatar brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
+          <div class="cx-bot">
+            <p class="cx-text">{{ m.text }}@if (!m.done) {<span class="cx-caret" aria-hidden="true"></span>}</p>
+
+            @if (m.done && m.kind === 'answer' && m.article; as a) {
+              <figure class="cx-cite">
+                <blockquote>{{ a.excerpt }}</blockquote>
+                <figcaption>
+                  <span class="cx-ref">{{ a.ref }}</span>
+                  <span>{{ a.source }}</span>
+                </figcaption>
+              </figure>
+              <p class="cx-ok">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                Citation exacte vérifiée
+              </p>
+            }
+
+            @if (m.done && m.kind === 'signin') {
+              <div class="cx-actions">
+                <a routerLink="/signup" class="cx-cta">Créer un compte gratuit</a>
+                <a routerLink="/login" class="cx-cta cx-cta--line">Se connecter</a>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if (thinking(); as t) {
+      <div class="cx-row cx-row--bot">
+        <span class="cx-avatar brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
+        <p class="cx-thinking"><span class="cx-dots" aria-hidden="true"><i></i><i></i><i></i></span>{{ t }}</p>
+      </div>
+    }
+  </div>
+
+  <ul class="cx-chips" aria-label="Questions à essayer">
+    @for (item of questions; track item.articleId) {
+      <li><button type="button" (click)="pick(item)" [disabled]="busy()">{{ item.q }}</button></li>
+    }
+  </ul>
+
+  <form class="cx-input" (ngSubmit)="sendTyped()">
+    <label for="cx-field" class="cx-sr">Votre question juridique</label>
+    <input #field id="cx-field" name="q" type="text" [(ngModel)]="draft" autocomplete="off" enterkeyhint="send"
+           placeholder="Ou écrivez la vôtre (connexion requise)…" />
+    <button type="submit" class="cx-send" [disabled]="busy() || !draft.trim()" aria-label="Envoyer la question">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </form>
+
+  <p class="cx-note">Démonstration · réponses préparées à partir de 9 articles réels, cités mot pour mot.</p>
+</div>

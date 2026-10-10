@@ -1,63 +1,40 @@
-<div class="justicia-loader" [class.active]="active()">
+<!-- Barre de progression : visible dès qu'une navigation dure plus de 120 ms -->
+<div class="ld-bar" [attr.data-state]="bar()" aria-hidden="true">
+  <span class="ld-bar-fill"></span>
+</div>
 
-  <!-- Barre de progression en haut -->
-  <div class="progress-track">
-    <div class="progress-fill"></div>
-  </div>
+<!-- Sceau plein écran : seulement si la navigation traîne -->
+<div class="ld-overlay" [class.is-on]="overlay()" role="status" aria-live="polite">
+  @if (overlay()) {
+    <span class="ld-sr">Chargement de la page…</span>
+  }
 
-  <!-- Overlay central -->
-  <div class="loader-overlay">
-    <div class="loader-content">
+  <div class="ld-stage" aria-hidden="true">
+    <span class="ld-paragraph">§</span>
 
-      <!-- Balance de justice animée -->
-      <div class="scales">
-
-        <!-- Pied de la balance -->
-        <div class="scales-pole">
-          <div class="scales-top-jewel"></div>
-        </div>
-
-        <!-- Bras de la balance -->
-        <div class="scales-beam">
-          <div class="scales-beam-center"></div>
-
-          <!-- Côté gauche -->
-          <div class="scales-side left">
-            <div class="scales-chain"></div>
-            <div class="scales-pan">
-              <div class="scales-pan-rim"></div>
-            </div>
-          </div>
-
-          <!-- Côté droit -->
-          <div class="scales-side right">
-            <div class="scales-chain"></div>
-            <div class="scales-pan">
-              <div class="scales-pan-rim"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Base -->
-        <div class="scales-base">
-          <div class="scales-base-foot"></div>
-        </div>
-
-      </div>
-
-      <!-- Nom de la marque -->
-      <div class="brand">
-        <span class="brand-justic">Justic</span><span class="brand-ia">IA</span>
-      </div>
-
-      <!-- Points de chargement -->
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-
+    <div class="ld-seal">
+      <svg class="ld-ring" viewBox="0 0 120 120">
+        <circle class="ld-track" cx="60" cy="60" r="54" />
+        <circle class="ld-ticks" cx="60" cy="60" r="54" />
+        <circle class="ld-arc" cx="60" cy="60" r="54" />
+      </svg>
+      <span class="ld-tile">
+        <img src="/brand/jia-mark@2x.webp"
+             srcset="/brand/jia-mark@2x.webp 1x, /brand/jia-mark@4x.webp 2x"
+             alt="" width="227" height="128" />
+      </span>
     </div>
-  </div>
 
+    <p class="ld-word">Justic<em>IA</em></p>
+
+    <p class="ld-ticker">
+      <span class="ld-ticker-label">Le codex s'ouvre</span>
+      <span class="ld-ticker-sep"></span>
+      <span class="ld-ticker-window">
+        @for (ref of refs; track ref; let i = $index) {
+          <span class="ld-ref" [class.is-current]="i === refIndex()">{{ ref }}</span>
+        }
+      </span>
+    </p>
+  </div>
 </div>

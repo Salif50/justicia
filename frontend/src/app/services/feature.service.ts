@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, of, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { isAuthError } from '../core/utils/auth-error.util';
+import { isBackendUnavailable } from './backend-status.service';
 
 export interface UserFeatures {
   plan_id: string;
@@ -99,6 +100,8 @@ export class FeatureService {
       catchError((err) => {
         if (isAuthError(err)) return throwError(() => err);
         const fallback = { plan_id: 'gratuit', plan_name: 'Gratuit', features: [], is_free: true };
+        // Panne passagère : ne pas mémoriser un plan gratuit erroné, on rechargera
+        if (isBackendUnavailable(err) || err?.error?.code === 'SERVICE_UNAVAILABLE') return of(fallback);
         this._features.set(fallback);
         this._loaded.set(true);
         return of(fallback);

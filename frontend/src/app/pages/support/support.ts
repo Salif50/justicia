@@ -77,9 +77,9 @@ export class Support implements OnInit, AfterViewInit, OnDestroy {
         this.contactForm = { name: '', email: '', subject: '', message: '' };
         this.triggerToast('Message envoyé ! Nous vous répondrons sous 24h.', true);
       },
-      error: () => {
+      error: (err) => {
         this.isSubmitting.set(false);
-        this.triggerToast("Erreur lors de l'envoi. Veuillez réessayer.", false);
+        this.triggerToast(err.error?.detail || "Erreur lors de l'envoi. Veuillez réessayer.", false);
       },
     });
   }

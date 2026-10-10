@@ -13,6 +13,7 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
     env_file: .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-db_justicia}
@@ -33,11 +34,13 @@ services:
       dockerfile: deploy/Dockerfile  # ignore : deploy/Dockerfile.dockerignore
     image: justicia-api
     restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
     env_file: .env
     environment:
       RAG_MODEL_PATH: /app/model
       HF_HOME: /app/.cache/huggingface
       TOKENIZERS_PARALLELISM: "false"
+      RAG_WARMUP: "true"            # modèles chargés au démarrage, pas à la 1re question
     ports:
       - "${API_BIND:-127.0.0.1}:${API_PORT:-8000}:8000"
     volumes:
@@ -66,11 +69,13 @@ services:
     image: caddy:2-alpine
     profiles: ["https"]
     restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
     environment:
       API_DOMAIN: ${API_DOMAIN:-}
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"               # HTTP/3
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

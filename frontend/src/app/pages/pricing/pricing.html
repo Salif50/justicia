@@ -1,6 +1,6 @@
 <app-header></app-header>
 
-<section class="pub-hero">
+<section class="pub-hero" id="contenu" tabindex="-1">
   <div class="pub-container">
     <p class="pub-eyebrow pub-eyebrow--light">Tarifs</p>
     <h1 class="pub-hero-title">Une offre pour chaque <em>pratique du droit</em>.</h1>
@@ -37,7 +37,7 @@
                 <span class="amount custom">{{ plan.price }}</span>
               } @else {
                 <span class="currency">{{ plan.currency }}</span>
-                <span class="amount">{{ plan.price | number:'1.0-0' }}</span>
+                <span class="amount">{{ formatAmount(plan.price) }}</span>
               }
             </div>
             @if (plan.period) { <span class="price-period">/{{ plan.period }}</span> }
@@ -73,6 +73,15 @@
       }
     </div>
 
+    @if (unavailable()) {
+      <div class="tarif-unavailable" role="status">
+        <p class="tarif-unavailable-title">Les offres ne peuvent pas être affichées pour le moment.</p>
+        <p class="tarif-unavailable-text">Le service est momentanément indisponible. Veuillez réessayer ultérieurement.</p>
+        <button type="button" class="pub-btn pub-btn--dark" (click)="load()">Réessayer</button>
+      </div>
+    }
+
+    @if (faqItems().length) {
     <div class="faq-section scroll-reveal">
       <div class="faq-header">
         <p class="pub-eyebrow">Questions fréquentes</p>
@@ -87,6 +96,7 @@
         }
       </div>
     </div>
+    }
   </div>
 </section>
 

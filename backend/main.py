@@ -74,6 +74,8 @@ async def _run_migrations(conn) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.is_production and (problems := settings.production_problems()):
+        raise RuntimeError("Configuration de production non sûre :\n  - " + "\n  - ".join(problems))
     # Créer toutes les tables au démarrage
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -90,6 +92,10 @@ async def lifespan(app: FastAPI):
         print("    Attendu : model/03_vectorstore + model/04_pipeline/rag.py")
     else:
         print(f"✅ RAG prêt — {model_root}")
+        if settings.RAG_WARMUP:
+            import asyncio
+            from app.services.rag_service import warmup_pipeline
+            app.state.rag_warmup = asyncio.create_task(warmup_pipeline())
 
     print(f"✅ JusticIA backend démarré — {settings.APP_ENV}")
     yield
@@ -101,8 +107,10 @@ app = FastAPI(
     description="Backend de l'assistant juridique guinéen JusticIA",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    # Documentation interactive masquée en production (surface d'attaque)
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
@@ -154,6 +162,7 @@ async def root():
 async def health():
     from pathlib import Path
     from app.services.llm_service import llm
+    from app.services.rag_service import is_pipeline_loaded
 
     model_root = Path(settings.RAG_MODEL_PATH)
     rag_ok = (model_root / "03_vectorstore").exists() and (model_root / "04_pipeline" / "rag.py").exists()
@@ -165,6 +174,7 @@ async def health():
         "rag": {
             "path": str(model_root),
             "ready": rag_ok,
+            "loaded": is_pipeline_loaded(),
         },
     }
 

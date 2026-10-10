@@ -17,6 +17,7 @@ export class Pricing implements OnInit, AfterViewInit, OnDestroy {
   plans     = signal<PricingPlan[]>([]);
   faqItems  = signal<FaqItem[]>([]);
   isLoading = signal(true);
+  unavailable = signal(false);
 
   private observer!: IntersectionObserver;
 
@@ -28,24 +29,41 @@ export class Pricing implements OnInit, AfterViewInit, OnDestroy {
       { threshold: 0.05, rootMargin: '0px 0px 0px 0px' }
     );
 
+    this.load();
+  }
+
+  load() {
+    this.isLoading.set(true);
+    this.unavailable.set(false);
     this.contentService.getPricing().subscribe({
       next: (data) => {
         this.plans.set(data);
         this.isLoading.set(false);
         // Observer les cartes après rendu Angular
         setTimeout(() => this.observeAll(), 150);
-      }
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.unavailable.set(true);
+      },
     });
     this.contentService.getFaq('pricing').subscribe({
       next: (data) => {
         this.faqItems.set(data);
         setTimeout(() => this.observeAll(), 150);
-      }
+      },
+      error: () => this.faqItems.set([]),
     });
   }
 
   private observeAll() {
     document.querySelectorAll('.scroll-reveal').forEach((el) => this.observer.observe(el));
+  }
+
+  /** Montant au format français : 60000 → « 60 000 ». */
+  formatAmount(price: string): string {
+    const n = Number(price);
+    return Number.isFinite(n) ? n.toLocaleString('fr-FR') : price;
   }
 
   formatPrice(p: PricingPlan): string {

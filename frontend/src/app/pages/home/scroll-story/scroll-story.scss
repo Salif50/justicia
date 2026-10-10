@@ -1,0 +1,141 @@
+@use '../../public' as pub;
+
+:host { display: block; }
+@include pub.primitives;
+
+.ss {
+  background: pub.$ink;
+  color: pub.$on-ink;
+}
+
+/* Épinglé : la piste fait 4 écrans, la scène reste collée en haut */
+.ss.is-pinned .ss-track { height: 400vh; }
+.ss.is-pinned .ss-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.ss:not(.is-pinned) .ss-stage { padding: 96px 0; }
+
+.ss-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 72px;
+  align-items: center;
+  width: 100%;
+}
+
+.ss-kicker {
+  margin: 0 0 16px;
+  font-family: pub.$mono;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: pub.$accent-ink;
+}
+
+.ss-title {
+  margin: 0 0 32px;
+  font-family: pub.$display;
+  font-weight: 400;
+  font-size: clamp(2rem, 3.8vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  em { font-style: italic; color: pub.$accent-ink; }
+}
+
+.ss-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgba(245, 242, 234, 0.14);
+
+  li {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 12px;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(245, 242, 234, 0.14);
+    opacity: 0.38;
+    transition: opacity 0.4s pub.$ease-out;
+
+    &.is-active, &.is-done { opacity: 1; }
+    &.is-done p { display: none; }
+  }
+
+  h3 { margin: 0 0 6px; font-size: 1.02rem; font-weight: 600; color: pub.$on-ink; }
+  p { margin: 0; font-size: 0.95rem; line-height: 1.6; color: pub.$on-ink-mut; }
+}
+
+.ss-step-n { font-family: pub.$mono; font-size: 12px; color: pub.$accent-ink; padding-top: 3px; }
+
+.ss.is-pinned .ss-steps li:not(.is-active) p { display: none; }
+
+/* Visuel : compteur + champ de points */
+.ss-visual {
+  position: relative;
+  padding: 28px;
+  border-radius: 22px;
+  background: rgba(245, 242, 234, 0.03);
+  border: 1px solid rgba(245, 242, 234, 0.1);
+}
+
+.ss-count {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 22px;
+
+  b {
+    font-family: pub.$display;
+    font-weight: 400;
+    font-size: clamp(3rem, 6vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: pub.$on-ink;
+  }
+
+  span { font-family: pub.$mono; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: pub.$accent-ink; }
+}
+
+.ss-field {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  gap: 7px;
+
+  i {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: pub.$on-ink;
+    transition: opacity 0.5s pub.$ease-out, transform 0.5s pub.$ease-out, background 0.4s;
+
+    &.all   { opacity: 0.32; }
+    &.off   { opacity: 0.06; transform: scale(0.6); }
+    &.on    { opacity: 1; background: pub.$accent-ink; transform: scale(1.15); }
+    &.cited { opacity: 1; background: pub.$accent; transform: scale(2.4); box-shadow: 0 0 0 4px rgba(232, 101, 10, 0.25), 0 0 28px rgba(232, 101, 10, 0.7); }
+  }
+}
+
+.ss-bar {
+  height: 2px;
+  margin-top: 24px;
+  background: rgba(245, 242, 234, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+
+  span { display: block; height: 100%; background: pub.$accent-ink; transform-origin: left; transition: transform 0.1s linear; }
+}
+
+@media (max-width: 960px) {
+  .ss-grid { grid-template-columns: 1fr; gap: 40px; }
+  .ss-field { gap: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-field i, .ss-steps li { transition: none; }
+}

@@ -1,252 +1,268 @@
-// ── Variables ────────────────────────────────────────────────────────────────
-$primary-dark:   #0d2740;
-$primary-light:  #0f3d63;
-$accent-blue:    #1a7fe8;
-$accent-cyan:    #4fc3f7;
-$gold:           #f0c040;
-$gold-light:     #ffe082;
+@use '../../pages/public' as pub;
 
-// ── Conteneur principal ──────────────────────────────────────────────────────
-.justicia-loader {
+/* ═══════════════════════════════════════════════════════════════
+   Loader « Le sceau du codex »
+   1. Barre fine orange en haut (navigation > 120 ms).
+   2. Sceau plein écran (navigation > 450 ms) : tuile JiA cerclée
+      d'un arc qui tourne, références d'articles réelles qui défilent.
+   ═══════════════════════════════════════════════════════════════ */
+
+:host { display: contents; }
+
+/* ── 1. Barre de progression ─────────────────────────────────── */
+.ld-bar {
   position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-
-  &.active {
-    opacity: 1;
-    pointer-events: all;
-  }
-}
-
-// ── Barre de progression (haut de page) ─────────────────────────────────────
-.progress-track {
-  position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 3px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  z-index: 1;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s ease .12s;
+
+  &[data-state='run'],
+  &[data-state='done'] { opacity: 1; transition-delay: 0s; }
+  &[data-state='done'] { opacity: 0; transition: opacity .3s ease .15s; }
 }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, $accent-cyan, $accent-blue, $gold, $accent-cyan);
-  background-size: 300% 100%;
-  animation: progress-slide 1.6s ease-in-out infinite;
-  border-radius: 0 2px 2px 0;
-}
-
-@keyframes progress-slide {
-  0%   { width: 0%;   margin-left: 0;    background-position: 0% 50%; }
-  40%  { width: 60%;  margin-left: 0;    background-position: 50% 50%; }
-  80%  { width: 10%;  margin-left: 90%;  background-position: 100% 50%; }
-  100% { width: 0%;   margin-left: 100%; background-position: 100% 50%; }
-}
-
-// ── Overlay ──────────────────────────────────────────────────────────────────
-.loader-overlay {
+.ld-bar-fill {
   position: absolute;
   inset: 0;
-  background: rgba($primary-dark, 0.96);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, rgba(232, 101, 10, .35), pub.$accent 70%, #FFB066);
+  box-shadow: 0 0 10px rgba(232, 101, 10, .55), 0 0 2px rgba(232, 101, 10, .8);
+
+  // Tête lumineuse au bout de la barre
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -3px;
+    width: 80px;
+    height: 9px;
+    background: radial-gradient(closest-side, rgba(255, 176, 102, .9), transparent);
+    transform: translateX(40px);
+  }
+
+  [data-state='run'] > & { animation: ld-trickle 8s cubic-bezier(.08, .7, .2, 1) forwards; }
+  [data-state='done'] > & { transform: scaleX(1); transition: transform .25s pub.$ease-out; }
 }
 
-.loader-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  user-select: none;
+@keyframes ld-trickle {
+  0%   { transform: scaleX(0); }
+  8%   { transform: scaleX(.32); }
+  40%  { transform: scaleX(.7); }
+  100% { transform: scaleX(.92); }
 }
 
-// ── Balance de justice ───────────────────────────────────────────────────────
-.scales {
-  position: relative;
-  width: 140px;
-  height: 160px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* ── 2. Sceau plein écran ────────────────────────────────────── */
+.ld-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(255, 253, 248, .96), rgba(245, 242, 234, .9) 55%, rgba(236, 231, 219, .94));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .22s ease, visibility 0s linear .22s;
+
+  &.is-on {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .32s ease, visibility 0s;
+
+    .ld-stage { transform: none; opacity: 1; }
+  }
 }
 
-// Joyau du haut
-.scales-top-jewel {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, $gold-light, $gold);
-  box-shadow: 0 0 12px rgba($gold, 0.7), 0 0 24px rgba($gold, 0.3);
+.ld-sr {
   position: absolute;
-  top: -7px;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-// Pied vertical
-.scales-pole {
+.ld-stage {
   position: relative;
-  width: 3px;
-  height: 68px;
-  background: linear-gradient(180deg, $gold 0%, $accent-blue 60%, $primary-light 100%);
-  border-radius: 2px;
-  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  transform: translateY(10px) scale(.97);
+  opacity: 0;
+  transition: transform .45s pub.$ease-out, opacity .3s ease;
 }
 
-// Bras horizontal
-.scales-beam {
-  position: relative;
-  width: 140px;
-  height: 4px;
-  background: linear-gradient(90deg, $accent-cyan, $accent-blue 50%, $accent-cyan);
-  border-radius: 4px;
-  transform-origin: center center;
-  animation: beam-rock 2.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-  flex-shrink: 0;
-}
-
-.scales-beam-center {
+// Grand § en filigrane derrière le sceau
+.ld-paragraph {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: 0 0 8px rgba($accent-cyan, 0.8);
+  transform: translate(-50%, -58%);
+  font-family: pub.$display;
+  font-size: 22rem;
+  line-height: 1;
+  color: rgba(20, 18, 16, .025);
+  pointer-events: none;
+  user-select: none;
 }
 
-// Côtés (chaînes + plateau)
-.scales-side {
-  position: absolute;
-  top: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  &.left {
-    left: 0;
-    animation: side-down 2.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-  }
-
-  &.right {
-    right: 0;
-    animation: side-up 2.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-  }
-}
-
-// Chaîne
-.scales-chain {
-  width: 1.5px;
-  height: 38px;
-  background: linear-gradient(180deg, rgba($accent-cyan, 0.9), rgba($accent-blue, 0.6));
-}
-
-// Plateau
-.scales-pan {
-  width: 52px;
-  height: 12px;
-  background: linear-gradient(180deg, $accent-blue, darken($accent-blue, 10%));
-  border-radius: 0 0 30px 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+.ld-seal {
   position: relative;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
 }
 
-.scales-pan-rim {
+.ld-ring {
   position: absolute;
-  top: -2px;
-  left: -3px;
-  right: -3px;
-  height: 4px;
-  background: $accent-cyan;
-  border-radius: 4px;
-  box-shadow: 0 0 6px rgba($accent-cyan, 0.5);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  circle { fill: none; }
 }
 
-// Pied / base
-.scales-base {
-  width: 3px;
-  height: 14px;
-  background: linear-gradient(180deg, $primary-light, $primary-dark);
-  flex-shrink: 0;
+.ld-track { stroke: rgba(20, 18, 16, .08); stroke-width: 1.5; }
+
+// Graduations façon cadran : 24 traits
+.ld-ticks {
+  stroke: rgba(20, 18, 16, .16);
+  stroke-width: 5;
+  stroke-dasharray: 1 13.137;
+  transform-origin: center;
+  transform: scale(.86);
 }
 
-.scales-base-foot {
-  width: 70px;
-  height: 6px;
-  background: linear-gradient(90deg, transparent, $accent-blue, transparent);
-  border-radius: 4px;
-  transform: translateX(-50%) translateX(1.5px);
+.ld-arc {
+  stroke: pub.$accent;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 60 280;
+  transform-origin: center;
+  filter: drop-shadow(0 0 4px rgba(232, 101, 10, .45));
+  animation: ld-spin 1.4s linear infinite, ld-sweep 2.8s ease-in-out infinite;
 }
 
-// ── Animations de la balance ─────────────────────────────────────────────────
-@keyframes beam-rock {
-  0%, 100% { transform: rotate(-11deg); }
-  50%       { transform: rotate(11deg);  }
+@keyframes ld-spin { to { transform: rotate(360deg); } }
+
+@keyframes ld-sweep {
+  0%, 100% { stroke-dasharray: 26 314; }
+  50%      { stroke-dasharray: 150 190; }
 }
 
-@keyframes side-down {
-  0%, 100% { transform: translateY(10px); }
-  50%       { transform: translateY(-10px); }
+.ld-tile {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 22px;
+  background: pub.$white;
+  box-shadow:
+    inset 0 0 0 1px rgba(20, 18, 16, .07),
+    0 18px 36px -18px rgba(20, 18, 16, .45),
+    0 2px 6px rgba(20, 18, 16, .08);
+  animation: ld-breathe 2.8s ease-in-out infinite;
+
+  img { display: block; width: 78%; height: auto; }
 }
 
-@keyframes side-up {
-  0%, 100% { transform: translateY(-10px); }
-  50%       { transform: translateY(10px);  }
+@keyframes ld-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
 }
 
-// ── Texte de marque ──────────────────────────────────────────────────────────
-.brand {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  animation: brand-pulse 2.4s ease-in-out infinite;
+.ld-word {
+  margin: 4px 0 0;
+  font-family: pub.$display;
+  font-size: 1.6rem;
+  letter-spacing: -.02em;
+  color: pub.$ink;
+
+  em { font-style: italic; color: pub.$accent-txt; }
 }
 
-.brand-justic {
-  color: #ffffff;
-}
-
-.brand-ia {
-  color: $gold;
-  text-shadow: 0 0 16px rgba($gold, 0.6);
-}
-
-@keyframes brand-pulse {
-  0%, 100% { opacity: 1;    transform: scale(1); }
-  50%       { opacity: 0.8; transform: scale(0.98); }
-}
-
-// ── Points de chargement ─────────────────────────────────────────────────────
-.dots {
-  display: flex;
-  gap: 10px;
+.ld-ticker {
+  margin: 0;
+  display: inline-flex;
   align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border: 1px solid pub.$line;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, .8);
+  font-family: pub.$mono;
+  font-size: 12px;
+  color: pub.$muted;
+}
 
-  span {
-    display: block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: $accent-cyan;
-    animation: dot-bounce 1.2s ease-in-out infinite;
+.ld-ticker-label { letter-spacing: .04em; }
 
-    &:nth-child(1) { animation-delay: 0s;    background: $accent-cyan; }
-    &:nth-child(2) { animation-delay: 0.2s;  background: $accent-blue; }
-    &:nth-child(3) { animation-delay: 0.4s;  background: $gold; }
+.ld-ticker-sep {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: pub.$accent;
+  animation: ld-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes ld-blink { 50% { opacity: .25; } }
+
+.ld-ticker-window {
+  position: relative;
+  display: inline-block;
+  width: 11ch;
+  height: 1.4em;
+  overflow: hidden;
+}
+
+.ld-ref {
+  position: absolute;
+  inset: 0;
+  line-height: 1.4em;
+  font-weight: 600;
+  color: pub.$accent-txt;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-80%);
+  transition: opacity .2s ease, transform .3s pub.$ease-out;
+
+  &.is-current {
+    opacity: 1;
+    transform: none;
+    animation: ld-ref-in .34s pub.$ease-out;
   }
 }
 
-@keyframes dot-bounce {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-  40%           { transform: scale(1.2); opacity: 1;   }
+@keyframes ld-ref-in {
+  from { opacity: 0; transform: translateY(80%); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 480px) {
+  .ld-paragraph { font-size: 15rem; }
+  .ld-seal { width: 116px; height: 116px; }
+  .ld-tile { width: 74px; height: 74px; border-radius: 19px; }
+}
+
+/* Mouvement réduit : arc fixe, pas de défilement ni de respiration */
+@media (prefers-reduced-motion: reduce) {
+  .ld-bar-fill { [data-state='run'] > & { animation: none; transform: scaleX(.6); } }
+  .ld-arc { animation: none; stroke-dasharray: 90 250; transform: rotate(-90deg); }
+  .ld-tile, .ld-ticker-sep { animation: none; }
+  .ld-stage { transition: opacity .2s ease; transform: none; }
+  .ld-ref { transition: none; &.is-current { animation: none; } }
 }

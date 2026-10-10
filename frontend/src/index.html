@@ -11,8 +11,33 @@
   <link rel="apple-touch-icon" href="/favicon.png">
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    /* Sceau de démarrage : remplacé par l'application dès qu'elle démarre */
+    .boot{position:fixed;inset:0;display:grid;place-items:center;background:#F5F2EA}
+    .boot-seal{position:relative;width:132px;height:132px;display:grid;place-items:center}
+    .boot-seal svg{position:absolute;inset:0;width:100%;height:100%}
+    .boot-seal circle{fill:none}
+    .boot-track{stroke:rgba(20,18,16,.08);stroke-width:1.5}
+    .boot-arc{stroke:#E8650A;stroke-width:3;stroke-linecap:round;stroke-dasharray:60 280;transform-origin:center;animation:boot-spin 1.4s linear infinite}
+    .boot-tile{width:84px;height:84px;border-radius:22px;background:#FFFDF8;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(20,18,16,.07),0 18px 36px -18px rgba(20,18,16,.45)}
+    .boot-tile img{width:78%;height:auto;display:block}
+    @keyframes boot-spin{to{transform:rotate(360deg)}}
+    @media (prefers-reduced-motion:reduce){.boot-arc{animation:none;stroke-dasharray:90 250}}
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="boot" role="status" aria-label="Chargement de JusticIA">
+      <div class="boot-seal">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="boot-track" cx="60" cy="60" r="54" />
+          <circle class="boot-arc" cx="60" cy="60" r="54" />
+        </svg>
+        <span class="boot-tile">
+          <img src="/brand/jia-mark@2x.webp" srcset="/brand/jia-mark@2x.webp 1x, /brand/jia-mark@4x.webp 2x" alt="" width="227" height="128" />
+        </span>
+      </div>
+    </div>
+  </app-root>
 </body>
 </html>

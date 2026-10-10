@@ -75,6 +75,8 @@ class Settings(BaseSettings):
     RAG_LLM_PROVIDER:     str = ""
     RAG_OLLAMA_MODEL:     str = ""   # Si vide, utilise OLLAMA_MODEL
     RAG_REQUEST_TIMEOUT_SECONDS: int = 120
+    # Charger les modèles dès le démarrage (activé en Docker, désactivé en dev)
+    RAG_WARMUP:           bool = False
 
     # ── Google OAuth ──────────────────────────────────────────────────────────
     GOOGLE_CLIENT_ID:     str = ""
@@ -91,12 +93,32 @@ class Settings(BaseSettings):
 
     model_config = {"env_file": Path(__file__).parent.parent / ".env", "extra": "ignore"}
 
+    @property
+    def is_production(self) -> bool:
+        return self.APP_ENV.strip().lower() == "production"
+
+    def production_problems(self) -> list[str]:
+        """Réglages dangereux qui empêchent le démarrage en production."""
+        problems = []
+        key = self.SECRET_KEY or ""
+        if len(key) < 32 or "generez" in key or "changez" in key:
+            problems.append("SECRET_KEY trop courte ou laissée par défaut (openssl rand -hex 32)")
+        if "changez-moi" in self.DATABASE_URL:
+            problems.append("mot de passe PostgreSQL laissé par défaut")
+        if not self.GOOGLE_CLIENT_ID:
+            problems.append("GOOGLE_CLIENT_ID vide : l'audience des jetons Google ne serait pas vérifiée")
+        for name in ("FRONTEND_URL", "BACKEND_URL"):
+            if not getattr(self, name).startswith("https://"):
+                problems.append(f"{name} doit être en https://")
+        return problems
+
     def allowed_origins(self) -> list[str]:
+        # En production : uniquement les domaines déclarés (pas de localhost)
+        local = [] if self.is_production else ["http://localhost:4200", "http://localhost:4201"]
         raw = [
             self.FRONTEND_URL,
             self.APP_PUBLIC_FRONTEND_URL,
-            "http://localhost:4200",
-            "http://localhost:4201",
+            *local,
             *self.CORS_ORIGINS.split(","),
         ]
         seen: list[str] = []

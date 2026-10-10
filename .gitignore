@@ -30,3 +30,6 @@ model/corpus/pdfs/
 
 # Contient des identifiants en clair — ne jamais versionner
 docs/admin.md
+
+# Sauvegardes produites sur le VPS par deploy/backup.sh
+deploy/backups/

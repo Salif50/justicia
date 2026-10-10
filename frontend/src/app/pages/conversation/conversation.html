@@ -3,7 +3,7 @@
   <!-- ── En-tête de la consultation ─────────────────────────── -->
   <div class="conversation-header">
     <div class="ch-left">
-      <span class="ch-mark" aria-hidden="true">J</span>
+      <span class="ch-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
       <div class="ch-titles">
         <h2>{{ aiName() }}</h2>
         <span class="ch-saved">Consultation enregistrée automatiquement</span>
@@ -76,7 +76,7 @@
           <div class="message" [class.user-message]="message.sender === 'user'" [class.bot-message]="message.sender === 'bot'">
             @if (message.sender === 'bot') {
               <div class="bot-head">
-                <span class="bot-mark" aria-hidden="true">J</span>
+                <span class="bot-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
                 <span class="bot-name">{{ aiName() }}</span>
               </div>
             }
@@ -118,7 +118,7 @@
         @if (isLoading()) {
           <div class="message bot-message">
             <div class="bot-head">
-              <span class="bot-mark" aria-hidden="true">J</span>
+              <span class="bot-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
               <span class="bot-name">{{ aiName() }}</span>
             </div>
             <div class="typing">

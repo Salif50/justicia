@@ -1,0 +1,37 @@
+<section class="ss" [class.is-pinned]="pinned()" aria-labelledby="ss-title">
+  <div class="ss-track" #track>
+    <div class="ss-stage">
+      <div class="pub-container ss-grid">
+        <div class="ss-copy">
+          <p class="ss-kicker">§ Sous le capot</p>
+          <h2 id="ss-title" class="ss-title">De 12 282 articles <em>à une seule citation</em>.</h2>
+
+          <ol class="ss-steps">
+            @for (s of steps; track s.n; let i = $index) {
+              <li [class.is-active]="pinned() ? step() === i : true" [class.is-done]="pinned() && step() > i">
+                <span class="ss-step-n">0{{ i + 1 }}</span>
+                <div>
+                  <h3>{{ s.title }}</h3>
+                  <p>{{ s.text }}</p>
+                </div>
+              </li>
+            }
+          </ol>
+        </div>
+
+        <div class="ss-visual" aria-hidden="true">
+          <div class="ss-count">
+            <b>{{ steps[step()].n }}</b>
+            <span>{{ steps[step()].unit }}</span>
+          </div>
+          <div class="ss-field" [attr.data-step]="step()">
+            @for (d of dots; track $index) {
+              <i [class]="stateOf(d)"></i>
+            }
+          </div>
+          <div class="ss-bar"><span [style.transform]="'scaleX(' + (pinned() ? progress() : 1) + ')'"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

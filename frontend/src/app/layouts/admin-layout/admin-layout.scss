@@ -58,14 +58,7 @@
 .adm-mark {
   width: 32px;
   height: 32px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  background: var(--sb-accent);
-  color: #0E1B2C;
-  border-radius: 6px;
-  font-family: var(--serif);
-  font-size: 1.15rem;
+  border-radius: 8px;
 }
 
 .adm-brand-name {

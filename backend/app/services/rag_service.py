@@ -6,6 +6,7 @@ Les appels bloquants sont exécutés dans un thread pool pour ne pas bloquer l'e
 
 import asyncio
 import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
@@ -151,6 +152,8 @@ _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="rag")
 
 # Cache du pipeline — stocké avec le provider utilisé pour détecter les changements
 _pipeline_cache: dict = {"pipeline": None, "provider": None}
+# Empêche deux chargements simultanés (préchauffage + première question)
+_pipeline_lock = threading.Lock()
 
 
 def _load_pipeline():
@@ -159,10 +162,17 @@ def _load_pipeline():
     Si le provider change dans .env, recrée automatiquement le pipeline.
     Supporte Ollama, Anthropic, OpenAI, Mistral.
     """
+    rag_provider = settings.RAG_LLM_PROVIDER or settings.LLM_PROVIDER
+    if _pipeline_cache["pipeline"] is not None and _pipeline_cache["provider"] == rag_provider:
+        return _pipeline_cache["pipeline"]
+    with _pipeline_lock:
+        return _load_pipeline_locked(rag_provider)
+
+
+def _load_pipeline_locked(rag_provider: str):
     global _pipeline_cache
 
-    model_path   = settings.RAG_MODEL_PATH
-    rag_provider = settings.RAG_LLM_PROVIDER or settings.LLM_PROVIDER
+    model_path = settings.RAG_MODEL_PATH
 
     # Retourner le cache seulement si le provider n'a pas changé
     if _pipeline_cache["pipeline"] is not None and _pipeline_cache["provider"] == rag_provider:
@@ -209,6 +219,23 @@ def _load_pipeline():
     logging.getLogger("justicia").info(f"RAG pipeline chargé — provider: {rag_provider}")
 
     return pipeline
+
+
+def is_pipeline_loaded() -> bool:
+    return _pipeline_cache["pipeline"] is not None
+
+
+async def warmup_pipeline() -> None:
+    """Charge les modèles au démarrage (en arrière-plan) pour que la première
+    question n'attende pas le téléchargement et le chargement (~1–3 min)."""
+    import logging
+    log = logging.getLogger("justicia")
+    try:
+        await asyncio.get_running_loop().run_in_executor(_executor, _load_pipeline)
+        print("✅ RAG préchargé (modèles en mémoire)")
+    except Exception as exc:  # l'API reste utilisable : chargement retenté à la 1re question
+        log.warning(f"Préchargement RAG échoué : {exc}")
+        print(f"⚠️  Préchargement RAG échoué : {exc}")
 
 
 def _run_rag_sync(

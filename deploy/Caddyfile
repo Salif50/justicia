@@ -1,6 +1,34 @@
-# Reverse proxy HTTPS devant l'API (certificat Let's Encrypt automatique).
-# Le DNS de API_DOMAIN doit pointer vers l'IP du VPS, ports 80 et 443 ouverts.
+# Reverse proxy HTTPS devant l'API (certificat Let's Encrypt automatique et renouvelé).
+# Prérequis : le DNS de API_DOMAIN pointe vers l'IP du VPS, ports 80 et 443 ouverts.
 {$API_DOMAIN} {
-	encode gzip
-	reverse_proxy api:8000
+	encode zstd gzip
+
+	# Fichiers déposés : 25 Mo max par fichier côté API (comparaison = 2 fichiers)
+	request_body {
+		max_size 60MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+		-Server
+		-Via
+	}
+
+	reverse_proxy api:8000 {
+		# Une réponse RAG peut prendre jusqu'à ~2 min (RAG_REQUEST_TIMEOUT_SECONDS)
+		transport http {
+			read_timeout 180s
+		}
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 20MiB
+			roll_keep 5
+		}
+	}
 }
