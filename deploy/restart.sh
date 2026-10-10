@@ -3,6 +3,7 @@
 #   ./restart.sh           → redémarre l'API (rapide : après une réindexation de model/)
 #   ./restart.sh --all     → redémarre tous les services (API, base, HTTPS)
 #   ./restart.sh --build   → reconstruit l'image puis redémarre (après une modif du code backend)
+# ⚠️  Après une modification de .env : ./up.sh (un simple restart garde l'ancienne config).
 set -e
 cd "$(dirname "$0")"
 

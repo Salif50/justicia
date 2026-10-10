@@ -122,12 +122,57 @@ sauvegardes ne sont jamais écrasés.
   *API et services → Identifiants* → client OAuth « Web » → **Origines JavaScript
   autorisées** → ajouter `https://justicia.mosagix.com`. Aucune URI de redirection
   n'est nécessaire (mode popup). La prise en compte peut prendre quelques minutes.
-- **Paiement Mosagix** (le jour où il est activé) : URL de webhook
-  `https://justiciaapi.mosagix.com/api/webhooks/mosagix`. Renseigner `MOSAGIX_API_URL`,
-  `MOSAGIX_API_KEY` et `MOSAGIX_WEBHOOK_SECRET` dans `/opt/justicia/deploy/.env`, puis
-  `./restart.sh --all`.
+- **Paiement Mosagix Pay** : voir la section [Mosagix Pay](#mosagix-pay) ci-dessous.
 - **E-mails** : désactivés tant que `EMAILS_ENABLED=false`. Pour les activer, renseigner
-  les variables `SMTP_*` dans le même `.env`.
+  les variables `SMTP_*` dans le même `.env`, puis lancer `./up.sh`.
+
+### Mosagix Pay
+
+**À déclarer chez Mosagix Pay** (espace marchand) :
+
+| Réglage | Valeur |
+|---|---|
+| URL de webhook | `https://justiciaapi.mosagix.com/api/webhooks/mosagix` |
+| Événements | `payment.success`, `payment.failed`, `payment.cancelled`, `payment.timeout` |
+| Domaine de retour (si demandé) | `https://justicia.mosagix.com` |
+
+Il n'y a pas besoin de déclarer les pages de retour : JusticIA les envoie à chaque
+paiement.
+- succès : `https://justicia.mosagix.com/dashboard/subscription/payment/success`
+- annulation : `https://justicia.mosagix.com/dashboard/subscription/payment/cancel`
+
+Moyens de paiement proposés : `OM` (Orange Money), `MOMO` (MTN MoMo), `PAYCARD`, `CARD`.
+Pays `GN`, devise `GNF`.
+
+**À recopier depuis Mosagix Pay dans `/opt/justicia/deploy/.env`** :
+
+| Variable | Contenu |
+|---|---|
+| `MOSAGIX_API_URL` | Adresse de base de l'API Mosagix Pay, en `https://`, **sans** `/api/v1` (JusticIA ajoute `/api/v1/checkout`, `/api/v1/payments/…`, `/api/v1/status`). |
+| `MOSAGIX_API_KEY` | Clé API marchande (secrète), envoyée dans l'en-tête `X-Mosagix-Key`. |
+| `MOSAGIX_WEBHOOK_SECRET` | Secret de signature des webhooks (secret), différent de la clé API. |
+
+Ce que fait le backend avec ces valeurs :
+- **Signature des webhooks** : en-tête `X-Mosagix-Signature: v1:<HMAC-SHA256 hexadécimal
+  du corps brut, calculé avec MOSAGIX_WEBHOOK_SECRET>`. Sans signature valide, la
+  réponse est **401**.
+- **Contrôle du lien de paiement** : la page de paiement renvoyée par Mosagix
+  (`checkoutUrl`) doit être sur le **même nom de domaine** que `MOSAGIX_API_URL`.
+  C'est une protection contre les redirections frauduleuses. Si Mosagix héberge sa page
+  de paiement sur un autre domaine que son API, signalez-le : le contrôle devra être
+  adapté.
+
+Appliquer, sur le VPS :
+
+```bash
+cd /opt/justicia/deploy
+nano .env        # remplir les 3 variables MOSAGIX_*
+./up.sh          # recrée l'API avec la nouvelle configuration
+```
+
+Vérifier : un abonnement payant ouvre la page Mosagix, et après paiement la page
+« succès » active le plan. Le webhook confirme aussi le paiement si l'utilisateur ferme
+la page avant le retour.
 
 ## 6. Vérifications
 
@@ -184,7 +229,7 @@ Dans le navigateur, sur https://justicia.mosagix.com :
 | `https://justiciaapi…` ne répond pas, mais `deploy.sh` dit « API démarrée » | DNS pas encore propagé, ou enregistrement A erroné | `dig +short justiciaapi.mosagix.com`. Caddy réessaie seul une fois le DNS correct. |
 | Logs Caddy : erreur de certificat | AAAA ou CAA bloquant, port 80 fermé | Voir l'étape 2 ; pare-feu hPanel. Logs : `docker compose logs caddy` |
 | Le site affiche « service momentanément indisponible » | API arrêtée ou en cours de démarrage | `ssh root@IP 'cd /opt/justicia/deploy && docker compose ps && docker compose logs --tail 80 api'` |
-| Erreur CORS dans la console du navigateur | Le site est ouvert depuis une autre adresse (ex. `*.vercel.app`) | Utiliser `https://justicia.mosagix.com`, ou ajouter l'adresse dans `CORS_ORIGINS` (séparées par des virgules) puis `./restart.sh` |
+| Erreur CORS dans la console du navigateur | Le site est ouvert depuis une autre adresse (ex. `*.vercel.app`) | Utiliser `https://justicia.mosagix.com`, ou ajouter l'adresse dans `CORS_ORIGINS` (séparées par des virgules) puis `./up.sh` |
 | L'API refuse de démarrer : « Configuration de production non sûre » | Un garde-fou de sécurité | Le message liste la ligne de `.env` à corriger |
 | Connexion Google refusée | Origine non autorisée | Étape 5 |
 
@@ -195,5 +240,6 @@ Commandes utiles sur le VPS (`ssh root@IP`, puis `cd /opt/justicia/deploy`) :
 | État des services | `docker compose ps` |
 | Logs de l'API | `docker compose logs -f api` |
 | Redémarrer l'API | `./restart.sh` |
+| Appliquer une modification de `.env` | `./up.sh` (`restart.sh` ne relit **pas** le `.env`) |
 | Sauvegarde manuelle | `./backup.sh` |
 | Restaurer une sauvegarde | voir la fin de `deploy/backup.sh` |

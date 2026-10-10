@@ -16,8 +16,11 @@ if (apiUrl && !apiUrl.endsWith('/api')) apiUrl += '/api';
 
 const googleClientId = (process.env.GOOGLE_CLIENT_ID ?? '').trim();
 if (!googleClientId) errors.push('GOOGLE_CLIENT_ID manquant');
-else if (!googleClientId.endsWith('.apps.googleusercontent.com')) {
-  errors.push('GOOGLE_CLIENT_ID invalide (doit finir par .apps.googleusercontent.com)');
+else if (!/^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(googleClientId)) {
+  errors.push(
+    `GOOGLE_CLIENT_ID invalide : « ${googleClientId} ». Format attendu ` +
+    '123456789012-xxxxxxxx.apps.googleusercontent.com (préfixe numérique compris, copier la valeur entière)',
+  );
 }
 
 if (errors.length) {

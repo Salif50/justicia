@@ -49,6 +49,7 @@ charge en mémoire (préchauffage au démarrage). Sur une connexion lente, copie
 | Démarrer / mettre à jour                | `./up.sh`                     |
 | Redémarrer l'API (après réindexation)   | `./restart.sh`                |
 | Redémarrer tous les services            | `./restart.sh --all`          |
+| Appliquer une modification de `.env`    | `./up.sh` (restart ne relit pas `.env`) |
 | Reconstruire (après modif du backend)   | `./restart.sh --build`        |
 | Tout arrêter                            | `./stop.sh`                   |
 | Logs de l'API                           | `docker compose logs -f api`  |
