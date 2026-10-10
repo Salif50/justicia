@@ -1,0 +1,109 @@
+<div class="admin-page">
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Contenu du site</p>
+      <h1 class="app-title">Témoignages</h1>
+      <p class="app-sub">Avis affichés sur la page d'accueil.</p>
+    </div>
+    <div class="app-head-actions">
+      <button class="app-btn" (click)="openCreate()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Ajouter un témoignage
+    </button>
+    </div>
+  </header>
+
+  @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+  @if (success()) { <div class="alert alert-success">{{ success() }}</div> }
+
+  <!-- Formulaire -->
+  @if (showForm()) {
+    <div class="form-card">
+      <h2>{{ editingId() ? 'Modifier' : 'Nouveau' }} témoignage</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nom *</label>
+          <input type="text" [(ngModel)]="form.name" placeholder="Maître Diallo" />
+        </div>
+        <div class="form-group">
+          <label>Rôle / Fonction *</label>
+          <input type="text" [(ngModel)]="form.role" placeholder="Avocat - Conakry" />
+        </div>
+        <div class="form-group full-width">
+          <label>Témoignage *</label>
+          <textarea [(ngModel)]="form.text" rows="4" placeholder="Texte du témoignage..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Note (1-5)</label>
+          <input type="number" [(ngModel)]="form.rating" min="1" max="5" />
+        </div>
+        <div class="form-group">
+          <label>Ordre d'affichage</label>
+          <input type="number" [(ngModel)]="form.order" min="0" />
+        </div>
+        <div class="form-group">
+          <label>URL avatar (optionnel)</label>
+          <input type="url" [(ngModel)]="form.avatar_url" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="toggle-label">
+            <input type="checkbox" [(ngModel)]="form.is_active" />
+            <span>Visible sur le site</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="cancel()">Annuler</button>
+        <button class="btn-primary" (click)="save()">
+          {{ editingId() ? 'Enregistrer' : 'Ajouter' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Liste -->
+  @if (isLoading()) {
+    <div class="loading"><div class="spinner"></div><p>Chargement...</p></div>
+  } @else if (testimonials().length === 0) {
+    <div class="empty-state">
+      <p>Aucun témoignage. Ajoutez-en un !</p>
+    </div>
+  } @else {
+    <div class="testimonials-grid">
+      @for (t of testimonials(); track t.id) {
+        <div class="testimonial-card" [class.inactive]="!t.is_active">
+          <div class="card-header">
+            <div class="stars">
+              @for (s of stars(t.rating); track $index) { <span>★</span> }
+            </div>
+            <div class="card-actions">
+              <button class="btn-icon" (click)="openEdit(t)" title="Modifier">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn-icon" (click)="toggleActive(t)" [title]="t.is_active ? 'Masquer' : 'Afficher'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  @if (t.is_active) { <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/> }
+                  @else { <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/> }
+                </svg>
+              </button>
+              <button class="btn-icon danger" (click)="delete(t)" title="Supprimer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="testimonial-text">"{{ t.text }}"</p>
+          <div class="testimonial-author">
+            <strong>{{ t.name }}</strong>
+            <span>{{ t.role }}</span>
+          </div>
+          <div class="card-meta">
+            <span class="badge" [class.active]="t.is_active" [class.inactive]="!t.is_active">
+              {{ t.is_active ? 'Visible' : 'Masqué' }}
+            </span>
+            <span class="order-badge">Ordre : {{ t.order }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

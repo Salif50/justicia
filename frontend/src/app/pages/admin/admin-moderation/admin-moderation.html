@@ -1,0 +1,126 @@
+<div class="am-page">
+
+  <!-- ── En-tête ───────────────────────────────────────────────────────────── -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Modération</p>
+      <h1 class="app-title">Règles de contenu</h1>
+      <p class="app-sub">Mots et expressions filtrés dans les questions envoyées à l'assistant.</p>
+    </div>
+    <div class="app-head-actions">
+      <button class="app-btn" (click)="toggleForm()">
+      @if (showForm) {
+        Annuler
+      } @else {
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ajouter une règle
+      }
+    </button>
+    </div>
+  </header>
+
+  <!-- ── Avertissement légal ────────────────────────────────────────────── -->
+  <div class="am-notice">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Toute règle de blocage doit être conforme aux obligations contractuelles envers les utilisateurs. Les règles de type "Blocage user" engagent la responsabilité de l'administrateur.
+  </div>
+
+  <!-- ── Formulaire de création ─────────────────────────────────────────── -->
+  @if (showForm) {
+    <div class="am-form-card">
+      <h3>Nouvelle règle de modération</h3>
+
+      <div class="am-form-grid">
+        <div class="am-field">
+          <label>Type de règle</label>
+          <div class="am-type-grid">
+            @for (t of RULE_TYPES; track t.id) {
+              <button class="am-type-btn" [class.active]="newType === t.id" (click)="newType = t.id">
+                <span class="am-type-icon">{{ t.icon }}</span>
+                <span class="am-type-label">{{ t.label }}</span>
+                <span class="am-type-desc">{{ t.desc }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="am-field">
+          <label for="newPattern">Motif (mot ou phrase) <span class="am-req">*</span></label>
+          <input id="newPattern" [(ngModel)]="newPattern" placeholder="Ex: injure, menace, spam…" class="am-input" />
+          <small>Insensible à la casse. Peut être un mot, une expression ou une regex.</small>
+        </div>
+
+        <div class="am-field">
+          <label for="newDesc">Description (raison)</label>
+          <input id="newDesc" [(ngModel)]="newDescription" placeholder="Ex: Contenu haineux, hors périmètre…" class="am-input" />
+        </div>
+      </div>
+
+      @if (error()) {
+        <div class="am-error">{{ error() }}</div>
+      }
+
+      <div class="am-form-actions">
+        <button class="am-cancel-btn" (click)="toggleForm()">Annuler</button>
+        <button class="am-save-btn" (click)="save()" [disabled]="saving()">
+          @if (saving()) { Enregistrement… } @else { Créer la règle }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Règles par type ────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="am-loading">
+      <div class="am-spinner"></div>
+      Chargement des règles…
+    </div>
+  } @else {
+    <div class="am-sections">
+      @for (group of rulesByType; track group.type) {
+        <div class="am-section">
+          <div class="am-section-head">
+            <span class="am-section-icon">{{ group.icon }}</span>
+            <span class="am-section-label" [style.color]="group.color">{{ group.label }}</span>
+            <span class="am-section-count">{{ group.rules.length }} règle{{ group.rules.length !== 1 ? 's' : '' }}</span>
+          </div>
+
+          @if (group.rules.length === 0) {
+            <div class="am-empty-section">Aucune règle de ce type</div>
+          } @else {
+            <div class="am-rules-list">
+              @for (rule of group.rules; track rule.id) {
+                <div class="am-rule" [class.am-rule--inactive]="!rule.is_active">
+                  <div class="am-rule-left">
+                    <span class="am-rule-pattern">{{ rule.pattern }}</span>
+                    @if (rule.description) {
+                      <span class="am-rule-desc">{{ rule.description }}</span>
+                    }
+                    <span class="am-rule-meta">Ajouté le {{ formatDate(rule.created_at) }} par {{ rule.created_by }}</span>
+                  </div>
+                  <div class="am-rule-right">
+                    <button class="am-toggle-btn" [class.active]="rule.is_active" (click)="toggle(rule)" [title]="rule.is_active ? 'Désactiver' : 'Activer'">
+                      {{ rule.is_active ? 'Actif' : 'Inactif' }}
+                    </button>
+                    <button class="am-delete-btn" (click)="delete(rule)" title="Supprimer">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (rules().length === 0 && !showForm) {
+      <div class="am-global-empty">
+        <div class="am-global-empty-icon">🛡️</div>
+        <p>Aucune règle de modération configurée</p>
+        <button class="am-add-btn" (click)="toggleForm()">Créer votre première règle</button>
+      </div>
+    }
+  }
+
+</div>

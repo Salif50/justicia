@@ -1,0 +1,89 @@
+// Styles responsive tablette pour la page Historique
+@media (min-width: 769px) and (max-width: 1024px) {
+  .historique-container {
+    padding: 1.5rem;
+  }
+
+  .historique-header {
+    margin-bottom: 1.75rem;
+    gap: 1.5rem;
+
+    .header-content {
+      .header-title {
+        h1 {
+          font-size: 1.75rem;
+        }
+      }
+
+      .header-subtitle {
+        font-size: 0.95rem;
+      }
+    }
+
+    .header-actions {
+      gap: 0.875rem;
+
+      .return-conversation-btn,
+      .clear-all-btn {
+        padding: 0.75rem 1.375rem;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .historique-content {
+    min-height: 350px;
+  }
+
+  .loading-state,
+  .empty-state {
+    padding: 3.5rem 2rem;
+
+    .empty-icon {
+      width: 100px;
+      height: 100px;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+    }
+  }
+
+  .conversations-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .conversation-card {
+    padding: 1.375rem;
+
+    .card-header {
+      .card-title {
+        h3 {
+          font-size: 1.05rem;
+        }
+      }
+    }
+
+    .card-body {
+      .card-info {
+        gap: 0.875rem;
+
+        .info-item {
+          font-size: 0.85rem;
+        }
+      }
+
+      .card-footer {
+        .date-info {
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+}
+

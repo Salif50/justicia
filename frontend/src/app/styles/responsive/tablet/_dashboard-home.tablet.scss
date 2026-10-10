@@ -1,0 +1,159 @@
+// Styles responsive tablette pour la page Dashboard Home
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dashboard-home {
+    padding: 1.25rem;
+  }
+
+  .dashboard-header-section {
+    margin-bottom: 1.75rem;
+  }
+
+  .welcome-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1.75rem;
+    align-items: center;
+
+    .welcome-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .greeting {
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .greeting-text {
+          text-align: center;
+        }
+
+        h1 {
+          font-size: 2.25rem;
+          text-align: center;
+        }
+      }
+
+      .date-time {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+        width: 100%;
+
+        .time {
+          font-size: 1.75rem;
+          text-align: center;
+        }
+
+        .date {
+          text-align: center;
+        }
+      }
+    }
+
+    .welcome-icon {
+      display: none; // Cacher l'icône sur tablette
+    }
+
+    .start-conversation-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 1.75rem;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 350px;
+
+      svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 2.5;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .usage-guide {
+    padding: 2rem;
+    border-radius: 18px;
+  }
+
+  .guide-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.25rem;
+    margin-bottom: 2.25rem;
+    padding-bottom: 1.25rem;
+    align-items: center;
+  }
+
+  .guide-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+  }
+
+  .guide-title {
+    font-size: 1.75rem;
+    text-align: center;
+  }
+
+  .guide-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .guide-section {
+    padding: 1.5rem;
+
+    .card-header {
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+    }
+
+    .section-subtitle {
+      font-size: 1.15rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+  }
+
+  .guide-notice {
+    padding: 1.5rem;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+
+    svg {
+      margin: 0 auto;
+    }
+  }
+}

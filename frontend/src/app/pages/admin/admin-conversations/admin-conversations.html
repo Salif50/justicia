@@ -1,0 +1,153 @@
+<div class="ac-page">
+
+  <!-- ── En-tête ───────────────────────────────────────────────────────────── -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Intelligence artificielle</p>
+      <h1 class="app-title">Conversations</h1>
+      <p class="app-sub">Toutes les conversations enregistrées. Pour lire les questions une à une, utilisez « Questions posées ».</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="ac-stats">
+      <div class="ac-stat">
+        <span class="ac-stat-value">{{ totalConvs() }}</span>
+        <span class="ac-stat-label">Conversations</span>
+      </div>
+      <div class="ac-stat ac-stat--accent">
+        <span class="ac-stat-value">{{ messagesToday() }}</span>
+        <span class="ac-stat-label">Messages aujourd'hui</span>
+      </div>
+    </div>
+    </div>
+  </header>
+
+  <!-- ── Filtres ────────────────────────────────────────────────────────────── -->
+  <div class="ac-filters">
+    <div class="ac-search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input [(ngModel)]="searchQuery" (keyup.enter)="applyFilters()" placeholder="Rechercher par titre…" class="ac-search" />
+    </div>
+    <select [(ngModel)]="agentFilter" (change)="applyFilters()" class="ac-select">
+      @for (a of AGENTS; track a.id) {
+        <option [value]="a.id">{{ a.label }}</option>
+      }
+    </select>
+    <button class="ac-search-btn" (click)="applyFilters()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Filtrer
+    </button>
+  </div>
+
+  <!-- ── Layout : liste + détail ─────────────────────────────────────────── -->
+  <div class="ac-layout" [class.ac-layout--detail]="showDetail()">
+
+    <!-- Table des conversations -->
+    <div class="ac-table-wrap">
+      @if (isLoading()) {
+        <div class="ac-loading">
+          <div class="ac-spinner"></div>
+          Chargement…
+        </div>
+      } @else if (conversations().length === 0) {
+        <div class="ac-empty">
+          <span>💬</span>
+          <p>Aucune conversation trouvée</p>
+        </div>
+      } @else {
+        <table class="ac-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Titre</th>
+              <th>Agent</th>
+              <th>Messages</th>
+              <th>Dernière activité</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (conv of conversations(); track conv.id) {
+              <tr [class.active]="selectedConv()?.id === conv.id">
+                <td>
+                  <div class="ac-user-cell">
+                    <div class="ac-user-avatar">{{ conv.user_name[0] }}</div>
+                    <div>
+                      <div class="ac-user-name">{{ conv.user_name }}</div>
+                      <div class="ac-user-email">{{ conv.user_email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="ac-conv-title">{{ conv.title }}</div>
+                </td>
+                <td>
+                  <span class="ac-agent-badge">
+                    {{ agentLabel(conv.agent_id) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="ac-msg-count">{{ conv.msg_count }}</span>
+                </td>
+                <td class="ac-date">{{ formatDate(conv.updated_at) }}</td>
+                <td>
+                  <div class="ac-actions">
+                    <button class="ac-btn ac-btn--view" (click)="viewMessages(conv)" title="Voir les messages">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="ac-btn ac-btn--delete" (click)="deleteConversation(conv)" title="Supprimer">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="ac-pagination">
+          <button class="ac-page-btn" (click)="prevPage()" [disabled]="skip === 0">
+            ← Précédent
+          </button>
+          <span class="ac-page-info">{{ skip + 1 }} – {{ skip + conversations().length }}</span>
+          <button class="ac-page-btn" (click)="nextPage()" [disabled]="conversations().length < limit">
+            Suivant →
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Panneau de détail des messages -->
+    @if (showDetail()) {
+      <div class="ac-detail">
+        <div class="ac-detail-header">
+          <div class="ac-detail-title">
+            @if (selectedConv()) {
+              <strong>{{ selectedConv()!.title }}</strong>
+              <span class="ac-detail-user">{{ selectedConv()!.user_name }} · {{ selectedConv()!.user_email }}</span>
+            } @else {
+              Chargement…
+            }
+          </div>
+          <button class="ac-detail-close" (click)="closeDetail()">✕</button>
+        </div>
+
+        <div class="ac-messages">
+          @if (detailLoading()) {
+            <div class="ac-loading"><div class="ac-spinner"></div> Chargement des messages…</div>
+          } @else if (selectedConv()) {
+            @for (msg of selectedConv()!.messages; track msg.id) {
+              <div class="ac-message" [class.ac-message--user]="msg.sender === 'user'" [class.ac-message--bot]="msg.sender === 'bot'">
+                <div class="ac-message-sender">{{ msg.sender === 'user' ? selectedConv()!.user_name : 'JusticIA' }}</div>
+                <div class="ac-message-bubble">{{ msg.content }}</div>
+                <div class="ac-message-time">{{ formatDate(msg.created_at) }}</div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+
+</div>

@@ -1,0 +1,604 @@
+<div class="trl-page">
+
+  <!-- ═══════════ EN-TÊTE ═══════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Assistant IA</p>
+      <h1 class="app-title">Traduction juridique</h1>
+      <p class="app-sub">Traduisez ou reformulez en langage clair un texte juridique guinéen.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+      <button [class.active]="activeTab() === 'translate'" (click)="switchTab('translate')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/>
+        </svg>
+        Traduction
+      </button>
+      <button [class.active]="activeTab() === 'simplify'" (click)="switchTab('simplify')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        Vulgarisation
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- ═══════════ TAB : TRADUCTION ═══════════ -->
+  @if (activeTab() === 'translate') {
+
+    @if (trlStage() === 'idle' || trlStage() === 'error') {
+      <div class="trl-section">
+
+        <!-- Sélecteur de langues -->
+        <div class="trl-lang-bar">
+          <div class="trl-lang-side">
+            <div class="trl-lang-label">Langue source</div>
+            <div class="trl-lang-pills">
+              @for (lang of LANGUAGES | slice:0:3; track lang.code) {
+                <button class="trl-lang-pill"
+                  [class.active]="trlSourceLang() === lang.code"
+                  (click)="setSourceLang(lang.code)">
+                  <span>{{ lang.flag }}</span> {{ lang.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <button class="trl-swap-btn"
+            [disabled]="['pular','malinke','soussou'].includes(trlSourceLang())"
+            (click)="swapLanguages()"
+            title="Inverser les langues">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+              <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+          </button>
+
+          <div class="trl-lang-side trl-lang-side--right">
+            <div class="trl-lang-label">Langue cible</div>
+            <div class="trl-lang-pills trl-lang-pills--target">
+              @for (lang of availableTargets(); track lang.code) {
+                <button class="trl-lang-pill"
+                  [class.active]="trlTargetLang() === lang.code"
+                  [class.local]="lang.local ?? false"
+                  (click)="trlTargetLang.set(lang.code)">
+                  <span>{{ lang.flag }}</span> {{ lang.label }}
+                  @if (lang.local) { <span class="trl-local-badge">GN</span> }
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (targetIsLocal()) {
+          <div class="trl-local-notice">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Les langues locales guinéennes (Pular, Malinké, Soussou) sont des langues à ressources limitées. La traduction sera fournie mais peut nécessiter une vérification par un locuteur natif.
+          </div>
+        }
+
+        <!-- Mode de traduction -->
+        <div class="trl-mode-row">
+          <div class="trl-mode-label">Mode :</div>
+          <div class="trl-mode-btns">
+            <button class="trl-mode-btn" [class.active]="trlTransMode() === 'professional'" (click)="trlTransMode.set('professional')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              Professionnelle
+            </button>
+            <button class="trl-mode-btn" [class.active]="trlTransMode() === 'literal'" (click)="trlTransMode.set('literal')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+              Littérale
+            </button>
+          </div>
+          <span class="trl-mode-hint">
+            {{ trlTransMode() === 'professional' ? 'Style formel, terminologie exacte préservée' : 'Traduction mot à mot, proche du texte source' }}
+          </span>
+        </div>
+
+        <!-- Zone d'entrée -->
+        <div class="trl-input-section">
+          <div class="trl-input-tabs">
+            <button class="trl-input-tab" [class.active]="trlMode() === 'text'" (click)="trlMode.set('text'); trlFile.set(null)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Coller le texte
+            </button>
+            <button class="trl-input-tab" [class.active]="trlMode() === 'file'" (click)="trlMode.set('file'); trlText.set('')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Uploader PDF
+            </button>
+          </div>
+
+          @if (trlMode() === 'text') {
+            <textarea class="trl-textarea"
+              [placeholder]="'Collez votre texte en ' + sourceLangLabel() + ' ici…'"
+              [value]="trlText()"
+              (input)="trlText.set($any($event.target).value)"
+              rows="12"></textarea>
+            <div class="trl-char-count">{{ trlText().length }} / 12 000 caractères</div>
+          } @else {
+            <input #trlFileInput type="file" accept=".pdf,application/pdf" style="display:none" (change)="onTrlFileSelected($event)" />
+            <div class="trl-dropzone"
+              [class.drag-over]="trlDrag()"
+              [class.has-file]="!!trlFile()"
+              (dragover)="$event.preventDefault(); trlDrag.set(true)"
+              (dragleave)="trlDrag.set(false)"
+              (drop)="onDropTrl($event)"
+              (click)="openTrlFile()">
+              @if (!trlFile()) {
+                <div class="trl-dz-inner">
+                  <div class="trl-dz-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </div>
+                  <p>Glissez votre PDF ou <span class="trl-link">cliquez pour choisir</span></p>
+                  <small>Format PDF · Max 25 Mo</small>
+                </div>
+              } @else {
+                <div class="trl-dz-file">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <div class="trl-dz-info">
+                    <span class="trl-dz-fname">{{ trlFile()!.name }}</span>
+                    <span class="trl-dz-fsize">{{ fileSizeLabel(trlFile()!.size) }}</span>
+                  </div>
+                  <button class="trl-dz-rm" (click)="trlFile.set(null); $event.stopPropagation()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (trlError()) {
+          <div class="trl-error-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+            {{ trlError() }}
+          </div>
+        }
+
+        <div class="trl-actions">
+          <button class="trl-btn-primary" [disabled]="!trlValid()" (click)="translate()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/>
+            </svg>
+            Traduire en {{ targetLangLabel() }}
+          </button>
+          <span class="trl-hint">
+            @if (isLangIcon(trlSourceLang())) {
+              <ui-icon name="globe" [size]="14" />
+            } @else {
+              {{ langFlag(trlSourceLang()) }}
+            }
+            {{ sourceLangLabel() }}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            @if (isLangIcon(trlTargetLang())) {
+              <ui-icon name="globe" [size]="14" />
+            } @else {
+              {{ langFlag(trlTargetLang()) }}
+            }
+            {{ targetLangLabel() }}
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- LOADING -->
+    @if (trlStage() === 'loading') {
+      <div class="trl-ai-screen">
+        <div class="trl-ai-core">
+          <div class="trl-ai-ring trl-ai-ring--3"></div>
+          <div class="trl-ai-ring trl-ai-ring--2"></div>
+          <div class="trl-ai-ring trl-ai-ring--1"></div>
+          <div class="trl-ai-nucleus">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/>
+            </svg>
+          </div>
+        </div>
+        <div class="trl-ai-text">
+          <h2>Traduction en cours…</h2>
+          <p>
+            @if (isLangIcon(trlSourceLang())) {
+              <ui-icon name="globe" [size]="14" />
+            } @else {
+              {{ langFlag(trlSourceLang()) }}
+            }
+            {{ sourceLangLabel() }} →
+            @if (isLangIcon(trlTargetLang())) {
+              <ui-icon name="globe" [size]="14" />
+            } @else {
+              {{ langFlag(trlTargetLang()) }}
+            }
+            {{ targetLangLabel() }}
+          </p>
+        </div>
+        <div class="trl-ai-steps">
+          @for (msg of thinkingMessages; track $index) {
+            <div class="trl-ai-step"
+              [class.done]="thinkingStep() > $index"
+              [class.active]="thinkingStep() === $index"
+              [class.pending]="thinkingStep() < $index">
+              <div class="trl-ai-step-icon">
+                @if (thinkingStep() > $index) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                } @else if (thinkingStep() === $index) {
+                  <div class="trl-step-spinner"></div>
+                } @else {
+                  <div class="trl-step-dot"></div>
+                }
+              </div>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+        <div class="trl-ai-bars">
+          @for (b of [1,2,3,4,5,6,7]; track b) {
+            <div class="trl-ai-bar" [class]="'trl-ai-bar--' + b"></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- DONE : Résultats traduction -->
+    @if (trlStage() === 'done') {
+      @if (trlResult(); as res) {
+        <div class="trl-result">
+
+          <div class="trl-result-bar">
+            <div class="trl-result-bar-left">
+              <span class="trl-lang-pair">
+                @if (isLangIcon(trlSourceLang())) {
+                  <ui-icon name="globe" [size]="14" />
+                } @else {
+                  {{ langFlag(trlSourceLang()) }}
+                }
+                {{ res.source_language }}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                @if (isLangIcon(trlTargetLang())) {
+                  <ui-icon name="globe" [size]="14" />
+                } @else {
+                  {{ langFlag(trlTargetLang()) }}
+                }
+                {{ res.target_language }}
+              </span>
+              @if (res.glossary.length > 0) {
+                <span class="trl-glossary-count">{{ res.glossary.length }} termes traduits</span>
+              }
+            </div>
+            <div class="trl-result-actions">
+              <button class="trl-act-btn" (click)="copyTrl()">
+                @if (trlCopied()) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Copié !
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copier
+                }
+              </button>
+              <button class="trl-act-btn" (click)="downloadTrl()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                TXT
+              </button>
+              <button class="trl-act-btn trl-act-btn--new" (click)="resetTranslate()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+                Nouveau
+              </button>
+            </div>
+          </div>
+
+          <div class="trl-result-body">
+
+            <!-- Texte traduit -->
+            <div class="trl-translated-panel">
+              <div class="trl-panel-header">
+                <span class="trl-panel-lang">
+                  @if (isLangIcon(trlTargetLang())) {
+                    <ui-icon name="globe" [size]="14" />
+                  } @else {
+                    {{ langFlag(trlTargetLang()) }}
+                  }
+                  {{ res.target_language }}
+                </span>
+              </div>
+              <div class="trl-translated-text">{{ res.translated_text }}</div>
+            </div>
+
+            <!-- Colonne droite : glossaire + notes -->
+            <div class="trl-side-panel">
+
+              <!-- Notes de traduction -->
+              @if (res.translation_notes) {
+                <div class="trl-notes-card">
+                  <div class="trl-notes-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                    Notes du traducteur
+                  </div>
+                  <p>{{ res.translation_notes }}</p>
+                </div>
+              }
+
+              <!-- Avertissements -->
+              @if ((res.preservation_warnings?.length ?? 0) > 0) {
+                <div class="trl-warnings-card">
+                  <div class="trl-warnings-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                    Avertissements
+                  </div>
+                  <ul>@for (w of res.preservation_warnings; track $index) { <li>{{ w }}</li> }</ul>
+                </div>
+              }
+
+              <!-- Glossaire -->
+              @if (res.glossary.length > 0) {
+                <div class="trl-glossary-card">
+                  <div class="trl-glossary-header" (click)="showGlossary.set(!showGlossary())">
+                    <div class="trl-glossary-title">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                      Glossaire juridique
+                      <span class="trl-glossary-badge">{{ res.glossary.length }}</span>
+                    </div>
+                    <svg class="trl-toggle-icon" [class.rotated]="!showGlossary()"
+                      width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="18 15 12 9 6 15"/>
+                    </svg>
+                  </div>
+                  @if (showGlossary()) {
+                    <div class="trl-glossary-list">
+                      @for (entry of res.glossary; track $index) {
+                        <div class="trl-glossary-entry">
+                          <div class="trl-glos-original">{{ entry.original }}</div>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                          <div class="trl-glos-translated">{{ entry.translated }}</div>
+                          @if (entry.note) { <div class="trl-glos-note">{{ entry.note }}</div> }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+  }
+
+  <!-- ═══════════ TAB : VULGARISATION ═══════════ -->
+  @if (activeTab() === 'simplify') {
+
+    @if (splStage() === 'idle' || splStage() === 'error') {
+      <div class="trl-section">
+
+        <!-- Niveaux de vulgarisation -->
+        <div class="trl-levels">
+          <div class="trl-levels-label">Niveau d'accessibilité</div>
+          <div class="trl-levels-grid">
+            @for (lvl of SIMPLIFY_LEVELS; track lvl.value) {
+              <button class="trl-level-card"
+                [class.active]="splLevel() === lvl.value"
+                (click)="splLevel.set(lvl.value)">
+                <div class="trl-level-icon">
+                  <ui-icon [name]="levelIcon(lvl.value)" [size]="28" />
+                </div>
+                <div class="trl-level-name">{{ lvl.label }}</div>
+                <div class="trl-level-desc">{{ lvl.desc }}</div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Zone d'entrée -->
+        <div class="trl-input-section">
+          <div class="trl-input-tabs">
+            <button class="trl-input-tab" [class.active]="splMode() === 'text'" (click)="splMode.set('text'); splFile.set(null)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Coller le texte
+            </button>
+            <button class="trl-input-tab" [class.active]="splMode() === 'file'" (click)="splMode.set('file'); splText.set('')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Uploader PDF
+            </button>
+          </div>
+
+          @if (splMode() === 'text') {
+            <textarea class="trl-textarea"
+              placeholder="Collez ici votre texte juridique à vulgariser (contrat, article de loi, jugement…)"
+              [value]="splText()"
+              (input)="splText.set($any($event.target).value)"
+              rows="12"></textarea>
+            <div class="trl-char-count">{{ splText().length }} / 12 000 caractères</div>
+          } @else {
+            <input #splFileInput type="file" accept=".pdf,application/pdf" style="display:none" (change)="onSplFileSelected($event)" />
+            <div class="trl-dropzone"
+              [class.drag-over]="splDrag()"
+              [class.has-file]="!!splFile()"
+              (dragover)="$event.preventDefault(); splDrag.set(true)"
+              (dragleave)="splDrag.set(false)"
+              (drop)="onDropSpl($event)"
+              (click)="openSplFile()">
+              @if (!splFile()) {
+                <div class="trl-dz-inner">
+                  <div class="trl-dz-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </div>
+                  <p>Glissez votre PDF ou <span class="trl-link">cliquez pour choisir</span></p>
+                  <small>Format PDF · Max 25 Mo</small>
+                </div>
+              } @else {
+                <div class="trl-dz-file">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <div class="trl-dz-info">
+                    <span class="trl-dz-fname">{{ splFile()!.name }}</span>
+                    <span class="trl-dz-fsize">{{ fileSizeLabel(splFile()!.size) }}</span>
+                  </div>
+                  <button class="trl-dz-rm" (click)="splFile.set(null); $event.stopPropagation()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (splError()) {
+          <div class="trl-error-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+            {{ splError() }}
+          </div>
+        }
+
+        <div class="trl-actions">
+          <button class="trl-btn-primary trl-btn-simplify" [disabled]="!splValid()" (click)="simplify()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Vulgariser — {{ selectedLevel().label }}
+          </button>
+          <span class="trl-hint">Texte juridique complexe → langage clair</span>
+        </div>
+      </div>
+    }
+
+    <!-- LOADING -->
+    @if (splStage() === 'loading') {
+      <div class="trl-ai-screen">
+        <div class="trl-ai-core">
+          <div class="trl-ai-ring trl-ai-ring--3"></div>
+          <div class="trl-ai-ring trl-ai-ring--2"></div>
+          <div class="trl-ai-ring trl-ai-ring--1"></div>
+          <div class="trl-ai-nucleus">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+        </div>
+        <div class="trl-ai-text">
+          <h2>Vulgarisation en cours…</h2>
+          <p>Niveau : {{ selectedLevel().label }}</p>
+        </div>
+        <div class="trl-ai-steps">
+          @for (msg of thinkingMessages; track $index) {
+            <div class="trl-ai-step"
+              [class.done]="thinkingStep() > $index"
+              [class.active]="thinkingStep() === $index"
+              [class.pending]="thinkingStep() < $index">
+              <div class="trl-ai-step-icon">
+                @if (thinkingStep() > $index) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                } @else if (thinkingStep() === $index) {
+                  <div class="trl-step-spinner"></div>
+                } @else {
+                  <div class="trl-step-dot"></div>
+                }
+              </div>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+        <div class="trl-ai-bars">
+          @for (b of [1,2,3,4,5,6,7]; track b) {
+            <div class="trl-ai-bar" [class]="'trl-ai-bar--' + b"></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- DONE : Résultats vulgarisation -->
+    @if (splStage() === 'done') {
+      @if (splResult(); as res) {
+        <div class="trl-result">
+
+          <div class="trl-result-bar">
+            <div class="trl-result-bar-left">
+              <span class="trl-simplify-badge">{{ res.level }}</span>
+              @if ((res.key_terms?.length ?? 0) > 0) {
+                <span class="trl-glossary-count">{{ res.key_terms.length }} termes expliqués</span>
+              }
+            </div>
+            <div class="trl-result-actions">
+              <button class="trl-act-btn" (click)="copySpl()">
+                @if (splCopied()) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Copié !
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copier
+                }
+              </button>
+              <button class="trl-act-btn" (click)="downloadSpl()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                TXT
+              </button>
+              <button class="trl-act-btn trl-act-btn--new" (click)="resetSimplify()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+                Nouveau
+              </button>
+            </div>
+          </div>
+
+          <!-- Résumé -->
+          @if (res.summary) {
+            <div class="trl-summary-card">
+              <div class="trl-summary-icon"><ui-icon name="lightbulb" [size]="24" /></div>
+              <div>
+                <div class="trl-summary-label">En résumé</div>
+                <p>{{ res.summary }}</p>
+              </div>
+            </div>
+          }
+
+          <!-- Points importants -->
+          @if ((res.important_points?.length ?? 0) > 0) {
+            <div class="trl-important-card">
+              <div class="trl-important-title"><ui-icon name="alert-triangle" [size]="14" /> Points importants à retenir</div>
+              <ul>@for (pt of res.important_points; track $index) { <li>{{ pt }}</li> }</ul>
+            </div>
+          }
+
+          <div class="trl-result-body">
+
+            <!-- Texte vulgarisé -->
+            <div class="trl-translated-panel">
+              <div class="trl-panel-header">
+                <span class="trl-panel-lang">{{ res.level }}</span>
+              </div>
+              <div class="trl-translated-text trl-simplified-text">{{ res.simplified_text }}</div>
+            </div>
+
+            <!-- Glossaire des termes clés -->
+            @if ((res.key_terms?.length ?? 0) > 0) {
+              <div class="trl-side-panel">
+                <div class="trl-glossary-card">
+                  <div class="trl-glossary-header">
+                    <div class="trl-glossary-title">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                      Termes expliqués
+                      <span class="trl-glossary-badge">{{ res.key_terms.length }}</span>
+                    </div>
+                  </div>
+                  <div class="trl-key-terms-list">
+                    @for (term of res.key_terms; track $index) {
+                      <div class="trl-key-term">
+                        <div class="trl-term-name">{{ term.term }}</div>
+                        <div class="trl-term-def">{{ term.definition }}</div>
+                        @if (term.article) {
+                          <div class="trl-term-ref">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            {{ term.article }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+
+  }
+
+</div>

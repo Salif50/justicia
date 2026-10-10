@@ -1,0 +1,50 @@
+@import '../admin-shared';
+
+.filter-tabs {
+  display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+  .filter-tab {
+    padding: 0.5rem 1.25rem; border-radius: 20px; border: 1px solid var(--divider);
+    background: var(--card-bg-solid); color: var(--text-secondary);
+    font-size: 0.875rem; cursor: pointer; transition: all 0.2s;
+    &.active, &:hover {
+      background: var(--primary-mid);
+      color: var(--on-primary); border-color: transparent;
+    }
+  }
+}
+
+.faq-list { display: flex; flex-direction: column; gap: 1rem; }
+
+.faq-item {
+  background: var(--card-bg-solid); border-radius: 12px; padding: 1.25rem;
+  border: 1px solid var(--divider); transition: box-shadow 0.2s;
+  &:hover { box-shadow: none; }
+  &.inactive { opacity: 0.6; }
+
+  .faq-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.75rem;
+    .faq-meta { display: flex; align-items: center; gap: 0.75rem; }
+    .order-text { font-size: 0.75rem; color: var(--text-muted); }
+    .card-actions { display: flex; gap: 0.5rem; }
+  }
+
+  .faq-question { font-size: 1rem; font-weight: 600; color: var(--heading-color); margin-bottom: 0.5rem; }
+  .faq-answer { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.75rem; }
+
+  .cat-badge {
+    font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 10px;
+    &.cat-support { background: var(--tag-bg); color: var(--text-secondary); border: 1px solid var(--input-border); }
+    &.cat-pricing { background: var(--tag-bg); color: var(--success); border: 1px solid var(--input-border); }
+    &.cat-general { background: var(--tag-bg); color: var(--text-secondary); border: 1px solid var(--input-border); }
+  }
+}
+
+/* Alignement commun (même gabarit que le reste de l'administration) */
+.admin-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+  min-height: 0;
+  background: none;
+}

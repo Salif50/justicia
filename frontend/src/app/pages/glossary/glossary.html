@@ -1,0 +1,301 @@
+<div class="gl-page">
+
+  <!-- ═══════════ EN-TÊTE ═══════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Ressources juridiques</p>
+      <h1 class="app-title">Glossaire juridique</h1>
+      <p class="app-sub">{{ TERMES.length }} termes du droit positif guinéen, définis simplement.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+      <button [class.active]="viewMode() === 'alpha'"  (click)="viewMode.set('alpha')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="14" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="14" y2="18"/></svg>
+        Alphabétique
+      </button>
+      <button [class.active]="viewMode() === 'domain'" (click)="viewMode.set('domain')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8"/><path d="M9 11h6"/></svg>
+        Par domaine
+      </button>
+      <button [class.active]="viewMode() === 'list'"   (click)="viewMode.set('list')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="18" r="1"/><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/></svg>
+        Liste simple
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- ═══════════ STATS PAR DOMAINE ═══════════ -->
+  <div class="gl-domain-stats">
+    <button class="gl-ds-pill gl-ds-pill--all" [class.active]="selectedDomain() === 'Tous'" (click)="selectDomain('Tous')">
+      Tous · {{ TERMES.length }}
+    </button>
+    @for (s of statsPerDomain(); track s.domaine) {
+      <button class="gl-ds-pill"
+        [class.active]="selectedDomain() === s.domaine"
+        (click)="selectDomain(s.domaine)">
+        <span class="gl-ds-dot"></span>
+        <span><ui-icon [name]="s.icon" [size]="14" /> {{ s.domaine }}</span>
+        <span class="gl-ds-count">{{ s.count }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ═══════════ FILTRES ═══════════ -->
+  <div class="gl-filters">
+    <!-- Recherche -->
+    <div class="gl-search-wrap">
+      <svg class="gl-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="gl-search-input"
+        type="text"
+        placeholder="Rechercher un terme, une définition, un exemple…"
+        [value]="search()"
+        (input)="search.set($any($event.target).value)" />
+      @if (search()) {
+        <button class="gl-clear-btn" (click)="search.set('')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      }
+    </div>
+
+    <!-- Alphabet -->
+    @if (!isSearching()) {
+      <div class="gl-alphabet">
+        @for (l of LETTRES; track l) {
+          <button class="gl-letter-btn"
+            [class.active]="selectedLetter() === l"
+            [class.unavailable]="!availableLetters().has(l)"
+            [disabled]="!availableLetters().has(l)"
+            (click)="selectLetter(l)">{{ l }}</button>
+        }
+        @if (selectedLetter()) {
+          <button class="gl-letter-reset" (click)="selectedLetter.set('')"><ui-icon name="x" [size]="11" /> tout</button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Compteur résultats -->
+  <div class="gl-results-bar">
+    <span class="gl-results-count">
+      {{ filteredTermes().length }} terme{{ filteredTermes().length > 1 ? 's' : '' }}
+      @if (isSearching()) {
+        trouvé{{ filteredTermes().length > 1 ? 's' : '' }} pour « <strong>{{ search() }}</strong> »
+      } @else if (selectedLetter()) {
+        commençant par <strong>{{ selectedLetter() }}</strong>
+      }
+    </span>
+    @if (selectedDomain() !== 'Tous' || selectedLetter() || isSearching()) {
+      <button class="gl-reset-all" (click)="resetFilters()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+        Réinitialiser
+      </button>
+    }
+  </div>
+
+  <!-- ═══════════ RÉSULTATS ═══════════ -->
+  @if (filteredTermes().length === 0) {
+    <div class="gl-empty">
+      <div class="gl-empty-icon inline-icon-box"><ui-icon name="book-open" [size]="28" /></div>
+      <p>Aucun terme trouvé pour « {{ search() }} »</p>
+      <button class="gl-empty-reset" (click)="resetFilters()">Réinitialiser les filtres</button>
+    </div>
+  } @else {
+
+    <!-- VUE ALPHABÉTIQUE -->
+    @if (viewMode() === 'alpha') {
+      <div class="gl-alpha-view">
+        @for (group of termsByLetter(); track group[0]) {
+          <div class="gl-letter-section">
+            <div class="gl-letter-header">
+              <span class="gl-letter-mark">{{ group[0] }}</span>
+              <div class="gl-letter-line"></div>
+              <span class="gl-letter-sub">{{ group[1].length }} terme{{ group[1].length > 1 ? 's' : '' }}</span>
+            </div>
+            <div class="gl-terms-list">
+              @for (t of group[1]; track t.terme) {
+                <div class="gl-term-card"
+                  [class.gl-term-expanded]="expandedTerm() === t.terme"
+                  [id]="'term-' + t.terme.replace(' ', '-')">
+                  <ng-container *ngTemplateOutlet="termInner; context: { t: t }"></ng-container>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- VUE PAR DOMAINE -->
+    @if (viewMode() === 'domain') {
+      <div class="gl-domain-view">
+        @for (group of termsByDomain(); track group[0]) {
+          <div class="gl-domain-section">
+            <div class="gl-domain-header">
+              <span class="gl-domain-icon"><ui-icon [name]="domainIcon(group[0])" [size]="18" /></span>
+              <span class="gl-domain-name">{{ group[0] }}</span>
+              <span class="gl-domain-count">{{ group[1].length }}</span>
+            </div>
+            <div class="gl-terms-list">
+              @for (t of group[1]; track t.terme) {
+                <div class="gl-term-card"
+                  [class.gl-term-expanded]="expandedTerm() === t.terme"
+                  [id]="'term-' + t.terme.replace(' ', '-')">
+                  <ng-container *ngTemplateOutlet="termInner; context: { t: t }"></ng-container>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- VUE LISTE SIMPLE -->
+    @if (viewMode() === 'list') {
+      <div class="gl-list-view">
+        @for (t of filteredTermes(); track t.terme) {
+          <div class="gl-term-card"
+            [class.gl-term-expanded]="expandedTerm() === t.terme"
+            [id]="'term-' + t.terme.replace(' ', '-')">
+            <ng-container *ngTemplateOutlet="termInner; context: { t: t }"></ng-container>
+          </div>
+        }
+      </div>
+    }
+
+  }
+
+</div>
+
+<!-- ═══════════ TEMPLATE INTERNE CARTE ═══════════ -->
+<ng-template #termInner let-t="t">
+
+  <!-- En-tête cliquable -->
+  <div class="gl-term-head" (click)="toggle(t.terme)">
+    <div class="gl-term-head-left">
+      <div class="gl-term-name-row">
+        <span class="gl-term-name">{{ t.terme }}</span>
+        <span class="gl-term-domain">
+          {{ t.domaine }}
+        </span>
+      </div>
+      @if (expandedTerm() !== t.terme) {
+        <p class="gl-term-preview">{{ t.definition | slice:0:95 }}{{ t.definition.length > 95 ? '…' : '' }}</p>
+      }
+    </div>
+    <div class="gl-term-chevron" [class.open]="expandedTerm() === t.terme">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+
+  <!-- Corps expansé -->
+  @if (expandedTerm() === t.terme) {
+    <div class="gl-term-body">
+
+      <!-- Définition complète -->
+      <p class="gl-definition">{{ t.definition }}</p>
+
+      <!-- Référence légale -->
+      @if (t.loi) {
+        <div class="gl-loi-ref">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>{{ t.loi }}</span>
+        </div>
+      }
+
+      <!-- Exemple pratique -->
+      @if (t.exemple) {
+        <div class="gl-exemple">
+          <div class="gl-exemple-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Exemple pratique
+          </div>
+          <em class="gl-exemple-text">{{ t.exemple }}</em>
+        </div>
+      }
+
+      <!-- Termes liés -->
+      @if (t.related?.length) {
+        <div class="gl-related">
+          <span class="gl-related-label">Voir aussi :</span>
+          @for (rel of t.related; track rel) {
+            <button class="gl-related-chip" (click)="clickRelated(rel); $event.stopPropagation()">{{ rel }}</button>
+          }
+        </div>
+      }
+
+      <!-- IA inline -->
+      <div class="gl-ia-zone">
+        @if (askingTerm() !== t.terme) {
+          <div class="gl-ia-actions">
+            <button class="gl-ia-explain-btn" (click)="openAsk(t.terme); $event.stopPropagation()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/><path d="M12 8v4M12 16h.01"/></svg>
+              Explication IA approfondie
+            </button>
+            <button class="gl-ia-chat-btn" (click)="goToChat(t.terme); $event.stopPropagation()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Poser une question
+            </button>
+          </div>
+        }
+
+        <!-- Chargement IA -->
+        @if (askingTerm() === t.terme && askStage() === 'loading') {
+          <div class="gl-ia-loading">
+            <div class="gl-ia-spin-wrap">
+              <div class="gl-ia-ring"></div>
+              <span class="gl-ia-ring-label">IA</span>
+            </div>
+            <div class="gl-ia-steps">
+              @for (step of thinkingMessages; track step; let i = $index) {
+                <span class="gl-step" [class.active]="thinkingStep() === i" [class.done]="thinkingStep() > i">
+                  @if (thinkingStep() > i) {
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  }
+                  {{ step }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Résultat IA -->
+        @if (askingTerm() === t.terme && askStage() === 'done' && askResult()) {
+          <div class="gl-ia-result">
+            <div class="gl-ia-result-head">
+              <div class="gl-ia-badge">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Explication par JusticIA
+              </div>
+              <button class="gl-ia-close-btn" (click)="closeAsk(); $event.stopPropagation()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <p class="gl-ia-answer">{{ askResult()?.answer }}</p>
+            @if (askResult()?.sources?.length) {
+              <div class="gl-ia-sources">
+                <div class="gl-ia-src-label">Textes de loi consultés :</div>
+                @for (s of (askResult()?.sources ?? []).slice(0, 4); track s.article_ref) {
+                  <div class="gl-ia-src-item">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--glow-cyan)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    {{ s.nom_doc }}{{ s.article_ref ? ' · ' + s.article_ref : '' }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Erreur IA -->
+        @if (askingTerm() === t.terme && askStage() === 'error') {
+          <div class="gl-ia-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ askError() }}
+            <button class="gl-retry-btn" (click)="openAsk(t.terme); $event.stopPropagation()">Réessayer</button>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+</ng-template>

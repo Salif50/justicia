@@ -1,0 +1,793 @@
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// case-law.scss — JusticIA · Jurisprudence guinéenne
+// 100% CSS variables — compatible dark/light mode
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@keyframes clFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes clSlideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+.cl-page {
+  min-height:    100vh;
+  padding:       2rem 2.5rem;
+  box-sizing:    border-box;
+  background:    var(--page-bg);
+  color:         var(--heading-color);
+  display:       flex;
+  flex-direction:column;
+  gap:           1.25rem;
+  animation:     clFadeUp .35s ease;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.cl-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  flex-wrap:       wrap;
+  gap:             1rem;
+}
+
+.cl-header-left {
+  display:     flex;
+  align-items: center;
+  gap:         1rem;
+
+  h1 { font-size: 1.55rem; font-weight: 700; margin: 0; color: var(--heading-color); }
+  p  { font-size: .82rem; color: var(--text-muted); margin: .2rem 0 0; }
+}
+
+.cl-page-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.cl-header-right { display: flex; align-items: center; gap: .75rem; }
+
+.cl-view-toggle {
+  display:       flex;
+  background:    var(--card-bg-solid);
+  border:        1px solid var(--divider);
+  border-radius: 8px;
+  padding:       3px;
+  gap:           2px;
+}
+
+.cl-view-btn {
+  width:           30px;
+  height:          30px;
+  border-radius:   6px;
+  border:          none;
+  background:      none;
+  color:           var(--text-muted);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  cursor:          pointer;
+  transition:      all .15s;
+
+  &:hover { color: var(--heading-color); }
+  &.active { background: var(--accent-soft); color: var(--accent); }
+}
+
+// ── Bandeau démo ──────────────────────────────────────────────────────────────
+.cl-demo-banner {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             1rem;
+  padding:         .75rem 1.1rem;
+  border-radius:   10px;
+  background:      var(--accent-soft);
+  border:          1px solid var(--input-border);
+  font-size:       .8rem;
+  color:           var(--accent);
+  flex-wrap:       wrap;
+
+  strong { color: var(--accent); }
+}
+
+.cl-demo-left {
+  display:     flex;
+  align-items: center;
+  gap:         .6rem;
+}
+
+.cl-demo-badge {
+  padding:       .22rem .7rem;
+  border-radius: 5px;
+  background:    var(--accent-soft);
+  border:        1px solid var(--input-border);
+  color:         var(--accent);
+  font-size:     .68rem;
+  font-weight:   800;
+  letter-spacing:.1em;
+  white-space:   nowrap;
+}
+
+// ── Stats row ─────────────────────────────────────────────────────────────────
+.cl-stats-row {
+  display:       flex;
+  align-items:   center;
+  background:    var(--card-bg-solid);
+  border:        1px solid var(--divider);
+  border-radius: 14px;
+  padding:       .9rem 0;
+  overflow:      hidden;
+  flex-wrap:     wrap;
+}
+
+.cl-stat {
+  flex:       1;
+  min-width:  100px;
+  text-align: center;
+  padding:    .4rem 1.2rem;
+}
+
+.cl-stat-num {
+  font-size:   1.45rem;
+  font-weight: 800;
+  color:       var(--accent);
+  line-height: 1.1;
+}
+
+.cl-stat-label {
+  font-size:  .72rem;
+  color:      var(--text-muted);
+  margin-top: .2rem;
+}
+
+.cl-stat-sep {
+  width:      1px;
+  height:     32px;
+  background: var(--divider);
+  flex-shrink:0;
+}
+
+// ── Filtres ───────────────────────────────────────────────────────────────────
+.cl-filters-panel {
+  display:        flex;
+  flex-direction: column;
+  gap:            .75rem;
+  padding:        1.1rem 1.2rem;
+  background:     var(--card-bg-solid);
+  border:         1px solid var(--divider);
+  border-radius:  14px;
+}
+
+.cl-search-wrap {
+  position:    relative;
+  display:     flex;
+  align-items: center;
+}
+
+.cl-search-icon {
+  position:      absolute;
+  left:          .9rem;
+  color:         var(--text-muted);
+  pointer-events:none;
+}
+
+.cl-search {
+  width:         100%;
+  padding:       .7rem 2.5rem .7rem 2.6rem;
+  background:    var(--page-bg);
+  border:        1px solid var(--divider);
+  border-radius: 9px;
+  color:         var(--heading-color);
+  font-size:     .88rem;
+  font-family:   inherit;
+  outline:       none;
+  transition:    border-color .2s, box-shadow .2s;
+  box-sizing:    border-box;
+
+  &::placeholder { color: var(--text-muted); }
+  &:focus {
+    border-color: var(--input-border);
+    box-shadow:   0 0 0 3px var(--accent-soft);
+  }
+}
+
+.cl-clear-btn {
+  position:  absolute;
+  right:     .8rem;
+  background:none;
+  border:    none;
+  color:     var(--text-muted);
+  cursor:    pointer;
+  padding:   .2rem;
+  display:   flex;
+  align-items: center;
+  transition: color .15s;
+  &:hover { color: var(--heading-color); }
+}
+
+.cl-selects-row {
+  display:     flex;
+  flex-wrap:   wrap;
+  gap:         .6rem;
+  align-items: flex-end;
+}
+
+.cl-select-group {
+  display:        flex;
+  flex-direction: column;
+  gap:            .3rem;
+  flex:           1;
+  min-width:      130px;
+}
+
+.cl-select-label {
+  font-size:   .7rem;
+  font-weight: 600;
+  color:       var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.cl-select {
+  padding:       .5rem .8rem;
+  background:    var(--page-bg);
+  border:        1px solid var(--divider);
+  border-radius: 8px;
+  color:         var(--heading-color);
+  font-size:     .82rem;
+  font-family:   inherit;
+  outline:       none;
+  cursor:        pointer;
+  transition:    border-color .15s;
+  appearance:    none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .65rem center;
+  padding-right: 2rem;
+
+  &:focus { border-color: var(--input-border); }
+  &:hover { border-color: var(--input-border); }
+
+  option { background: var(--card-bg-solid); color: var(--heading-color); }
+}
+
+.cl-reset-btn {
+  display:       flex;
+  align-items:   center;
+  gap:           .45rem;
+  padding:       .5rem .9rem;
+  border-radius: 8px;
+  border:        1px solid var(--input-border);
+  background:    var(--tag-bg);
+  color:         var(--danger);
+  font-size:     .78rem;
+  font-family:   inherit;
+  cursor:        pointer;
+  white-space:   nowrap;
+  align-self:    flex-end;
+  height:        36px;
+  transition:    all .15s;
+
+  &:hover { background: var(--tag-bg); border-color: var(--input-border); }
+}
+
+.cl-filter-count {
+  width:           17px;
+  height:          17px;
+  border-radius:   50%;
+  background:      var(--danger);
+  color:           var(--danger);
+  font-size:       .65rem;
+  font-weight:     700;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+}
+
+// ── Badges types ──────────────────────────────────────────────────────────────
+.cl-type-badge {
+  font-size:   .65rem;
+  font-weight: 700;
+  padding:     .18rem .6rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space:   nowrap;
+
+  &.cl-type--arret {
+    background: var(--tag-bg);
+    color:      var(--text-secondary);
+    border:     1px solid var(--input-border);
+  }
+  &.cl-type--jugement {
+    background: var(--accent-soft);
+    color:      var(--accent);
+    border:     1px solid var(--input-border);
+  }
+  &.cl-type--ordonnance {
+    background: var(--accent-soft);
+    color:      var(--accent);
+    border:     1px solid var(--input-border);
+  }
+}
+
+.cl-sens-badge {
+  font-size:   .63rem;
+  font-weight: 700;
+  padding:     .15rem .55rem;
+  border-radius: 4px;
+  white-space:   nowrap;
+
+  &.cl-sens--fav {
+    background: var(--tag-bg);
+    color:      var(--success);
+    border:     1px solid var(--input-border);
+  }
+  &.cl-sens--def {
+    background: var(--tag-bg);
+    color:      var(--danger);
+    border:     1px solid var(--input-border);
+  }
+  &.cl-sens--mit {
+    background: var(--tag-bg);
+    color:      var(--text-secondary);
+    border:     1px solid var(--input-border);
+  }
+}
+
+// ── Tags ──────────────────────────────────────────────────────────────────────
+.cl-domaine-tag {
+  font-size:   .68rem;
+  font-weight: 600;
+  padding:     .18rem .6rem;
+  border-radius: 5px;
+  background:  var(--accent-soft);
+  color:       var(--accent);
+  border:      1px solid var(--input-border);
+  white-space: nowrap;
+}
+
+.cl-kw-tag {
+  font-size:   .66rem;
+  padding:     .15rem .5rem;
+  border-radius: 4px;
+  background:  var(--card-bg);
+  border:      1px solid var(--divider);
+  color:       var(--text-muted);
+  white-space: nowrap;
+}
+
+.cl-kw-more {
+  font-size:   .65rem;
+  color:       var(--text-muted);
+  align-self:  center;
+}
+
+// ── Empty ─────────────────────────────────────────────────────────────────────
+.cl-empty {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            .8rem;
+  padding:        4rem 2rem;
+  text-align:     center;
+
+  p { font-size: .9rem; color: var(--text-muted); margin: 0; }
+}
+
+.cl-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.cl-empty-reset {
+  padding:       .45rem 1rem;
+  border-radius: 8px;
+  border:        1px solid var(--divider);
+  background:    var(--card-bg-solid);
+  color:         var(--text-secondary);
+  font-size:     .8rem;
+  cursor:        pointer;
+  font-family:   inherit;
+  transition:    all .15s;
+  &:hover { border-color: var(--input-border); color: var(--heading-color); }
+}
+
+// ── Vue LISTE ─────────────────────────────────────────────────────────────────
+.cl-list {
+  display:        flex;
+  flex-direction: column;
+  gap:            .7rem;
+}
+
+.cl-list-card {
+  background:    var(--card-bg-solid);
+  border:        1px solid var(--divider);
+  border-radius: 14px;
+  overflow:      hidden;
+  transition:    border-color .2s, box-shadow .2s;
+
+  &:hover   { border-color: var(--input-border); }
+  &.expanded { border-color: var(--input-border); box-shadow: 0 0 0 3px var(--accent-soft); }
+}
+
+.cl-card-head {
+  display:         flex;
+  align-items:     flex-start;
+  gap:             1rem;
+  padding:         1.1rem 1.2rem;
+  cursor:          pointer;
+  user-select:     none;
+}
+
+.cl-card-left { flex: 1; display: flex; flex-direction: column; gap: .45rem; }
+
+.cl-card-ref-row {
+  display:     flex;
+  align-items: center;
+  gap:         .5rem;
+  flex-wrap:   wrap;
+}
+
+.cl-ref {
+  font-size:   .72rem;
+  font-weight: 700;
+  color:       var(--accent);
+  font-family: 'Courier New', monospace;
+  letter-spacing: .02em;
+}
+
+.cl-card-titre {
+  font-size:   .92rem;
+  font-weight: 700;
+  color:       var(--heading-color);
+  margin:      0;
+  line-height: 1.4;
+}
+
+.cl-card-meta {
+  display:     flex;
+  align-items: center;
+  gap:         .5rem;
+  flex-wrap:   wrap;
+  font-size:   .74rem;
+  color:       var(--text-muted);
+}
+
+.cl-meta-item { display: flex; align-items: center; gap: .3rem; }
+.cl-meta-sep  { color: var(--divider); }
+.cl-chambre   { font-style: italic; }
+
+.cl-card-domains {
+  display:     flex;
+  flex-wrap:   wrap;
+  gap:         .35rem;
+  margin-top:  .1rem;
+}
+
+.cl-card-chevron {
+  color:      var(--text-muted);
+  flex-shrink:0;
+  margin-top: .2rem;
+  transition: transform .25s;
+
+  &.open { transform: rotate(180deg); }
+}
+
+// ── Détail carte ──────────────────────────────────────────────────────────────
+.cl-card-detail {
+  padding:    1.1rem 1.2rem 1.3rem;
+  border-top: 1px solid var(--divider);
+  display:    flex;
+  flex-direction: column;
+  gap:        1.1rem;
+  animation:  clSlideDown .22s ease;
+}
+
+.cl-detail-section { display: flex; flex-direction: column; gap: .45rem; }
+
+.cl-detail-label {
+  font-size:   .7rem;
+  font-weight: 700;
+  color:       var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.cl-detail-text {
+  font-size:   .84rem;
+  color:       var(--text-secondary);
+  line-height: 1.7;
+  margin:      0;
+}
+
+.cl-parties-grid {
+  display:               grid;
+  grid-template-columns: 1fr 48px 1fr;
+  align-items:           start;
+  gap:                   .6rem;
+  padding:               .9rem 1rem;
+  background:            var(--accent-soft);
+  border:                1px solid var(--divider);
+  border-radius:         10px;
+
+  &--compact { padding: .7rem .9rem; }
+}
+
+.cl-partie { display: flex; flex-direction: column; gap: .25rem; }
+
+.cl-partie-label {
+  font-size:   .66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.cl-partie--dem .cl-partie-label { color: var(--accent); }
+.cl-partie--def .cl-partie-label { color: var(--accent); }
+
+.cl-partie-name {
+  font-size:   .82rem;
+  font-weight: 600;
+  color:       var(--heading-color);
+  line-height: 1.35;
+}
+
+.cl-partie-vs {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       .72rem;
+  font-weight:     800;
+  color:           var(--text-muted);
+  padding-top:     1.2rem;
+}
+
+.cl-dispositif {
+  font-size:     .82rem;
+  color:         var(--text-secondary);
+  line-height:   1.75;
+  padding:       .85rem 1rem;
+  background:    var(--tag-bg);
+  border-left:   3px solid var(--input-border);
+  border-radius: 0 8px 8px 0;
+  white-space:   pre-wrap;
+
+  &--sm { font-size: .78rem; padding: .65rem .85rem; }
+}
+
+.cl-articles-list {
+  display:        flex;
+  flex-direction: column;
+  gap:            .35rem;
+}
+
+.cl-article-item {
+  display:     flex;
+  align-items: flex-start;
+  gap:         .5rem;
+  font-size:   .8rem;
+  color:       var(--text-secondary);
+  line-height: 1.5;
+
+  svg { flex-shrink: 0; margin-top: 1px; }
+}
+
+.cl-all-keywords {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       .35rem;
+}
+
+.cl-detail-actions {
+  display:     flex;
+  align-items: center;
+  gap:         .7rem;
+  flex-wrap:   wrap;
+  padding-top: .2rem;
+}
+
+.cl-ai-btn {
+  display:       flex;
+  align-items:   center;
+  gap:           .5rem;
+  padding:       .55rem 1.2rem;
+  border-radius: 8px;
+  font-size:     .82rem;
+  font-weight:   600;
+  cursor:        pointer;
+  font-family:   inherit;
+  transition:    all .18s;
+
+  &--primary {
+    background:  var(--primary-dark);
+    border:      1px solid var(--input-border);
+    color:       var(--on-primary);
+    box-shadow:  var(--shadow-card);
+    &:hover { background: var(--primary-mid); color: var(--on-primary); box-shadow: none; }
+  }
+  &--secondary {
+    background:  var(--card-bg-solid);
+    border:      1px solid var(--divider);
+    color:       var(--text-secondary);
+    &:hover { border-color: var(--input-border); color: var(--heading-color); }
+  }
+}
+
+// ── Vue GRILLE ────────────────────────────────────────────────────────────────
+.cl-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap:                   .85rem;
+}
+
+.cl-grid-card {
+  background:    var(--card-bg-solid);
+  border:        1px solid var(--divider);
+  border-radius: 14px;
+  padding:       1.1rem 1.1rem .9rem;
+  display:       flex;
+  flex-direction:column;
+  gap:           .55rem;
+  transition:    border-color .2s, transform .2s;
+
+  &:hover   { border-color: var(--input-border); }
+  &.expanded { border-color: var(--input-border); transform: none; }
+}
+
+.cl-grid-top {
+  display:     flex;
+  align-items: center;
+  gap:         .4rem;
+}
+
+.cl-grid-ref {
+  font-size:   .67rem;
+  font-weight: 700;
+  color:       var(--accent);
+  font-family: 'Courier New', monospace;
+}
+
+.cl-grid-titre {
+  font-size:   .86rem;
+  font-weight: 700;
+  color:       var(--heading-color);
+  margin:      0;
+  line-height: 1.35;
+}
+
+.cl-grid-meta {
+  display:        flex;
+  flex-direction: column;
+  gap:            .15rem;
+  font-size:      .72rem;
+  color:          var(--text-muted);
+}
+
+.cl-grid-resume {
+  font-size:   .78rem;
+  color:       var(--text-secondary);
+  line-height: 1.6;
+  margin:      0;
+  flex:        1;
+}
+
+.cl-grid-kws {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       .3rem;
+}
+
+.cl-grid-footer {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             .5rem;
+  padding-top:     .4rem;
+  border-top:      1px solid var(--divider);
+  margin-top:      auto;
+}
+
+.cl-grid-detail-btn {
+  display:     flex;
+  align-items: center;
+  gap:         .35rem;
+  background:  none;
+  border:      none;
+  color:       var(--accent);
+  font-size:   .78rem;
+  font-weight: 600;
+  cursor:      pointer;
+  font-family: inherit;
+  padding:     0;
+  transition:  opacity .15s;
+  &:hover { opacity: .8; }
+}
+
+.cl-grid-ai-btn {
+  width:           30px;
+  height:          30px;
+  border-radius:   7px;
+  border:          1px solid var(--input-border);
+  background:      var(--accent-soft);
+  color:           var(--accent);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  cursor:          pointer;
+  transition:      all .15s;
+  &:hover { background: var(--accent-soft); }
+}
+
+.cl-grid-expanded {
+  border-top: 1px solid var(--divider);
+  padding-top:.8rem;
+  animation:  clSlideDown .2s ease;
+}
+
+// ── Footer note ───────────────────────────────────────────────────────────────
+.cl-footer-note {
+  display:     flex;
+  align-items: flex-start;
+  gap:         .5rem;
+  font-size:   .74rem;
+  color:       var(--text-muted);
+  padding:     .75rem 1rem;
+  border-radius: 9px;
+  border:      1px solid var(--divider);
+  background:  var(--card-bg-solid);
+  line-height: 1.55;
+
+  svg { flex-shrink: 0; margin-top: 1px; }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .cl-page { padding: 1.5rem 1rem; }
+
+  .cl-header { flex-direction: column; align-items: flex-start; }
+
+  .cl-stats-row {
+    .cl-stat     { min-width: 50%; }
+    .cl-stat-sep { display: none; }
+  }
+
+  .cl-selects-row { flex-direction: column; }
+  .cl-select-group { min-width: unset; }
+
+  .cl-parties-grid { grid-template-columns: 1fr; }
+  .cl-partie-vs { display: none; }
+
+  .cl-grid { grid-template-columns: 1fr; }
+
+  .cl-card-head { flex-direction: column; }
+  .cl-card-chevron { align-self: flex-end; }
+}
+
+/* Alignement commun de l'espace client (même gabarit que Vue d'ensemble) */
+.cl-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+  min-height: 0;
+  background: none;
+  gap: 0;
+  > * + * { margin-top: 1.25rem; }
+  > .app-head + * { margin-top: 0; }
+}

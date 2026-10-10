@@ -1,0 +1,141 @@
+// Styles responsive tablette pour la page Conversation
+@media (min-width: 769px) and (max-width: 1024px) {
+  .conversation-header {
+    padding: 1.125rem 0;
+    margin-bottom: 1.25rem;
+
+    .header-left {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      width: 100%;
+
+      .header-title {
+        flex: 1;
+        margin: 0;
+
+        h2 {
+          font-size: 1.35rem;
+        }
+
+        svg {
+          width: 22px;
+          height: 22px;
+        }
+      }
+
+      .ephemeral-notice,
+      .save-notice {
+        padding: 0.5rem;
+        width: auto;
+        min-width: auto;
+        justify-content: center;
+        border-radius: 8px;
+
+        span {
+          display: none; // Cacher le texte, garder uniquement l'icône
+        }
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .header-icons {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-left: auto;
+        padding-left: 1rem;
+      }
+
+      .ephemeral-notice {
+        .ephemeral-tooltip {
+          right: -20px;
+          left: auto;
+          transform: translateX(0);
+          min-width: 300px;
+          max-width: calc(100vw - 40px);
+          width: auto;
+
+          &::before {
+            right: 30px;
+            left: auto;
+          }
+        }
+      }
+
+      .history-btn {
+        width: auto;
+        min-width: auto;
+        padding: 0.5rem;
+        justify-content: center;
+        border-radius: 8px;
+
+        span {
+          display: none; // Cacher le texte, garder uniquement l'icône
+        }
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+
+        .history-badge {
+          top: -7px;
+          right: -7px;
+          font-size: 0.7rem;
+          min-width: 19px;
+          height: 19px;
+        }
+      }
+    }
+  }
+
+  .messages-container {
+    padding: 1.25rem 0;
+  }
+
+  .message {
+    .message-wrapper {
+      max-width: 80%;
+    }
+
+    .message-content {
+      padding: 0.9375rem 1.125rem;
+      font-size: 0.95rem;
+    }
+  }
+
+  .input-container {
+    padding: 1.25rem;
+
+    .input-wrapper {
+      .input-form {
+        .message-input {
+          font-size: 0.95rem;
+          padding: 0.875rem 1.125rem;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    padding: 2.5rem 1.5rem;
+
+    .empty-icon {
+      width: 70px;
+      height: 70px;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+    }
+  }
+}

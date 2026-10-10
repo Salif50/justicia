@@ -1,0 +1,343 @@
+// ════════════════════════════════════════════════════════════════════════════
+//  STYLES PARTAGÉS — toutes les pages admin
+//  Utilise uniquement des variables CSS pour supporter dark/light mode
+// ════════════════════════════════════════════════════════════════════════════
+
+.admin-page {
+  padding: 2rem;
+  max-width: 1200px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin: 0 0 0.25rem 0;
+  }
+  p { color: var(--text-muted); margin-top: 0.25rem; font-size: 0.88rem; }
+}
+
+// ── Boutons ───────────────────────────────────────────────────────────────────
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-dark);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover   { opacity: 0.88; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &.btn-sm  { padding: 0.4rem 1rem; font-size: 0.8rem; }
+}
+
+.btn-secondary {
+  background: var(--card-bg-solid);
+  color: var(--text-secondary);
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--card-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+  }
+}
+
+.btn-danger {
+  background: var(--tag-bg);
+  color: var(--danger);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { background: var(--tag-bg); }
+}
+
+.btn-icon {
+  background: var(--card-bg);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  padding: 0.4rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: var(--tag-bg);
+    border-color: var(--input-border);
+    color: var(--text-secondary);
+  }
+  &.danger:hover {
+    background: var(--tag-bg);
+    border-color: var(--input-border);
+    color: var(--danger);
+  }
+}
+
+// ── Alertes ───────────────────────────────────────────────────────────────────
+.alert {
+  padding: 0.875rem 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &.alert-error {
+    background: var(--tag-bg);
+    color: var(--danger);
+    border: 1px solid var(--input-border);
+  }
+  &.alert-success {
+    background: var(--tag-bg);
+    color: var(--success);
+    border: 1px solid var(--input-border);
+  }
+  &.alert-info {
+    background: var(--tag-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--input-border);
+  }
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+
+  &.active {
+    background: var(--tag-bg);
+    color: var(--success);
+    border: 1px solid var(--input-border);
+  }
+  &.inactive {
+    background: var(--tag-bg);
+    color: var(--danger);
+    border: 1px solid var(--input-border);
+  }
+  &.pending {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--input-border);
+  }
+}
+
+// ── Carte formulaire ──────────────────────────────────────────────────────────
+.form-card {
+  background: var(--card-bg-solid);
+  border-radius: 14px;
+  border: 1px solid var(--divider);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--heading-color);
+    margin: 0 0 1.25rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--divider);
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+
+  .full-width { grid-column: 1 / -1; }
+  .checkboxes { display: flex; flex-direction: column; gap: 0.5rem; }
+}
+
+.form-group {
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1.5px solid var(--divider);
+    border-radius: 9px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: var(--input-bg, var(--tag-bg));
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder { color: var(--text-muted); }
+
+    &:focus {
+      outline: none;
+      border-color: var(--input-border);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+  }
+
+  textarea { resize: vertical; }
+}
+
+.toggle-label {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  color: var(--text-primary) !important;
+  input[type="checkbox"] { width: auto; cursor: pointer; }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--divider);
+}
+
+// ── Tableau ───────────────────────────────────────────────────────────────────
+.table-wrap {
+  background: var(--card-bg-solid);
+  border-radius: 14px;
+  border: 1px solid var(--divider);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: var(--page-bg);
+  border-bottom: 1px solid var(--divider);
+}
+
+td {
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--divider);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+
+tr:hover td { background: var(--card-bg); }
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-muted);
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--divider);
+    border-top-color: var(--input-border);
+    border-radius: 50%;
+    animation: admin-spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+  }
+}
+
+@keyframes admin-spin { to { transform: rotate(360deg); } }
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  background: var(--card-bg-solid);
+  border-radius: 14px;
+  border: 1px dashed var(--divider);
+
+  p { font-size: 0.88rem; }
+}
+
+// ── Stats card simple ─────────────────────────────────────────────────────────
+.stat-card {
+  background: var(--card-bg-solid);
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .stat-body {}
+  .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--heading-color); line-height: 1; }
+  .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+}
+
+// ── Light mode overrides ──────────────────────────────────────────────────────
+:host-context([data-theme="light"]) {
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: var(--card-bg-solid);
+    border-color: var(--divider);
+    color: var(--text-secondary);
+
+    &:focus { border-color: var(--input-border); box-shadow: 0 0 0 3px var(--accent-soft); }
+  }
+}

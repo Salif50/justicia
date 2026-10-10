@@ -1,0 +1,497 @@
+<div class="agents-page">
+
+  <!-- ── En-tête ─────────────────────────────────────────────────────────── -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Assistant IA</p>
+      <h1 class="app-title">Agents juridiques</h1>
+      <p class="app-sub">Consultez les agents spécialisés ou créez les vôtres, adossés aux textes guinéens que vous choisissez.</p>
+    </div>
+    <div class="app-head-actions">
+      <button class="app-btn" (click)="openCreateModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Créer un agent
+      </button>
+    </div>
+  </header>
+
+  <!-- Alerte de succès -->
+  @if (createSuccess()) {
+    <div class="alert-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ createSuccess() }}
+    </div>
+  }
+
+  <!-- ── Agents personnalisés ───────────────────────────────────────────── -->
+  <section class="agents-section">
+    <div class="section-header">
+      <span class="section-badge custom">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83"/></svg>
+        Mes agents
+      </span>
+      @if (!isLoadingAgents()) {
+        <span class="section-count">{{ customAgents().length }} agent(s)</span>
+      }
+      <div class="section-divider"></div>
+    </div>
+
+    @if (isLoadingAgents()) {
+      <div class="loading-row">
+        <div class="spinner"></div>
+        <span>Chargement de vos agents...</span>
+      </div>
+    } @else if (!customAgents().length) {
+      <div class="empty-custom">
+        <div class="empty-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        <h3>Aucun agent personnalisé</h3>
+        <p>Créez votre premier agent en sélectionnant des textes juridiques guinéens et en définissant son comportement.</p>
+        <button class="btn-create-empty" (click)="openCreateModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Créer mon premier agent
+        </button>
+      </div>
+    } @else {
+      <div class="agents-grid">
+        @for (agent of customAgents(); track agent.id) {
+          <div class="agent-card custom-card" (click)="startConversation(agent.id)">
+            <div class="agent-card-header">
+              <div class="agent-icon-wrap">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              </div>
+              <div class="agent-card-badges">
+                @for (domain of agent.domains.slice(0, 2); track domain) {
+                  <span class="domain-chip">
+                    {{ domain }}
+                  </span>
+                }
+                @if (agent.domains.length > 2) {
+                  <span class="domain-chip more">+{{ agent.domains.length - 2 }}</span>
+                }
+              </div>
+            </div>
+
+            <h3>{{ agent.name }}</h3>
+            <p>{{ agent.description || (agent.doc_ids.length + ' document(s) · ' + agent.domains.length + ' domaine(s)') }}</p>
+
+            <div class="docs-count-row">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+              {{ agent.doc_ids.length }} texte(s) juridique(s)
+            </div>
+
+            @if (agent.system_prompt) {
+              <div class="agent-prompt-preview">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Comportement personnalisé
+              </div>
+            }
+
+            <div class="card-footer">
+              <div class="card-left-actions">
+                <button class="btn-action-icon delete" (click)="deleteCustomAgent(agent, $event)" title="Supprimer">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+                <button class="btn-action-icon edit" (click)="openEditModal(agent, $event)" title="Modifier">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+              </div>
+              <button class="btn-start" (click)="startConversation(agent.id); $event.stopPropagation()">
+                Démarrer
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ── Agents intégrés ────────────────────────────────────────────────── -->
+  <section class="agents-section">
+    <div class="section-header">
+      <span class="section-badge builtin">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Intégrés
+      </span>
+      <span class="section-count">{{ builtinAgents().length }} agents</span>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="agents-grid">
+      @for (agent of builtinAgents(); track agent.id) {
+        <div class="agent-card" [attr.data-agent]="agent.id" (click)="startConversation(agent.id)">
+          <div class="agent-card-header">
+            <div class="agent-icon-wrap">
+              <span [innerHTML]="getBuiltinIcon(agent.icon)"></span>
+            </div>
+            <span class="category-chip">{{ agent.category }}</span>
+          </div>
+          <h3>{{ agent.name }}</h3>
+          <p>{{ agent.description }}</p>
+          <div class="card-footer">
+            <span class="builtin-badge">Intégré</span>
+            <button class="btn-start" (click)="startConversation(agent.id); $event.stopPropagation()">
+              Démarrer
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODAL PLEIN ÉCRAN — CRÉER UN AGENT
+     ════════════════════════════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="modal-fullscreen">
+
+    <div class="modal-topbar">
+      <div class="modal-topbar-left">
+        <button class="btn-modal-close" (click)="closeModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="modal-breadcrumb">
+          <span>Créer un agent</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span [class.active]="modalStep() === 1">1. Textes juridiques</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span [class.active]="modalStep() === 2">2. Configuration</span>
+        </div>
+      </div>
+      <div class="modal-topbar-right">
+        @if (selectedDocIds().size > 0) {
+          <span class="selected-count-badge">{{ selectedDocIds().size }} texte(s) sélectionné(s)</span>
+        }
+        @if (modalStep() === 1) {
+          <button class="btn-modal-next" [disabled]="!selectedDocIds().size" (click)="goToStep2()">
+            Continuer
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        } @else {
+          <button class="btn-modal-back" (click)="goBackToStep1()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Retour
+          </button>
+          <button class="btn-modal-create" [disabled]="!agentName().trim() || isCreating()" (click)="createAgent()">
+            @if (isCreating()) {
+              <span class="spinner-sm"></span> Création...
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Créer l'agent
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ═══ ÉTAPE 1 : Sélection des textes ═══ -->
+    @if (modalStep() === 1) {
+      <div class="modal-body step1">
+
+        <div class="template-search-bar">
+          <div class="search-input-wrap">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text"
+              placeholder="Rechercher un texte juridique..."
+              [value]="templateSearch()"
+              (input)="templateSearch.set($any($event.target).value)"
+              autofocus
+            />
+            @if (templateSearch()) {
+              <button class="clear-search" (click)="templateSearch.set('')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            }
+          </div>
+          <div class="domain-filters">
+            @for (domain of availableDomains(); track domain) {
+              <button
+                class="domain-filter-btn"
+                [class.active]="domainFilter() === domain"
+                (click)="domainFilter.set(domain)"
+              >{{ domain }}</button>
+            }
+          </div>
+        </div>
+
+        @if (selectedDocIds().size > 0) {
+          <div class="selection-summary">
+            <div class="summary-left">
+              <span class="summary-title">Sélection :</span>
+              @for (domain of selectedDomains(); track domain) {
+                <span class="summary-domain">{{ domain }}</span>
+              }
+            </div>
+            <button class="clear-all-btn" (click)="selectedDocIds.set(emptySet())">Tout désélectionner</button>
+          </div>
+        }
+
+        @if (isLoadingTemplates()) {
+          <div class="templates-loading">
+            <div class="spinner large"></div>
+            <span>Chargement du corpus juridique guinéen...</span>
+          </div>
+        } @else if (templatesLoadError()) {
+          <div class="templates-error">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p>Impossible de charger les textes juridiques.</p>
+            <button class="btn-retry" (click)="retryLoadTemplates()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Réessayer
+            </button>
+          </div>
+        } @else {
+          <div class="templates-info">{{ filteredTemplates().length }} texte(s) disponible(s)</div>
+          <div class="templates-grid">
+            @for (template of filteredTemplates(); track template.doc_id) {
+              <div
+                class="template-card"
+                [class.selected]="isSelected(template.doc_id)"
+                (click)="toggleTemplate(template.doc_id)"
+              >
+                <div class="template-card-header">
+                  <span class="doc-type-badge" [class]="getDocTypeBadgeClass(template.type)">{{ template.type }}</span>
+                  <div class="template-select-indicator">
+                    @if (isSelected(template.doc_id)) {
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    }
+                  </div>
+                </div>
+                <div class="template-domain-bar"></div>
+                <h4>{{ template.nom }}</h4>
+                <div class="template-meta">
+                  <span class="template-domain">{{ template.domaine }}</span>
+                  @if (template.nombre_pages) {
+                    <span class="template-pages">· {{ template.nombre_pages }} p.</span>
+                  }
+                </div>
+                @if (template.numero) {
+                  <span class="template-ref">{{ template.numero }}</span>
+                }
+                @if (template.date_adoption) {
+                  <span class="template-date">{{ template.date_adoption }}</span>
+                }
+              </div>
+            }
+            @empty {
+              <div class="no-results">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <p>Aucun texte trouvé pour cette recherche.</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═══ ÉTAPE 2 : Configuration ═══ -->
+    @if (modalStep() === 2) {
+      <div class="modal-body step2">
+        <div class="step2-container">
+
+          <!-- Résumé des docs -->
+          <div class="selected-docs-review">
+            <h3>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+              Textes sélectionnés ({{ selectedDocIds().size }})
+            </h3>
+            <div class="selected-docs-list">
+              @for (doc of selectedTemplates(); track doc.doc_id) {
+                <div class="selected-doc-item">
+                  <div class="selected-doc-icon">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+                  </div>
+                  <div class="selected-doc-info">
+                    <span class="selected-doc-name">{{ doc.nom }}</span>
+                    <span class="selected-doc-domain">{{ doc.domaine }}</span>
+                  </div>
+                  <span class="doc-type-mini" [class]="getDocTypeBadgeClass(doc.type)">{{ doc.type }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Formulaire -->
+          <div class="agent-form">
+            <h3>Configuration de l'agent</h3>
+
+            @if (createError()) {
+              <div class="form-error">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                {{ createError() }}
+              </div>
+            }
+
+            <div class="form-group">
+              <label class="form-label">Nom de l'agent <span class="form-required">*</span></label>
+              @if (suggestedName() && !agentName()) {
+                <div class="form-suggestion" (click)="agentName.set(suggestedName())">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  Suggestion : <em>{{ suggestedName() }}</em>
+                </div>
+              }
+              <input
+                type="text"
+                class="form-input"
+                placeholder="Ex: Expert Droit Pénal & Foncier"
+                [value]="agentName()"
+                (input)="agentName.set($any($event.target).value)"
+                maxlength="150"
+              />
+              <span class="char-count">{{ agentName().length }}/150</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description <span style="opacity:.5; font-weight:400; text-transform: none;">(optionnelle)</span></label>
+              <textarea
+                class="form-textarea"
+                placeholder="Décrivez les capacités et le rôle de cet agent..."
+                [value]="agentDescription()"
+                (input)="agentDescription.set($any($event.target).value)"
+                rows="2"
+                maxlength="500"
+              ></textarea>
+              <span class="char-count">{{ agentDescription().length }}/500</span>
+            </div>
+
+            <div class="form-group">
+              <div class="prompt-label-row">
+                <label class="form-label">
+                  Instructions <span class="label-badge">Comportement IA</span>
+                </label>
+                <button type="button" class="prompt-help-btn" (click)="showPromptHelp.set(!showPromptHelp())">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Aide
+                </button>
+              </div>
+              @if (showPromptHelp()) {
+                <div class="prompt-help-box">
+                  <p><strong>Définissez ce que l'agent peut et ne peut PAS faire.</strong></p>
+                  <ul>
+                    <li>« Tu es spécialisé en droit minier guinéen. Refuse toute question hors ce domaine. »</li>
+                    <li>« Tu conseilles les droits des employés et proposes des modèles de lettres. »</li>
+                  </ul>
+                  <p class="prompt-help-note">Si vide, l'agent utilisera les règles générales de JusticIA.</p>
+                </div>
+              }
+              <textarea
+                class="form-textarea prompt-textarea"
+                placeholder="Ex: Tu es spécialisé en droit minier et pétrolier guinéen. Tu refuses poliment toute question hors ce domaine..."
+                [value]="agentSystemPrompt()"
+                (input)="agentSystemPrompt.set($any($event.target).value)"
+                rows="4"
+                maxlength="4000"
+              ></textarea>
+              <span class="char-count">{{ agentSystemPrompt().length }}/4000</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Domaines couverts</label>
+              <div class="domains-preview">
+                @for (domain of selectedDomains(); track domain) {
+                  <span class="domain-tag">
+                    {{ domain }}
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    }
+
+  </div>
+}
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODAL D'ÉDITION — Dialog centré (avec overlay)
+     ════════════════════════════════════════════════════════════════ -->
+@if (showEditModal()) {
+  <div class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Modifier l'agent
+        </h2>
+        <button class="modal-close" (click)="closeEditModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-scroll-body">
+        <div class="form-section">
+
+          <div class="form-group">
+            <label class="form-label">Nom de l'agent <span class="form-required">*</span></label>
+            <input
+              type="text"
+              class="form-input"
+              [value]="editName()"
+              (input)="editName.set($any($event.target).value)"
+              placeholder="Ex: Expert Droit Minier"
+              maxlength="150"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea
+              class="form-textarea"
+              [value]="editDescription()"
+              (input)="editDescription.set($any($event.target).value)"
+              rows="2"
+              maxlength="500"
+              placeholder="Décrivez les capacités de cet agent..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <div class="prompt-label-row">
+              <label class="form-label">Instructions <span class="label-badge">Comportement IA</span></label>
+            </div>
+            <p class="form-hint">Définissez le périmètre exact : ce que l'agent fait, ce qu'il refuse, son ton, ses sources prioritaires.</p>
+            <textarea
+              class="form-textarea prompt-textarea"
+              [value]="editSystemPrompt()"
+              (input)="editSystemPrompt.set($any($event.target).value)"
+              rows="7"
+              maxlength="4000"
+              placeholder="Ex: Tu es spécialisé en droit minier guinéen uniquement. Tu cites toujours le Code minier avec le numéro d'article exact..."
+            ></textarea>
+            <span class="char-count">{{ editSystemPrompt().length }}/4000</span>
+          </div>
+
+          @if (editError()) {
+            <div class="form-error">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              {{ editError() }}
+            </div>
+          }
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeEditModal()">Annuler</button>
+        <button class="btn-primary" (click)="saveEdit()" [disabled]="isSavingEdit()">
+          @if (isSavingEdit()) {
+            <span class="spinner-sm"></span> Sauvegarde...
+          } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Enregistrer
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

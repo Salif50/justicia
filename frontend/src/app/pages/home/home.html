@@ -1,0 +1,362 @@
+<app-header></app-header>
+
+@if (showToast()) {
+  <div class="toast-notification" [class.toast-success]="toastSuccess()" [class.toast-error]="!toastSuccess()">
+    <div class="toast-icon">
+      @if (toastSuccess()) {
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+      } @else {
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      }
+    </div>
+    <div class="toast-body">
+      <div class="toast-title">{{ toastSuccess() ? 'Message envoyé' : 'Erreur' }}</div>
+      <div class="toast-msg">{{ toastText() }}</div>
+    </div>
+    <button class="toast-close" (click)="closeToast()" aria-label="Fermer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="toast-progress" [class.toast-progress-success]="toastSuccess()" [class.toast-progress-error]="!toastSuccess()"></div>
+  </div>
+}
+
+<!-- ═════════════ HERO ═════════════ -->
+<section class="lp-hero">
+  <div class="lp-container lp-hero-grid">
+    <div class="lp-hero-copy">
+      <p class="lp-eyebrow lp-eyebrow--light">Assistant juridique · République de Guinée</p>
+      <h1 class="lp-hero-title" [attr.aria-label]="titleText">
+        @for (line of titleLines; track $index) {
+          <span class="lp-title-line" [class.lp-title-em]="line.em" aria-hidden="true">
+            @for (word of line.words; track $index; let last = $last) {
+              <span class="lp-word">@for (ch of word; track $index) {<span class="lp-char" [style.animation-delay.ms]="ch.d">{{ ch.c }}</span>}</span>@if (!last) {<span class="lp-space">{{ ' ' }}</span>}
+            }
+          </span>
+        }
+      </h1>
+      <p class="lp-hero-lead">
+        JusticIA interroge les codes, lois et décrets officiels de la République de Guinée
+        et vous répond en français, en citant mot pour mot les articles applicables.
+        Aucune réponse sans texte de loi pour la soutenir.
+      </p>
+      <div class="lp-hero-actions">
+        <a routerLink="/signup" class="lp-btn lp-btn--accent">
+          Essayer gratuitement
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#methode" class="lp-btn lp-btn--outline-light">Voir la méthode</a>
+      </div>
+      <ul class="lp-hero-proof">
+        <li><span class="lp-proof-num">12 149</span><span>articles indexés</span></li>
+        <li><span class="lp-proof-num">32</span><span>textes officiels</span></li>
+        <li><span class="lp-proof-num">23</span><span>domaines du droit</span></li>
+      </ul>
+    </div>
+
+    <!-- Aperçu d'une vraie réponse -->
+    <div class="lp-hero-card" aria-label="Exemple de réponse JusticIA">
+      <div class="lp-card-head">
+        <span class="lp-card-dot"></span>
+        <span>Consultation</span>
+        <span class="lp-card-domain">Droit du travail</span>
+      </div>
+      <div class="lp-card-q">
+        Quels sont mes droits en cas de licenciement sans motif valable&nbsp;?
+      </div>
+      <div class="lp-card-section">
+        <p class="lp-card-label">Textes de loi applicables</p>
+        <blockquote class="lp-card-quote">
+          « Tout licenciement effectué sans motif valable ou sans respecter la procédure légale est abusif. »
+          <cite>Code du travail, Loi L/2014/072/CNT — Art. 172.10</cite>
+        </blockquote>
+      </div>
+      <div class="lp-card-divider"></div>
+      <div class="lp-card-section">
+        <p class="lp-card-label">Analyse juridique</p>
+        <p class="lp-card-text">
+          Le licenciement est qualifié d'abusif et ouvre droit à une indemnité d'au moins
+          <strong>trois mois de salaire</strong>, sans préjudice des autres indemnités légales.
+        </p>
+      </div>
+      <div class="lp-card-foot">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        Citation vérifiée dans le texte officiel
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ ENGAGEMENTS ═════════════ -->
+<section class="lp-section lp-commit">
+  <div class="lp-container lp-split">
+    <div class="lp-split-head">
+      <p class="lp-eyebrow">Nos engagements</p>
+      <h2 class="lp-title">Une exigence de juriste, la vitesse de l'intelligence artificielle.</h2>
+      <p class="lp-lead">
+        En droit, une réponse fausse est plus dangereuse que l'absence de réponse.
+        JusticIA a été conçu autour de ce principe.
+      </p>
+    </div>
+    <ol class="lp-commit-list">
+      <li>
+        <span class="lp-commit-num">01</span>
+        <div>
+          <h3>Chaque réponse est sourcée</h3>
+          <p>Les articles cités sont reproduits mot pour mot depuis le texte officiel, avec la référence exacte de la loi et du numéro d'article.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-commit-num">02</span>
+        <div>
+          <h3>Rien n'est inventé</h3>
+          <p>Si les textes disponibles ne couvrent pas un point, JusticIA le dit clairement plutôt que de deviner. Chaque citation est contrôlée avant affichage.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-commit-num">03</span>
+        <div>
+          <h3>Vos consultations restent confidentielles</h3>
+          <p>Le modèle fonctionne sur une infrastructure maîtrisée : vos questions et vos dossiers ne sont pas transmis à des services tiers.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═════════════ DOMAINES ═════════════ -->
+<section class="lp-section lp-domains">
+  <div class="lp-container">
+    <div class="lp-section-head">
+      <p class="lp-eyebrow">Domaines couverts</p>
+      <h2 class="lp-title">Le corpus législatif guinéen, réuni et consultable.</h2>
+      <p class="lp-lead">Codes, lois organiques et décrets en vigueur, indexés article par article.</p>
+    </div>
+    <div class="lp-domain-grid">
+      <article class="lp-domain">
+        <h3>Droit du travail</h3>
+        <p>Contrat, licenciement, préavis, indemnités, conditions de travail.</p>
+        <span class="lp-domain-src">Code du travail — Loi L/2014/072/CNT</span>
+      </article>
+      <article class="lp-domain">
+        <h3>Droit pénal &amp; procédure</h3>
+        <p>Infractions, peines, garde à vue, droits de la défense.</p>
+        <span class="lp-domain-src">Code pénal 2016 · Code de procédure pénale 2016</span>
+      </article>
+      <article class="lp-domain">
+        <h3>Famille &amp; personnes</h3>
+        <p>Mariage, divorce, filiation, successions, protection de l'enfant.</p>
+        <span class="lp-domain-src">Code civil 2019 · Code de l'enfant</span>
+      </article>
+      <article class="lp-domain">
+        <h3>Foncier &amp; domanial</h3>
+        <p>Propriété, immatriculation, transactions immobilières, expropriation.</p>
+        <span class="lp-domain-src">Code foncier et domanial</span>
+      </article>
+      <article class="lp-domain">
+        <h3>Affaires &amp; finances</h3>
+        <p>Sociétés, activités économiques, marchés publics, réglementation bancaire.</p>
+        <span class="lp-domain-src">Code des activités économiques · Loi bancaire</span>
+      </article>
+      <article class="lp-domain">
+        <h3>Institutions</h3>
+        <p>Constitution, organisation judiciaire, élections, accès à l'information.</p>
+        <span class="lp-domain-src">Constitution 2025 · Code électoral</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ MÉTHODE ═════════════ -->
+<section class="lp-section lp-method" id="methode">
+  <div class="lp-container">
+    <div class="lp-section-head lp-section-head--light">
+      <p class="lp-eyebrow lp-eyebrow--light">La méthode</p>
+      <h2 class="lp-title lp-title--light">Trois étapes, une réponse vérifiable.</h2>
+    </div>
+    <div class="lp-steps">
+      <div class="lp-step">
+        <span class="lp-step-num">I</span>
+        <h3>Vous posez votre question</h3>
+        <p>En français courant, comme vous la poseriez à un juriste. Aucune connaissance technique requise.</p>
+      </div>
+      <div class="lp-step">
+        <span class="lp-step-num">II</span>
+        <h3>JusticIA recherche les textes</h3>
+        <p>Une recherche hybride, sémantique et par mots-clés, identifie les articles pertinents parmi plus de 12 000 dispositions.</p>
+      </div>
+      <div class="lp-step">
+        <span class="lp-step-num">III</span>
+        <h3>Vous recevez une réponse structurée</h3>
+        <p>Les textes applicables d'abord, cités intégralement, puis l'analyse juridique et les observations pratiques.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ PUBLICS ═════════════ -->
+<section class="lp-section lp-audience">
+  <div class="lp-container">
+    <div class="lp-section-head">
+      <p class="lp-eyebrow">Pour qui</p>
+      <h2 class="lp-title">Un outil pensé pour ceux qui pratiquent le droit, et ceux qui le vivent.</h2>
+    </div>
+    <div class="lp-audience-grid">
+      <div class="lp-audience-item">
+        <h3>Avocats &amp; juristes</h3>
+        <p>Retrouvez en quelques secondes l'article exact, préparez vos consultations et gérez vos dossiers.</p>
+      </div>
+      <div class="lp-audience-item">
+        <h3>Entreprises</h3>
+        <p>Sécurisez vos décisions en droit du travail, des affaires et des marchés publics.</p>
+      </div>
+      <div class="lp-audience-item">
+        <h3>Institutions</h3>
+        <p>Facilitez l'accès des agents et du public aux textes en vigueur.</p>
+      </div>
+      <div class="lp-audience-item">
+        <h3>Citoyens</h3>
+        <p>Comprenez vos droits et vos démarches, avec des explications claires et sourcées.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ TÉMOIGNAGES ═════════════ -->
+@if (testimonials().length > 0) {
+<section class="lp-section lp-testi">
+  <div class="lp-container">
+    <div class="lp-section-head">
+      <p class="lp-eyebrow">Témoignages</p>
+      <h2 class="lp-title">Ils utilisent JusticIA au quotidien.</h2>
+    </div>
+    <div class="lp-testi-grid">
+      @for (t of testimonials(); track t.id) {
+        <figure class="lp-testi-card">
+          <blockquote>« {{ t.text }} »</blockquote>
+          <figcaption>
+            <span class="lp-testi-avatar">
+              @if (t.avatar_url) { <img [src]="t.avatar_url" [alt]="t.name" /> }
+              @else { {{ t.name.charAt(0) }} }
+            </span>
+            <span>
+              <strong>{{ t.name }}</strong>
+              <small>{{ t.role }}</small>
+            </span>
+          </figcaption>
+        </figure>
+      }
+    </div>
+  </div>
+</section>
+}
+
+<!-- ═════════════ PARTENAIRES ═════════════ -->
+@if (partners().length > 0) {
+<section class="lp-partners">
+  <div class="lp-container">
+    <p class="lp-partners-label">Ils nous font confiance</p>
+    <div class="lp-partners-row">
+      @for (p of partners(); track p.id) {
+        <div class="lp-partner">
+          @if (p.logo_url) { <img [src]="p.logo_url" [alt]="p.name" /> } @else { <span>{{ p.name }}</span> }
+        </div>
+      }
+    </div>
+  </div>
+</section>
+}
+
+<!-- ═════════════ FAQ ═════════════ -->
+<section class="lp-section lp-faq">
+  <div class="lp-container lp-split">
+    <div class="lp-split-head">
+      <p class="lp-eyebrow">Questions fréquentes</p>
+      <h2 class="lp-title">Ce que l'on nous demande le plus souvent.</h2>
+      <p class="lp-lead">Une autre question ? <a href="#contact">Écrivez-nous</a>.</p>
+    </div>
+    <div class="lp-faq-list">
+      <details>
+        <summary>JusticIA remplace-t-il un avocat&nbsp;?</summary>
+        <p>Non. JusticIA est un outil d'information juridique. Pour toute procédure ou décision importante, consultez un avocat inscrit au Barreau de Guinée.</p>
+      </details>
+      <details>
+        <summary>D'où viennent les textes utilisés&nbsp;?</summary>
+        <p>Des textes officiels de la République de Guinée : codes, lois et décrets publiés, notamment via la Cour Suprême. Chaque réponse indique la loi et l'article cités.</p>
+      </details>
+      <details>
+        <summary>Que se passe-t-il si la réponse n'est pas dans les textes&nbsp;?</summary>
+        <p>JusticIA vous l'indique explicitement. Il ne complète jamais une réponse par une disposition qui ne figure pas dans le corpus.</p>
+      </details>
+      <details>
+        <summary>Mes questions sont-elles confidentielles&nbsp;?</summary>
+        <p>Oui. Vos consultations et vos dossiers sont traités sur une infrastructure maîtrisée et ne sont pas partagés avec des tiers.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ CTA ═════════════ -->
+<section class="lp-cta">
+  <div class="lp-container lp-cta-inner">
+    <h2>Posez votre première question juridique dès aujourd'hui.</h2>
+    <div class="lp-cta-actions">
+      <a routerLink="/signup" class="lp-btn lp-btn--accent">Créer un compte gratuit</a>
+      <a routerLink="/pricing" class="lp-btn lp-btn--outline-light">Voir les offres</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ CONTACT ═════════════ -->
+<section class="lp-section lp-contact" id="contact">
+  <div class="lp-container lp-contact-grid">
+    <div>
+      <p class="lp-eyebrow">Contact</p>
+      <h2 class="lp-title">Parlons de vos besoins.</h2>
+      <p class="lp-lead">Cabinet, entreprise ou institution : notre équipe vous répond sous 24 heures ouvrées.</p>
+      <dl class="lp-contact-info">
+        <div>
+          <dt>Téléphone</dt>
+          @for (phone of getContactPhones(); track $index) {
+            <dd><a [href]="phoneHref(phone)">{{ phone }}</a></dd>
+          }
+        </div>
+        <div>
+          <dt>Email</dt>
+          @for (email of getContactEmails(); track $index) {
+            <dd><a [href]="'mailto:' + email">{{ email }}</a></dd>
+          }
+        </div>
+        <div>
+          <dt>Horaires</dt>
+          <dd>{{ getContactHours() }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <form class="lp-form" (ngSubmit)="submitContact()">
+      <div class="lp-form-row">
+        <label>
+          <span>Nom complet</span>
+          <input type="text" name="name" [(ngModel)]="contactForm.name" placeholder="Votre nom" required />
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" [(ngModel)]="contactForm.email" placeholder="vous@exemple.com" required />
+        </label>
+      </div>
+      <label>
+        <span>Sujet</span>
+        <input type="text" name="subject" [(ngModel)]="contactForm.subject" placeholder="Objet de votre message" required />
+      </label>
+      <label>
+        <span>Message</span>
+        <textarea name="message" [(ngModel)]="contactForm.message" rows="5" placeholder="Décrivez votre besoin" required></textarea>
+      </label>
+      <button type="submit" class="lp-btn lp-btn--dark" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Envoi en cours…' : 'Envoyer le message' }}
+      </button>
+    </form>
+  </div>
+</section>
+
+<app-footer></app-footer>

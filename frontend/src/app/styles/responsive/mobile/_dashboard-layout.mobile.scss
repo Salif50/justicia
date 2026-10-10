@@ -1,0 +1,77 @@
+// ══════════════════════════════════════════════════════════════════════════════
+//  Dashboard Layout — Mobile (≤ 768px)
+//  80% des utilisateurs sont sur smartphone — priorité absolue
+// ══════════════════════════════════════════════════════════════════════════════
+@media (max-width: 768px) {
+
+  // ── Overlay sidebar ────────────────────────────────────────────────────────
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s, visibility .3s;
+
+    &.active { opacity: 1; visibility: visible; }
+  }
+
+  // ── Header ─────────────────────────────────────────────────────────────────
+  .dashboard-header {
+    left: 0 !important;
+    padding: 0 0.875rem;
+    height: 56px;
+  }
+
+  .dh-title-block h1 {
+    font-size: 0.95rem;
+    max-width: 140px;
+  }
+
+  // ── Boutons header ──────────────────────────────────────────────────────────
+  .dh-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+
+    svg { width: 17px; height: 17px; }
+  }
+
+  .mobile-menu-toggle {
+    width: 34px;
+    height: 34px;
+
+    svg { width: 20px; height: 20px; }
+  }
+
+  // ── Avatar utilisateur ──────────────────────────────────────────────────────
+  .dh-user-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.72rem;
+  }
+
+  // ── Divider ─────────────────────────────────────────────────────────────────
+  .dh-divider { display: none; }
+
+  // ── Contenu principal ───────────────────────────────────────────────────────
+  .dashboard-content {
+    margin-top: 56px;
+    padding: 0.875rem;
+
+    app-conversation {
+      height: calc(100vh - 56px);
+      margin: -0.875rem;
+    }
+  }
+
+  // ── Sidebar ─────────────────────────────────────────────────────────────────
+  .main-content { width: 100%; }
+}
+
+// ── Très petits écrans (≤ 390px — iPhone SE, etc.) ────────────────────────────
+@media (max-width: 390px) {
+  .dashboard-content { padding: 0.75rem; }
+  .dh-title-block h1 { max-width: 110px; font-size: 0.88rem; }
+}

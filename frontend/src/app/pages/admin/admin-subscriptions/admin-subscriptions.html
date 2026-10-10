@@ -1,0 +1,92 @@
+<div class="asub-page">
+
+  <!-- ── En-tête ───────────────────────────────────────────────────────────── -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Utilisateurs</p>
+      <h1 class="app-title">Abonnements</h1>
+      <p class="app-sub">Abonnements actifs et historiques, tous moyens de paiement confondus.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="asub-stats">
+      <div class="asub-stat">
+        <span class="asub-stat-value">{{ totalActive }}</span>
+        <span class="asub-stat-label">Actifs</span>
+      </div>
+      <div class="asub-stat asub-stat--pro">
+        <span class="asub-stat-value">{{ totalPro }}</span>
+        <span class="asub-stat-label">Pro</span>
+      </div>
+      <div class="asub-stat asub-stat--ent">
+        <span class="asub-stat-value">{{ totalEnterprise }}</span>
+        <span class="asub-stat-label">Enterprise</span>
+      </div>
+    </div>
+    </div>
+  </header>
+
+  <!-- ── Filtres ────────────────────────────────────────────────────────────── -->
+  <div class="asub-filters">
+    <select [(ngModel)]="statusFilter" (change)="load()" class="asub-select">
+      @for (s of STATUS_OPTIONS; track s.id) { <option [value]="s.id">{{ s.label }}</option> }
+    </select>
+    <select [(ngModel)]="planFilter" (change)="load()" class="asub-select">
+      @for (p of PLAN_OPTIONS; track p.id) { <option [value]="p.id">{{ p.label }}</option> }
+    </select>
+  </div>
+
+  <!-- ── Table ─────────────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="asub-loading"><div class="asub-spinner"></div> Chargement…</div>
+  } @else if (subscriptions().length === 0) {
+    <div class="asub-empty">
+      <span>💳</span>
+      <p>Aucun abonnement trouvé</p>
+    </div>
+  } @else {
+    <div class="asub-table-wrap">
+      <table class="asub-table">
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Plan</th>
+            <th>Statut</th>
+            <th>Méthode</th>
+            <th>Renouvellement</th>
+            <th>Depuis</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sub of subscriptions(); track sub.id) {
+            <tr>
+              <td>
+                <div class="asub-user">
+                  <div class="asub-avatar">{{ sub.user_name[0] }}</div>
+                  <div>
+                    <div class="asub-user-name">{{ sub.user_name }}</div>
+                    <div class="asub-user-email">{{ sub.user_email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="asub-plan-badge">
+                  {{ planLabel(sub.plan_id) }}
+                </span>
+              </td>
+              <td>
+                <span class="asub-status-badge"
+                  [style.color]="statusColor(sub.status)">
+                  {{ sub.status }}
+                </span>
+              </td>
+              <td class="asub-method">{{ sub.payment_method ?? '—' }}</td>
+              <td class="asub-date">{{ formatDate(sub.renewal_date) }}</td>
+              <td class="asub-date">{{ formatDate(sub.created_at) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

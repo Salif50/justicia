@@ -1,0 +1,690 @@
+<app-header></app-header>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════════ -->
+<section class="pub-hero">
+  <div class="pub-container">
+    <p class="pub-eyebrow pub-eyebrow--light">Guide d'utilisation</p>
+    <h1 class="pub-hero-title">Maîtriser JusticIA, <em>pas à pas</em>.</h1>
+    <p class="pub-hero-lead">
+      Tout ce qu'il faut savoir pour tirer le meilleur de l'assistant juridique dédié
+      au droit de la République de Guinée.
+    </p>
+    <div class="guide-hero-actions">
+      <a routerLink="/signup" class="pub-btn pub-btn--accent">Commencer gratuitement</a>
+      <button type="button" class="pub-btn pub-btn--outline-light" (click)="scrollTo('demarrage')">Lire le guide</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CORPS — layout documentation avec sidebar
+═══════════════════════════════════════════════════════════════ -->
+<section class="guide-docs">
+  <div class="docs-shell">
+
+    <!-- Overlay mobile -->
+    @if (sidebarOpen()) {
+      <button type="button" class="sidebar-overlay" (click)="sidebarOpen.set(false)" aria-label="Fermer le menu"></button>
+    }
+
+    <!-- Sidebar navigation -->
+    <aside class="docs-sidebar" [class.open]="sidebarOpen()">
+      <div class="sidebar-inner">
+        <div class="sidebar-head">
+          <p class="sidebar-title">Sommaire</p>
+          <button type="button" class="sidebar-close" (click)="sidebarOpen.set(false)" aria-label="Fermer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <nav class="sidebar-nav">
+          @for (s of sections; track s.id; let i = $index) {
+            <button
+              type="button"
+              class="sidebar-link"
+              [class.active]="activeSection() === s.id"
+              (click)="scrollTo(s.id)"
+            >
+              <span class="link-num">{{ (i + 1).toString().padStart(2, '0') }}</span>
+              <span class="link-icon"><guide-icon [name]="s.icon" [size]="16" /></span>
+              <span class="link-label">{{ s.label }}</span>
+            </button>
+          }
+        </nav>
+        <div class="sidebar-cta">
+          <a routerLink="/signup" class="sidebar-cta-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Essayer gratuitement
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Contenu principal -->
+    <div class="docs-main-wrap">
+      <div class="docs-toolbar">
+        <button type="button" class="sidebar-toggle" (click)="toggleSidebar()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+          <span>Sommaire</span>
+        </button>
+        <span class="toolbar-section">{{ activeSectionLabel() }}</span>
+      </div>
+
+      <main class="docs-content">
+
+        <!-- ══════════════ 1. DÉMARRAGE RAPIDE ══════════════ -->
+        <article id="demarrage" class="g-section">
+          <div class="section-label">01</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="rocket" [size]="22" /></span>
+            Démarrage rapide
+          </h2>
+          <p class="section-intro">
+            Commencez à utiliser JusticIA en moins de 5 minutes. Voici les étapes pour être
+            opérationnel immédiatement.
+          </p>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Créez votre compte gratuit</h4>
+                <p>Inscrivez-vous avec votre adresse e-mail ou via Google. Aucune carte bancaire requise pour le plan gratuit.</p>
+                <a routerLink="/signup" class="step-link">S'inscrire</a>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Configurez votre profil</h4>
+                <p>Lors du questionnaire d'accueil, indiquez votre rôle (particulier, avocat, entreprise) pour que l'IA adapte ses réponses à vos besoins.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Choisissez un agent juridique</h4>
+                <p>Sélectionnez l'agent correspondant à votre domaine (Droit du travail, Pénal, Foncier…) ou utilisez l'agent général.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <h4>Posez votre première question</h4>
+                <p>Rédigez votre question juridique en français. L'IA analyse le corpus législatif guinéen et vous répond avec des citations exactes.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-tip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <strong>Exemple de première question :</strong>
+            <em>« Quelles sont les conditions légales pour licencier un employé en CDI en Guinée ? »</em>
+          </div>
+        </article>
+
+        <!-- ══════════════ 2. ASSISTANT IA ══════════════ -->
+        <article id="assistant" class="g-section">
+          <div class="section-label">02</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="bot" [size]="22" /></span>
+            Assistant IA — Le moteur de JusticIA
+          </h2>
+          <p class="section-intro">
+            L'assistant IA est le cœur de la plateforme. Il combine plusieurs technologies de pointe
+            pour vous fournir des réponses précises, sourcées et contextualisées.
+          </p>
+
+          <h3>Comment fonctionne la recherche ?</h3>
+          <div class="tech-pipeline">
+            <div class="pipe-step">
+              <div class="pipe-icon"><guide-icon name="question" [size]="18" /></div>
+              <div class="pipe-label">Votre question</div>
+            </div>
+            <div class="pipe-arrow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-icon"><guide-icon name="search" [size]="18" /></div>
+              <div class="pipe-label">Recherche hybride<br><small>BM25 + Sémantique</small></div>
+            </div>
+            <div class="pipe-arrow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-icon"><guide-icon name="chart" [size]="18" /></div>
+              <div class="pipe-label">Fusion &amp; Reranking<br><small>RRF + Cross-encoder</small></div>
+            </div>
+            <div class="pipe-arrow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-icon"><guide-icon name="brain" [size]="18" /></div>
+              <div class="pipe-label">Génération IA<br><small>GPT-4o / Claude</small></div>
+            </div>
+            <div class="pipe-arrow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="pipe-step pipe-final">
+              <div class="pipe-icon"><guide-icon name="check-circle" [size]="18" /></div>
+              <div class="pipe-label">Réponse citée</div>
+            </div>
+          </div>
+
+          <h3>Ce que l'assistant peut faire</h3>
+          <div class="feature-grid">
+            <div class="feat-card">
+              <div class="feat-icon feat-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+              <h4>Recherche dans 23 textes de loi</h4>
+              <p>Codes pénal, civil, du travail, foncier, de l'enfant, Constitution 2025, lois OHADA et bien plus.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <h4>Citations exactes des articles</h4>
+              <p>Chaque réponse inclut les références précises (article, loi, numéro, date) pour vérification.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h4>Conversations continues</h4>
+              <p>Posez des questions de suivi dans le même fil. L'IA garde le contexte de toute la conversation.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+              <h4>Suggestions de questions</h4>
+              <p>L'interface propose des questions fréquentes pour vous aider à démarrer ou approfondir un sujet.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <h4>Sauvegarde automatique</h4>
+              <p>Toutes vos conversations sont sauvegardées automatiquement et accessibles depuis l'historique.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <h4>Quota journalier visible</h4>
+              <p>Un indicateur en temps réel affiche vos questions restantes selon votre plan d'abonnement.</p>
+            </div>
+          </div>
+
+          <h3>Domaines juridiques couverts</h3>
+          <div class="domains-wrap">
+            <span class="domain-tag dt-red"><guide-icon name="scale" [size]="13" /> Droit pénal</span>
+            <span class="domain-tag dt-blue"><guide-icon name="briefcase" [size]="13" /> Droit du travail</span>
+            <span class="domain-tag dt-green"><guide-icon name="home" [size]="13" /> Droit foncier</span>
+            <span class="domain-tag dt-purple"><guide-icon name="users" [size]="13" /> Droit de la famille</span>
+            <span class="domain-tag dt-orange"><guide-icon name="scroll" [size]="13" /> Droit civil</span>
+            <span class="domain-tag dt-teal"><guide-icon name="building" [size]="13" /> Droit commercial</span>
+            <span class="domain-tag dt-red"><guide-icon name="pickaxe" [size]="13" /> Droit minier</span>
+            <span class="domain-tag dt-blue"><guide-icon name="ship" [size]="13" /> Droit maritime</span>
+            <span class="domain-tag dt-green"><guide-icon name="leaf" [size]="13" /> Droit de l'environnement</span>
+            <span class="domain-tag dt-purple"><guide-icon name="baby" [size]="13" /> Droit de l'enfant</span>
+            <span class="domain-tag dt-orange"><guide-icon name="landmark" [size]="13" /> Droit constitutionnel</span>
+            <span class="domain-tag dt-teal"><guide-icon name="handshake" [size]="13" /> Droit OHADA</span>
+          </div>
+        </article>
+
+        <!-- ══════════════ 3. AGENTS SPÉCIALISÉS ══════════════ -->
+        <article id="agents" class="g-section">
+          <div class="section-label">03</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="scale" [size]="22" /></span>
+            Agents juridiques spécialisés
+          </h2>
+          <p class="section-intro">
+            Chaque agent est un expert pré-configuré pour un domaine précis du droit guinéen.
+            Utiliser le bon agent améliore significativement la qualité des réponses.
+          </p>
+
+          <h3>Catalogue des agents intégrés</h3>
+          <p class="agents-lead">
+            JusticIA propose une bibliothèque d'agents thématiques prêts à l'emploi, régulièrement
+            enrichie. À cela s'ajoutent vos agents personnalisés selon votre plan d'abonnement.
+          </p>
+          <div class="agents-grid">
+            @for (agent of builtinAgents; track agent.id) {
+              <div class="agent-card">
+                <div class="ag-header">
+                  <span class="ag-icon"><guide-icon [name]="agent.icon" [size]="22" /></span>
+                  <div class="ag-meta">
+                    <span class="ag-category">{{ agent.category }}</span>
+                    <h4>{{ agent.name }}</h4>
+                  </div>
+                </div>
+                <p>{{ agent.description }}</p>
+                <div class="ag-use">Cas d'usage : {{ agent.useCase }}</div>
+              </div>
+            }
+          </div>
+
+          <h3>Créer votre propre agent</h3>
+          <div class="info-card">
+            <div class="info-card-icon"><guide-icon name="wrench" [size]="22" /></div>
+            <div>
+              <h4>Agents personnalisés <span class="badge-plan">Basic+</span></h4>
+              <p>
+                Avec un abonnement Basic ou supérieur, créez des agents entièrement personnalisés.
+                Sélectionnez précisément les textes de loi pertinents pour votre pratique, définissez
+                un nom, une spécialité et un comportement sur mesure. Vos agents apparaissent dans
+                la liste aux côtés des agents intégrés.
+              </p>
+              <ul class="info-list">
+                <li>Choisissez parmi les 23 textes de loi guinéens indexés</li>
+                <li>Combinez plusieurs domaines juridiques</li>
+                <li>Nommez et personnalisez l'identité de l'agent</li>
+                <li>Partagez l'agent avec votre équipe (Enterprise)</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- ══════════════ 4. DOSSIERS ══════════════ -->
+        <article id="dossiers" class="g-section">
+          <div class="section-label">04</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="folder" [size]="22" /></span>
+            Gestion des dossiers judiciaires
+          </h2>
+          <p class="section-intro">
+            Organisez vos affaires comme un professionnel. Chaque dossier regroupe les documents,
+            notes et conversations liés à une procédure judiciaire.
+          </p>
+
+          <div class="feature-grid">
+            <div class="feat-card">
+              <div class="feat-icon feat-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+              </div>
+              <h4>Créer un dossier</h4>
+              <p>Créez un dossier par affaire avec un titre, une description, un statut (Actif / En attente / Clôturé / Archivé) et une date d'audience.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              </div>
+              <h4>Joindre des documents</h4>
+              <p>Attachez vos pièces juridiques (contrats, jugements, preuves) directement au dossier. L'IA peut les analyser dans le contexte de l'affaire.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </div>
+              <h4>Notes juridiques</h4>
+              <p>Rédigez des notes directement dans le dossier : stratégie, timeline, points de droit importants, observations sur les témoins.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h4>Chat IA sur le dossier</h4>
+              <p>Posez des questions à l'IA directement depuis le dossier. L'assistant a accès au contexte complet de l'affaire pour des réponses ultra-pertinentes.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-teal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <h4>Suivi de statut</h4>
+              <p>Suivez l'avancement de chaque affaire avec des statuts clairs et une date d'audience intégrée à votre agenda JusticIA.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/></svg>
+              </div>
+              <h4>Archivage</h4>
+              <p>Archivez les dossiers clôturés pour garder votre espace de travail propre tout en conservant l'historique complet.</p>
+            </div>
+          </div>
+
+          <div class="limits-table">
+            <h3>Limites selon le plan</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Dossiers actifs</th>
+                  <th>Documents / dossier</th>
+                  <th>IA sur le dossier</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="plan-badge free">Gratuit</span></td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td><span class="table-check"><guide-icon name="check" [size]="16" /></span></td>
+                </tr>
+                <tr>
+                  <td><span class="plan-badge basic">Basic</span></td>
+                  <td>5</td>
+                  <td>10</td>
+                  <td><span class="table-check"><guide-icon name="check" [size]="16" /></span></td>
+                </tr>
+                <tr>
+                  <td><span class="plan-badge pro">Pro</span></td>
+                  <td>Illimité</td>
+                  <td>Illimité</td>
+                  <td><span class="table-check"><guide-icon name="check" [size]="16" /></span> + Export PDF</td>
+                </tr>
+                <tr>
+                  <td><span class="plan-badge ent">Enterprise</span></td>
+                  <td>Illimité</td>
+                  <td>Illimité</td>
+                  <td><span class="table-check"><guide-icon name="check" [size]="16" /></span> Multi-utilisateurs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- ══════════════ 5. DOCUMENTS & RÉSUMÉS ══════════════ -->
+        <article id="documents" class="g-section">
+          <div class="section-label">05</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="file" [size]="22" /></span>
+            Résumé automatique de documents
+          </h2>
+          <p class="section-intro">
+            Uploadez n'importe quel PDF juridique et obtenez en quelques secondes un résumé
+            structuré, les points clés et les risques identifiés par l'IA.
+          </p>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Glissez votre PDF</h4>
+                <p>Uploadez n'importe quel document juridique : contrat, jugement, loi, décret, attestation, bail, acte notarié…</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>L'IA analyse le document</h4>
+                <p>L'IA extrait le texte, identifie les sections clés, les parties impliquées, les dates et les obligations contractuelles.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Résumé structuré + points clés</h4>
+                <p>Recevez un résumé en langage clair, les points essentiels à retenir, et les éventuels risques ou clauses problématiques.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <h4>Sauvegardez dans vos archives</h4>
+                <p>Tous vos résumés sont sauvegardés dans vos archives pour consultation future et peuvent être attachés à un dossier.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-tip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <strong>Astuce :</strong> Après le résumé, posez des questions spécifiques sur le document dans la conversation pour approfondir un point particulier.
+          </div>
+        </article>
+
+        <!-- ══════════════ 6. GÉNÉRATION DE CONTRATS ══════════════ -->
+        <article id="generation" class="g-section">
+          <div class="section-label">06</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="pen" [size]="22" /></span>
+            Génération de documents juridiques
+          </h2>
+          <p class="section-intro">
+            Rédigez ou analysez tout type de contrat conforme au droit guinéen en quelques minutes.
+            L'IA génère des documents professionnels adaptés à votre situation.
+          </p>
+
+          <h3>Rédiger un document</h3>
+          <div class="doc-types">
+            <div class="doc-type"><guide-icon name="pen" [size]="16" />Contrat de travail CDI/CDD</div>
+            <div class="doc-type"><guide-icon name="home" [size]="16" />Bail d'habitation</div>
+            <div class="doc-type"><guide-icon name="handshake" [size]="16" />Contrat de vente</div>
+            <div class="doc-type"><guide-icon name="scale" [size]="16" />Mise en demeure</div>
+            <div class="doc-type"><guide-icon name="building" [size]="16" />Statuts de société SARL/SA</div>
+            <div class="doc-type"><guide-icon name="clipboard" [size]="16" />Procuration notariée</div>
+            <div class="doc-type"><guide-icon name="wallet" [size]="16" />Reconnaissance de dette</div>
+            <div class="doc-type"><guide-icon name="lock" [size]="16" />Accord de confidentialité (NDA)</div>
+            <div class="doc-type"><guide-icon name="scroll" [size]="16" />Contrat de prestation de service</div>
+            <div class="doc-type"><guide-icon name="hammer" [size]="16" />Contrat de sous-traitance</div>
+            <div class="doc-type"><guide-icon name="package" [size]="16" />Contrat de distribution</div>
+            <div class="doc-type"><guide-icon name="plus" [size]="16" />Et bien plus…</div>
+          </div>
+
+          <h3>Analyser un document existant</h3>
+          <p>Uploadez votre document et demandez à l'IA de :</p>
+          <ul class="check-list">
+            <li>Identifier les clauses abusives ou déséquilibrées</li>
+            <li>Vérifier la conformité avec le droit guinéen en vigueur</li>
+            <li>Proposer des modifications ou des clauses manquantes</li>
+            <li>Évaluer les risques juridiques pour chaque partie</li>
+            <li>Comparer avec un modèle standard du même type de contrat</li>
+          </ul>
+        </article>
+
+        <!-- ══════════════ 7. AGENDA ══════════════ -->
+        <article id="agenda" class="g-section">
+          <div class="section-label">07</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="calendar" [size]="22" /></span>
+            Agenda juridique
+          </h2>
+          <p class="section-intro">
+            Gérez vos audiences, délais de prescription et rendez-vous juridiques depuis un agenda
+            intégré, synchronisé avec vos dossiers.
+          </p>
+
+          <div class="feature-grid">
+            <div class="feat-card">
+              <div class="feat-icon feat-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <h4>Planifier des audiences</h4>
+              <p>Créez des événements liés à vos dossiers (audiences, délais, rendez-vous) directement depuis la page de gestion de procès.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </div>
+              <h4>Rappels automatiques</h4>
+              <p>Recevez des notifications avant chaque événement important pour ne jamais manquer une date critique.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon feat-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <h4>Vue partagée (Enterprise)</h4>
+              <p>En mode Cabinet, partagez l'agenda avec toute votre équipe pour une coordination optimale.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- ══════════════ 8. ASTUCES AVANCÉES ══════════════ -->
+        <article id="power" class="g-section">
+          <div class="section-label">08</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="zap" [size]="22" /></span>
+            Astuces pour utilisateurs avancés
+          </h2>
+          <p class="section-intro">
+            Ces techniques vous permettront d'obtenir des réponses encore plus précises
+            et d'exploiter toute la puissance de JusticIA.
+          </p>
+
+          <div class="tips-list">
+            @for (tip of tips; track $index) {
+              <div class="tip-item" [class.open]="openTip() === $index">
+                <button class="tip-header" (click)="toggleTip($index)">
+                  <span class="tip-num">{{ ($index + 1).toString().padStart(2, '0') }}</span>
+                  <span class="tip-title">{{ tip.title }}</span>
+                  <svg class="tip-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                @if (openTip() === $index) {
+                  <div class="tip-body">{{ tip.body }}</div>
+                }
+              </div>
+            }
+          </div>
+
+          <h3>Formules de questions efficaces</h3>
+          <div class="prompt-examples">
+            <div class="prompt-ex">
+              <div class="ex-label bad"><guide-icon name="x-circle" [size]="14" /> Trop vague</div>
+              <div class="ex-text">"mes droits si licencié"</div>
+            </div>
+            <div class="prompt-arrow" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="prompt-ex">
+              <div class="ex-label good"><guide-icon name="check-circle" [size]="14" /> Précis et efficace</div>
+              <div class="ex-text">"Quels sont les droits d'un salarié en CDI licencié sans faute grave après 5 ans d'ancienneté en Guinée ? Calcul des indemnités selon L-2014-072."</div>
+            </div>
+          </div>
+          <div class="prompt-examples">
+            <div class="prompt-ex">
+              <div class="ex-label bad"><guide-icon name="x-circle" [size]="14" /> Question fermée</div>
+              <div class="ex-text">"C'est légal ?"</div>
+            </div>
+            <div class="prompt-arrow" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="prompt-ex">
+              <div class="ex-label good"><guide-icon name="check-circle" [size]="14" /> Question ouverte et contextuelle</div>
+              <div class="ex-text">"Est-ce qu'un bailleur peut expulser un locataire sans décision de justice en Guinée ? Quelle est la procédure légale et les délais ?"</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- ══════════════ 9. PLANS ══════════════ -->
+        <article id="plans" class="g-section">
+          <div class="section-label">09</div>
+          <h2>
+            <span class="section-icon"><guide-icon name="gem" [size]="22" /></span>
+            Plans &amp; Fonctionnalités
+          </h2>
+          <p class="section-intro">
+            Choisissez le plan adapté à vos besoins. Tous les plans incluent l'accès
+            à l'assistant IA et au corpus légal guinéen complet.
+          </p>
+
+          <div class="plans-compare">
+            <div class="plan-col">
+              <div class="plan-header free">
+                <div class="plan-name">Gratuit</div>
+                <div class="plan-price">0 FG</div>
+              </div>
+              <ul class="plan-features">
+                <li class="ok">5 questions / jour</li>
+                <li class="ok">1 dossier actif</li>
+                <li class="ok">Agents intégrés</li>
+                <li class="ok">Historique 30 jours</li>
+                <li class="no">Agents personnalisés</li>
+                <li class="no">Résumé PDF</li>
+                <li class="no">Génération contrats</li>
+                <li class="no">Export PDF</li>
+              </ul>
+              <a routerLink="/signup" class="plan-btn plan-btn-free">Commencer</a>
+            </div>
+            <div class="plan-col">
+              <div class="plan-header basic">
+                <div class="plan-name">Basic</div>
+                <div class="plan-price">5 000 FG<span>/mois</span></div>
+              </div>
+              <ul class="plan-features">
+                <li class="ok">10 questions / jour</li>
+                <li class="ok">5 dossiers actifs</li>
+                <li class="ok">Agents intégrés</li>
+                <li class="ok">Historique illimité</li>
+                <li class="ok">Agents personnalisés</li>
+                <li class="ok">Résumé PDF</li>
+                <li class="no">Génération contrats</li>
+                <li class="no">Export PDF</li>
+              </ul>
+              <a routerLink="/signup" class="plan-btn plan-btn-basic">Choisir Basic</a>
+            </div>
+            <div class="plan-col featured">
+              <div class="plan-badge-top">Le plus populaire</div>
+              <div class="plan-header pro">
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">15 000 FG<span>/mois</span></div>
+              </div>
+              <ul class="plan-features">
+                <li class="ok">Questions illimitées</li>
+                <li class="ok">Dossiers illimités</li>
+                <li class="ok">Agents intégrés</li>
+                <li class="ok">Historique illimité</li>
+                <li class="ok">Agents personnalisés</li>
+                <li class="ok">Résumé PDF</li>
+                <li class="ok">Génération contrats</li>
+                <li class="ok">Export PDF</li>
+              </ul>
+              <a routerLink="/signup" class="plan-btn plan-btn-pro">Choisir Pro</a>
+            </div>
+            <div class="plan-col">
+              <div class="plan-header ent">
+                <div class="plan-name">Enterprise</div>
+                <div class="plan-price">Sur devis</div>
+              </div>
+              <ul class="plan-features">
+                <li class="ok">Tout du plan Pro</li>
+                <li class="ok">Multi-utilisateurs</li>
+                <li class="ok">Agenda partagé</li>
+                <li class="ok">CRM intégré</li>
+                <li class="ok">Facturation cabinet</li>
+                <li class="ok">API dédiée</li>
+                <li class="ok">Support prioritaire</li>
+                <li class="ok">SLA garanti</li>
+              </ul>
+              <a routerLink="/support" class="plan-btn plan-btn-ent">Nous contacter</a>
+            </div>
+          </div>
+        </article>
+
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CTA FINAL
+═══════════════════════════════════════════════════════════════ -->
+<section class="guide-cta">
+  <div class="container">
+    <div class="cta-card">
+      <div class="cta-bg">
+        <div class="cta-orb cta-orb-1"></div>
+        <div class="cta-orb cta-orb-2"></div>
+      </div>
+      <h2>Prêt à maîtriser le droit guinéen ?</h2>
+      <p>Rejoignez des milliers de Guinéens qui font confiance à JusticIA pour leurs questions juridiques.</p>
+      <div class="cta-actions">
+        <a routerLink="/signup" class="btn-cta">
+          Commencer gratuitement
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a routerLink="/support" class="btn-ghost">Contacter l'équipe</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>

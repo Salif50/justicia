@@ -1,0 +1,30 @@
+<div class="app-page">
+
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Bientôt disponible · {{ meta().eta }}</p>
+      <h1 class="app-title">{{ meta().title }}</h1>
+      <p class="app-sub">{{ meta().description }}</p>
+    </div>
+  </header>
+
+  <div class="cs">
+    <div class="cs-main">
+      <h2>Au programme</h2>
+      <ol class="cs-list">
+        @for (hint of meta().hints; track hint; let i = $index) {
+          <li><span class="cs-num">{{ (i + 1).toString().padStart(2, '0') }}</span>{{ hint }}</li>
+        }
+      </ol>
+    </div>
+
+    <aside class="cs-side">
+      <span class="app-tag">Plan {{ meta().plan }}</span>
+      <p>Ce module est en cours de construction. Il sera inclus dans le plan {{ meta().plan }} dès sa mise en ligne.</p>
+      <div class="cs-actions">
+        <a class="app-btn" routerLink="/dashboard/subscription">Voir les formules</a>
+        <a class="app-btn app-btn--quiet" routerLink="/dashboard">Retour au tableau de bord</a>
+      </div>
+    </aside>
+  </div>
+</div>

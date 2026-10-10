@@ -1,0 +1,325 @@
+<div class="cl-page">
+
+  <!-- ═══════════ EN-TÊTE ═══════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Ressources juridiques</p>
+      <h1 class="app-title">Jurisprudence guinéenne</h1>
+      <p class="app-sub">Décisions des juridictions de la République de Guinée.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+        <button [class.active]="viewMode() === 'list'" (click)="viewMode.set('list')" title="Vue liste">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+        <button [class.active]="viewMode() === 'grid'" (click)="viewMode.set('grid')" title="Vue grille">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Bandeau données de démonstration -->
+  <div class="cl-demo-banner">
+    <div class="cl-demo-left">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <strong>Données de démonstration</strong> — Ces décisions sont des exemples illustratifs. La base de jurisprudence guinéenne réelle sera disponible prochainement.
+    </div>
+    <span class="cl-demo-badge">BÊTA</span>
+  </div>
+
+  <!-- Stats row -->
+  <div class="cl-stats-row">
+    <div class="cl-stat">
+      <div class="cl-stat-num">{{ DECISIONS.length }}</div>
+      <div class="cl-stat-label">Décisions</div>
+    </div>
+    <div class="cl-stat-sep"></div>
+    <div class="cl-stat">
+      <div class="cl-stat-num">5</div>
+      <div class="cl-stat-label">Juridictions</div>
+    </div>
+    <div class="cl-stat-sep"></div>
+    <div class="cl-stat">
+      <div class="cl-stat-num">8</div>
+      <div class="cl-stat-label">Domaines</div>
+    </div>
+    <div class="cl-stat-sep"></div>
+    <div class="cl-stat">
+      <div class="cl-stat-num">2022–2024</div>
+      <div class="cl-stat-label">Période</div>
+    </div>
+    <div class="cl-stat-sep"></div>
+    <div class="cl-stat">
+      <div class="cl-stat-num">{{ filteredDecisions().length }}</div>
+      <div class="cl-stat-label">Résultats filtrés</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FILTRES ═══════════ -->
+  <div class="cl-filters-panel">
+
+    <!-- Barre de recherche -->
+    <div class="cl-search-wrap">
+      <svg class="cl-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="cl-search"
+        type="text"
+        placeholder="Rechercher par titre, parties, mots-clés, référence…"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)" />
+      @if (searchQuery()) {
+        <button class="cl-clear-btn" (click)="searchQuery.set('')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      }
+    </div>
+
+    <!-- Sélecteurs -->
+    <div class="cl-selects-row">
+      <div class="cl-select-group">
+        <label class="cl-select-label">Juridiction</label>
+        <select class="cl-select" [value]="filterJurid()" (change)="filterJurid.set($any($event.target).value)">
+          @for (j of JURIDICTIONS; track j) { <option [value]="j">{{ j }}</option> }
+        </select>
+      </div>
+      <div class="cl-select-group">
+        <label class="cl-select-label">Domaine</label>
+        <select class="cl-select" [value]="filterDomaine()" (change)="filterDomaine.set($any($event.target).value)">
+          @for (d of DOMAINES; track d) { <option [value]="d">{{ d }}</option> }
+        </select>
+      </div>
+      <div class="cl-select-group">
+        <label class="cl-select-label">Type</label>
+        <select class="cl-select" [value]="filterType()" (change)="filterType.set($any($event.target).value)">
+          @for (t of TYPES; track t) { <option [value]="t">{{ t }}</option> }
+        </select>
+      </div>
+      <div class="cl-select-group">
+        <label class="cl-select-label">Année</label>
+        <select class="cl-select" [value]="filterAnnee()" (change)="filterAnnee.set($any($event.target).value)">
+          @for (a of ANNEES; track a) { <option [value]="a">{{ a }}</option> }
+        </select>
+      </div>
+      <div class="cl-select-group">
+        <label class="cl-select-label">Issue</label>
+        <select class="cl-select" [value]="filterSens()" (change)="filterSens.set($any($event.target).value)">
+          <option value="Tous">Toutes</option>
+          <option value="Favorable">Favorable</option>
+          <option value="Défavorable">Défavorable</option>
+          <option value="Mitigé">Mitigé</option>
+        </select>
+      </div>
+
+      @if (activeFiltersCount() > 0) {
+        <button class="cl-reset-btn" (click)="resetFilters()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+          Réinitialiser <span class="cl-filter-count">{{ activeFiltersCount() }}</span>
+        </button>
+      }
+    </div>
+
+  </div>
+
+  <!-- ═══════════ RÉSULTATS ═══════════ -->
+  @if (filteredDecisions().length === 0) {
+    <div class="cl-empty">
+      <div class="cl-empty-icon"><ui-icon name="scale" [size]="40" /></div>
+      <p>Aucune décision ne correspond à vos critères.</p>
+      <button class="cl-empty-reset" (click)="resetFilters()">Réinitialiser les filtres</button>
+    </div>
+  } @else {
+
+    <!-- VUE LISTE -->
+    @if (viewMode() === 'list') {
+      <div class="cl-list">
+        @for (d of filteredDecisions(); track d.id) {
+          <div class="cl-list-card" [class.expanded]="expandedId() === d.id">
+
+            <!-- ── En-tête de la carte ── -->
+            <div class="cl-card-head" (click)="toggleExpand(d.id)">
+
+              <div class="cl-card-left">
+                <div class="cl-card-ref-row">
+                  <span class="cl-ref">{{ d.reference }}</span>
+                  <span class="cl-type-badge" [ngClass]="typeClass(d.type)">{{ d.type }}</span>
+                  <span class="cl-sens-badge" [ngClass]="sensClass(d.sens)">{{ d.sens }}</span>
+                </div>
+
+                <h3 class="cl-card-titre">{{ d.titre }}</h3>
+
+                <div class="cl-card-meta">
+                  <span class="cl-meta-item">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {{ formatDate(d.date) }}
+                  </span>
+                  <span class="cl-meta-sep">·</span>
+                  <span class="cl-meta-item">
+                    <ui-icon [name]="juridictionIcon(d.juridiction)" [size]="12" />
+                    {{ d.juridiction }}
+                  </span>
+                  <span class="cl-meta-sep">·</span>
+                  <span class="cl-meta-item cl-chambre">{{ d.chambre }}</span>
+                </div>
+
+                <div class="cl-card-domains">
+                  <span class="cl-domaine-tag">{{ d.domaine }}</span>
+                  @for (kw of d.mots_cles.slice(0, 3); track kw) {
+                    <span class="cl-kw-tag">{{ kw }}</span>
+                  }
+                  @if (d.mots_cles.length > 3) {
+                    <span class="cl-kw-more">+{{ d.mots_cles.length - 3 }}</span>
+                  }
+                </div>
+              </div>
+
+              <div class="cl-card-chevron" [class.open]="expandedId() === d.id">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+
+            <!-- ── Détail expansé ── -->
+            @if (expandedId() === d.id) {
+              <div class="cl-card-detail">
+
+                <!-- Résumé -->
+                <div class="cl-detail-section">
+                  <div class="cl-detail-label">Résumé</div>
+                  <p class="cl-detail-text">{{ d.resume }}</p>
+                </div>
+
+                <!-- Parties -->
+                <div class="cl-parties-grid">
+                  <div class="cl-partie cl-partie--dem">
+                    <div class="cl-partie-label">Demandeur · Appelant</div>
+                    <div class="cl-partie-name">{{ d.parties.demandeur }}</div>
+                  </div>
+                  <div class="cl-partie-vs">VS</div>
+                  <div class="cl-partie cl-partie--def">
+                    <div class="cl-partie-label">Défendeur · Intimé</div>
+                    <div class="cl-partie-name">{{ d.parties.defendeur }}</div>
+                  </div>
+                </div>
+
+                <!-- Dispositif -->
+                <div class="cl-detail-section">
+                  <div class="cl-detail-label">Dispositif de la décision</div>
+                  <div class="cl-dispositif">{{ d.dispositif }}</div>
+                </div>
+
+                <!-- Articles de loi -->
+                <div class="cl-detail-section">
+                  <div class="cl-detail-label">Textes de loi cités</div>
+                  <div class="cl-articles-list">
+                    @for (art of d.articlesLoi; track art) {
+                      <div class="cl-article-item">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--glow-cyan)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        {{ art }}
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Tous les mots-clés -->
+                <div class="cl-all-keywords">
+                  @for (kw of d.mots_cles; track kw) {
+                    <span class="cl-kw-tag">{{ kw }}</span>
+                  }
+                </div>
+
+                <!-- Actions IA -->
+                <div class="cl-detail-actions">
+                  <button class="cl-ai-btn cl-ai-btn--primary" (click)="analyzeWithAI(d)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Analyser avec l'IA
+                  </button>
+                  <button class="cl-ai-btn cl-ai-btn--secondary" (click)="findSimilar(d)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Décisions similaires
+                  </button>
+                </div>
+
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+    }
+
+    <!-- VUE GRILLE -->
+    @if (viewMode() === 'grid') {
+      <div class="cl-grid">
+        @for (d of filteredDecisions(); track d.id) {
+          <div class="cl-grid-card" [class.expanded]="expandedId() === d.id">
+
+            <div class="cl-grid-top">
+              <span class="cl-type-badge" [ngClass]="typeClass(d.type)">{{ d.type }}</span>
+              <span class="cl-sens-badge" [ngClass]="sensClass(d.sens)">{{ d.sens }}</span>
+            </div>
+
+            <div class="cl-grid-ref">{{ d.reference }}</div>
+            <h3 class="cl-grid-titre">{{ d.titre }}</h3>
+
+            <div class="cl-grid-meta">
+              <span><ui-icon [name]="juridictionIcon(d.juridiction)" [size]="12" /> {{ d.juridiction }}</span>
+              <span>{{ formatDate(d.date) }}</span>
+            </div>
+
+            <p class="cl-grid-resume">{{ d.resume | slice:0:160 }}{{ d.resume.length > 160 ? '…' : '' }}</p>
+
+            <div class="cl-grid-kws">
+              <span class="cl-domaine-tag">{{ d.domaine }}</span>
+              @for (kw of d.mots_cles.slice(0, 2); track kw) {
+                <span class="cl-kw-tag">{{ kw }}</span>
+              }
+            </div>
+
+            <div class="cl-grid-footer">
+              <button class="cl-grid-detail-btn" (click)="toggleExpand(d.id)">
+                {{ expandedId() === d.id ? 'Fermer' : 'Voir le détail' }}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline [attr.points]="expandedId() === d.id ? '18 15 12 9 6 15' : '6 9 12 15 18 9'"/></svg>
+              </button>
+              <button class="cl-grid-ai-btn" (click)="analyzeWithAI(d)" title="Analyser avec l'IA">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </button>
+            </div>
+
+            @if (expandedId() === d.id) {
+              <div class="cl-grid-expanded">
+                <div class="cl-parties-grid cl-parties-grid--compact">
+                  <div class="cl-partie cl-partie--dem">
+                    <div class="cl-partie-label">Demandeur</div>
+                    <div class="cl-partie-name">{{ d.parties.demandeur }}</div>
+                  </div>
+                  <div class="cl-partie-vs">VS</div>
+                  <div class="cl-partie cl-partie--def">
+                    <div class="cl-partie-label">Défendeur</div>
+                    <div class="cl-partie-name">{{ d.parties.defendeur }}</div>
+                  </div>
+                </div>
+                <div class="cl-detail-label" style="margin: .75rem 0 .4rem">Dispositif</div>
+                <div class="cl-dispositif cl-dispositif--sm">{{ d.dispositif }}</div>
+                <div class="cl-articles-list" style="margin-top: .7rem">
+                  @for (art of d.articlesLoi; track art) {
+                    <div class="cl-article-item">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--glow-cyan)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                      {{ art }}
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  }
+
+  <!-- Info footer -->
+  <div class="cl-footer-note">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Données de démonstration. La base de jurisprudence officielle de la Guinée sera intégrée dès qu'elle sera disponible. Les décisions affichées sont des exemples réalistes à des fins d'illustration de l'interface.
+  </div>
+
+</div>

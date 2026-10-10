@@ -1,0 +1,294 @@
+// ══════════════════════════════════════════════════════════════════════════════
+//  Conversation — Mobile (≤ 768px)
+//  Interface principale de l'app — doit être parfaite sur smartphone
+// ══════════════════════════════════════════════════════════════════════════════
+@media (max-width: 768px) {
+
+  // ── Header de conversation ─────────────────────────────────────────────────
+  .conversation-header {
+    padding: 0.75rem 0;
+    margin-bottom: 0.75rem;
+
+    .header-left {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      width: 100%;
+
+      .header-title {
+        flex: 1;
+        margin: 0;
+        gap: 0.5rem;
+
+        h2 { font-size: 1.05rem; }
+        svg { width: 18px; height: 18px; }
+      }
+
+      .header-icons {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+      }
+
+      .save-notice,
+      .ephemeral-notice {
+        padding: 0.4rem;
+        min-width: unset;
+        border-radius: 8px;
+        justify-content: center;
+
+        span { display: none; }
+        svg  { width: 18px; height: 18px; }
+      }
+
+      .history-btn {
+        padding: 0.4rem;
+        min-width: unset;
+        border-radius: 8px;
+        justify-content: center;
+
+        span { display: none; }
+        svg  { width: 18px; height: 18px; }
+
+        .history-badge {
+          top: -5px;
+          right: -5px;
+          font-size: 0.65rem;
+          min-width: 16px;
+          height: 16px;
+          padding: 1px 4px;
+        }
+      }
+
+      .ephemeral-notice .ephemeral-tooltip {
+        right: -10px;
+        left: auto;
+        transform: none;
+        min-width: 260px;
+        max-width: calc(100vw - 2rem);
+      }
+    }
+  }
+
+  // ── Indicateur de quota ────────────────────────────────────────────────────
+  .quota-indicator {
+    font-size: 0.72rem;
+    padding: 0.28rem 0.6rem;
+    gap: 0.3rem;
+    border-radius: 20px;
+    white-space: nowrap;
+
+    svg { width: 11px; height: 11px; flex-shrink: 0; }
+    .quota-upgrade-link { font-size: 0.7rem; }
+  }
+
+  // ── Bannière limite ────────────────────────────────────────────────────────
+  .limit-banner {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.78rem;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+
+    .banner-upgrade-btn {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.65rem;
+    }
+  }
+
+  // ── Zone de messages ───────────────────────────────────────────────────────
+  .messages-container { padding: 0.5rem 0; }
+
+  .messages-list { gap: 1rem; }
+
+  .message {
+    gap: 0.5rem;
+
+    .message-avatar {
+      width: 30px;
+      height: 30px;
+
+      svg { width: 14px; height: 14px; }
+    }
+
+    .message-wrapper { max-width: 88%; }
+
+    .message-content {
+      padding: 0.75rem 0.875rem;
+      font-size: 0.88rem;
+      border-radius: 14px !important;
+
+      p {
+        font-size: 0.88rem;
+        line-height: 1.65;
+        margin-bottom: 0.5rem;
+      }
+
+      .message-footer { margin-top: 0.35rem; }
+      .message-time   { font-size: 0.68rem; }
+    }
+
+    // Markdown dans les bulles bot
+    .bot-formatted .markdown-body {
+      font-size: 0.86rem;
+      line-height: 1.6;
+
+      h1 { font-size: 1rem; }
+      h2 { font-size: 0.94rem; }
+      h3 { font-size: 0.88rem; }
+      h4 { font-size: 0.84rem; }
+
+      blockquote,
+      .legal-quote {
+        padding: 0.4rem 0.7rem;
+        margin: 0.45rem 0;
+        font-size: 0.82rem;
+        border-left-width: 3px;
+      }
+
+      ul, ol { padding-left: 1rem; }
+      li      { font-size: 0.84rem; margin: 0.2rem 0; }
+
+      pre {
+        padding: 0.65rem;
+        font-size: 0.78rem;
+        border-radius: 8px;
+      }
+
+      code { font-size: 0.78rem; }
+
+      hr { margin: 0.75rem 0; }
+
+      p:last-child em {
+        font-size: 0.72rem;
+        margin-top: 0.5rem;
+      }
+    }
+
+    // Sources
+    .message-sources {
+      margin-top: 0.5rem;
+      padding-top: 0.4rem;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+
+      .sources-label { font-size: 0.72rem; }
+      .source-chip   { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+    }
+  }
+
+  // ── Typing indicator ───────────────────────────────────────────────────────
+  .typing-indicator span {
+    width: 6px;
+    height: 6px;
+  }
+
+  // ── Empty state ────────────────────────────────────────────────────────────
+  .empty-state {
+    padding: 1.5rem 0.75rem;
+
+    .empty-icon { width: 56px; height: 56px; }
+    h2          { font-size: 1.1rem; }
+    p           { font-size: 0.85rem; }
+
+    .quick-questions {
+      margin-top: 1.25rem;
+      h3 { font-size: 0.92rem; }
+
+      .question-chips { gap: 0.6rem; }
+
+      .question-chip {
+        padding: 0.65rem 0.875rem;
+        font-size: 0.82rem;
+
+        svg { width: 13px; height: 13px; }
+      }
+    }
+
+    .empty-limit-card {
+      padding: 1.25rem;
+      border-radius: 14px;
+
+      svg  { width: 26px; height: 26px; }
+      h3   { font-size: 1rem; }
+      p    { font-size: 0.83rem; }
+
+      .btn-upgrade-empty {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.88rem;
+      }
+    }
+  }
+
+  // ── Zone de saisie ─────────────────────────────────────────────────────────
+  .input-container {
+    padding: 0.75rem;
+
+    .input-wrapper {
+      .input-form {
+        gap: 0.35rem;
+
+        .message-input {
+          font-size: 0.9rem;
+          padding: 0.7rem 0.875rem;
+          border-radius: 12px;
+        }
+
+        .attach-btn,
+        .send-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          flex-shrink: 0;
+
+          svg { width: 17px; height: 17px; }
+        }
+      }
+
+      .input-footer {
+        font-size: 0.7rem;
+        margin-top: 0.35rem;
+      }
+    }
+  }
+
+  // ── Error bar ──────────────────────────────────────────────────────────────
+  .error-bar {
+    margin: 0 0.75rem 0.5rem;
+    padding: 0.6rem 0.875rem;
+    font-size: 0.83rem;
+    border-radius: 10px;
+  }
+
+  // ── Modal limite atteinte ──────────────────────────────────────────────────
+  .limit-modal {
+    padding: 1.5rem 1.25rem;
+    border-radius: 18px;
+    max-width: calc(100vw - 2rem);
+
+    .limit-modal-icon svg { width: 36px; height: 36px; }
+    h3   { font-size: 1rem; }
+    p    { font-size: 0.83rem; }
+
+    .upgrade-feature { font-size: 0.8rem; gap: 0.4rem; }
+
+    .limit-modal-actions {
+      flex-direction: column;
+      gap: 0.6rem;
+
+      .btn-modal-dismiss,
+      .btn-modal-upgrade {
+        padding: 0.875rem;
+        font-size: 0.92rem;
+      }
+    }
+  }
+}
+
+// ── Très petits écrans ────────────────────────────────────────────────────────
+@media (max-width: 390px) {
+  .message .message-wrapper { max-width: 92%; }
+  .message .message-content { padding: 0.6rem 0.75rem; }
+  .input-container           { padding: 0.6rem; }
+}

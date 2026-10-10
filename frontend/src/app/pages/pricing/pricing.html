@@ -1,0 +1,93 @@
+<app-header></app-header>
+
+<section class="pub-hero">
+  <div class="pub-container">
+    <p class="pub-eyebrow pub-eyebrow--light">Tarifs</p>
+    <h1 class="pub-hero-title">Une offre pour chaque <em>pratique du droit</em>.</h1>
+    <p class="pub-hero-lead">
+      Des tarifs clairs, sans engagement. Commencez gratuitement, évoluez quand vos besoins grandissent.
+    </p>
+  </div>
+</section>
+
+<section class="tarif-section" #scrollSection>
+  <div class="pub-container">
+    <div class="pricing-grid">
+      @for (plan of plans(); track plan.id) {
+        <div class="pricing-card" [class.featured]="plan.is_popular">
+          @if (plan.is_popular) {
+            <div class="popular-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              <span>Populaire</span>
+            </div>
+          }
+
+          <div class="card-header">
+            <h3 class="plan-name">{{ plan.name }}</h3>
+            <p class="plan-description">{{ plan.description }}</p>
+          </div>
+
+          <div class="card-price">
+            <div class="price-amount">
+              @if (plan.price === '0') {
+                <span class="amount">Gratuit</span>
+              } @else if (!plan.currency && !plan.period) {
+                <span class="amount custom">{{ plan.price }}</span>
+              } @else {
+                <span class="currency">{{ plan.currency }}</span>
+                <span class="amount">{{ plan.price | number:'1.0-0' }}</span>
+              }
+            </div>
+            @if (plan.period) { <span class="price-period">/{{ plan.period }}</span> }
+          </div>
+
+          <ul class="features-list">
+            @for (feature of plan.features; track $index) {
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>{{ feature }}</span>
+              </li>
+            }
+          </ul>
+
+          @if (plan.cta_type === 'contact') {
+            <a routerLink="/support" class="btn-pricing" [class.btn-featured]="plan.is_popular">
+              <span>{{ plan.cta_text }}</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </a>
+          } @else {
+            <a routerLink="/login" class="btn-pricing" [class.btn-featured]="plan.is_popular">
+              <span>{{ plan.cta_text }}</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="faq-section scroll-reveal">
+      <div class="faq-header">
+        <p class="pub-eyebrow">Questions fréquentes</p>
+        <h2 class="pub-title">Tout savoir sur nos offres.</h2>
+      </div>
+      <div class="faq-grid">
+        @for (f of faqItems(); track f.id) {
+          <article class="faq-item">
+            <h4>{{ f.question }}</h4>
+            <p>{{ f.answer }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>

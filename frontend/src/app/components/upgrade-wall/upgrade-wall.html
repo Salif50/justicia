@@ -1,0 +1,91 @@
+<!-- Mode block : remplace la zone de contenu verrouillée -->
+@if (mode === 'block') {
+  <div class="upgrade-wall">
+    <div class="uw-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <div class="uw-content">
+      <h3>Fonctionnalité {{ requiredPlan }}</h3>
+      <p>
+        @if (message) {
+          {{ message }}
+        } @else {
+          <strong>{{ featureLabel }}</strong> est disponible à partir du plan <strong>{{ requiredPlan }}</strong>.
+          Vous êtes actuellement sur le plan <em>{{ currentPlan }}</em>.
+        }
+      </p>
+    </div>
+    <button class="uw-btn" (click)="goToPlans()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Passer au plan {{ requiredPlan }}
+    </button>
+  </div>
+}
+
+<!-- Mode modal : overlay plein écran -->
+@if (mode === 'modal') {
+  <div class="uw-modal-overlay" (click)="dismiss()">
+    <div class="uw-modal" (click)="$event.stopPropagation()">
+      <button class="uw-modal-close" (click)="dismiss()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="uw-modal-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+
+      <h2>Passez à la vitesse supérieure</h2>
+      <p class="uw-modal-feature">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        {{ featureLabel }}
+      </p>
+      <p class="uw-modal-desc">
+        @if (message) {
+          {{ message }}
+        } @else {
+          Cette fonctionnalité est disponible avec le plan <strong>{{ requiredPlan }}</strong> et plus.
+          Débloquez tout le potentiel de JusticIA pour votre pratique juridique.
+        }
+      </p>
+
+      <div class="uw-modal-plans">
+        <div class="uw-plan-card">
+          <div class="upc-name">Basic</div>
+          <div class="upc-price">5 000 FG<span>/mois</span></div>
+          <ul>
+            <li>Questions illimitées</li>
+            <li>Agents personnalisés</li>
+            <li>5 procès actifs</li>
+            <li>Historique illimité</li>
+          </ul>
+        </div>
+        <div class="uw-plan-card featured">
+          <div class="upc-badge">Recommandé</div>
+          <div class="upc-name">Pro</div>
+          <div class="upc-price">15 000 FG<span>/mois</span></div>
+          <ul>
+            <li>Tout du plan Basic</li>
+            <li>Citations de sources IA</li>
+            <li>Résumé automatique</li>
+            <li>Export PDF</li>
+            <li>Procès illimités</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="uw-modal-actions">
+        <button class="uw-btn-secondary" (click)="dismiss()">Pas maintenant</button>
+        <button class="uw-btn-primary" (click)="goToPlans()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Voir tous les plans
+        </button>
+      </div>
+    </div>
+  </div>
+}

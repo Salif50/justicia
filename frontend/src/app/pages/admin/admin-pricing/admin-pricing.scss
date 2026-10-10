@@ -1,0 +1,55 @@
+@import '../admin-shared';
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.plan-card {
+  background: var(--card-bg-solid);
+  border-radius: 12px;
+  border: 1px solid var(--divider);
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: none; }
+  &.popular { border-color: var(--input-border); border-width: 2px; }
+  &.inactive { opacity: 0.6; }
+
+  .popular-badge {
+    background: var(--primary-dark); color: var(--on-primary);
+    font-size: 0.75rem; font-weight: 600;
+    text-align: center; padding: 0.3rem;
+  }
+
+  .plan-header {
+    padding: 1.5rem;
+    h3 { font-size: 1.25rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem; }
+    .plan-price { font-size: 1.5rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    p { color: var(--text-muted); font-size: 0.875rem; }
+  }
+
+  .plan-features {
+    padding: 0 1.5rem 1rem;
+    list-style: none;
+    li { color: var(--text-secondary); font-size: 0.875rem; padding: 0.3rem 0; }
+  }
+
+  .plan-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--divider);
+    display: flex; justify-content: space-between; align-items: center;
+    .card-actions { display: flex; gap: 0.5rem; }
+  }
+}
+
+/* Alignement commun (même gabarit que le reste de l'administration) */
+.admin-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+  min-height: 0;
+  background: none;
+}

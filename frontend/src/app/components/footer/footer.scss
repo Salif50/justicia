@@ -1,0 +1,143 @@
+/* Footer public — bleu nuit institutionnel, aligné sur la page d'accueil.
+   Palette fixe : le site public ne suit pas la bascule clair/sombre. */
+
+:host {
+  --ft-bg:      #0A1522;
+  --ft-line:    rgba(255, 255, 255, 0.10);
+  --ft-text:    rgba(244, 241, 234, 0.66);
+  --ft-strong:  #F4F1EA;
+  --ft-accent:  #FF8A00;
+  display: block;
+}
+
+.footer {
+  background: var(--ft-bg);
+  color: var(--ft-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.footer-top { padding: 88px 0 64px; }
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 56px;
+}
+
+.footer-logo {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.9rem;
+  color: var(--ft-strong);
+  margin-bottom: 18px;
+
+  span { color: var(--ft-accent); }
+}
+
+.fg-brand p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  max-width: 340px;
+  margin: 0 0 28px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 10px;
+
+  a {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--ft-line);
+    border-radius: 2px;
+    color: var(--ft-text);
+    transition: color 0.2s, border-color 0.2s;
+
+    &:hover { color: var(--ft-strong); border-color: var(--ft-strong); }
+  }
+}
+
+.fg-col {
+  h5 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ft-strong);
+    margin: 6px 0 22px;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 13px;
+  }
+
+  a {
+    font-size: 0.93rem;
+    color: var(--ft-text);
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover { color: var(--ft-strong); }
+  }
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--ft-line);
+  padding: 26px 0;
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+  }
+}
+
+.footer-copy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 28px;
+  font-size: 0.85rem;
+
+  p { margin: 0; }
+}
+
+.footer-powered a {
+  color: var(--ft-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  &:hover { color: var(--ft-strong); }
+}
+
+.footer-guinea {
+  display: flex;
+  gap: 3px;
+
+  span { width: 16px; height: 4px; }
+  .fg-rouge { background: #CE1126; }
+  .fg-jaune { background: #FCD116; }
+  .fg-vert  { background: #009460; }
+}
+
+@media (max-width: 900px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 44px; }
+  .fg-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 560px) {
+  .container { padding: 0 20px; }
+  .footer-top { padding: 64px 0 48px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom .container { flex-direction: column; align-items: flex-start; }
+}

@@ -1,0 +1,51 @@
+@import '../admin-shared';
+
+.config-section {
+  background: var(--card-bg-solid);
+  border-radius: 12px;
+  border: 1px solid var(--divider);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--divider);
+    h2 { font-size: 1.1rem; font-weight: 600; color: var(--heading-color); }
+  }
+}
+
+.array-item {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+  input { flex: 1; }
+  .btn-remove {
+    background: none; border: none; color: var(--danger); cursor: pointer;
+    font-size: 1rem; padding: 0 0.25rem;
+    &:hover { color: var(--danger); }
+  }
+}
+
+.btn-add-item {
+  margin-left: 0.75rem; background: none;
+  border: 1px solid var(--input-border);
+  color: var(--text-secondary); border-radius: 4px; padding: 0.1rem 0.5rem;
+  font-size: 0.75rem; cursor: pointer;
+  &:hover { background: var(--tag-bg); }
+}
+
+.badges-row { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* Alignement commun (même gabarit que le reste de l'administration) */
+.admin-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+  min-height: 0;
+  background: none;
+}

@@ -1,0 +1,451 @@
+<div class="app-page">
+
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Utilisateurs</p>
+      <h1 class="app-title">Comptes utilisateurs</h1>
+      <p class="app-sub">{{ counts().all }} comptes · {{ counts().blocked }} suspendu{{ counts().blocked > 1 ? 's' : '' }} · {{ counts().admins }} administrateur{{ counts().admins > 1 ? 's' : '' }}. Cliquez sur un compte pour ouvrir sa fiche.</p>
+    </div>
+    <div class="app-head-actions">
+      <a class="app-btn app-btn--quiet" routerLink="/admin/questions">Questions posées</a>
+      <button class="app-btn app-btn--quiet" (click)="exportCsv()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exporter CSV
+      </button>
+    </div>
+  </header>
+
+  <!-- Barre de filtres -->
+  <div class="us-filters">
+    <label class="us-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" [ngModel]="q()" (ngModelChange)="onSearch($event)" placeholder="Nom, e-mail, organisation, ville…" aria-label="Rechercher un utilisateur" />
+    </label>
+
+    <div class="app-seg" role="tablist" aria-label="Statut">
+      <button [class.active]="status() === 'all'" (click)="setFilter('status', 'all')">Tous</button>
+      <button [class.active]="status() === 'active'" (click)="setFilter('status', 'active')">Actifs</button>
+      <button [class.active]="status() === 'blocked'" (click)="setFilter('status', 'blocked')">
+        Suspendus @if (counts().blocked) { <span class="app-tag">{{ counts().blocked }}</span> }
+      </button>
+    </div>
+
+    <select class="app-input us-select" [ngModel]="plan()" (ngModelChange)="setFilter('plan', $event)" aria-label="Plan">
+      <option value="">Tous les plans</option>
+      <option value="gratuit">Gratuit</option>
+      <option value="pro">Professionnel</option>
+      <option value="enterprise">Entreprise</option>
+    </select>
+    <select class="app-input us-select" [ngModel]="role()" (ngModelChange)="setFilter('role', $event)" aria-label="Rôle">
+      <option value="">Tous les rôles</option>
+      <option value="user">Utilisateurs</option>
+      <option value="admin">Administrateurs</option>
+    </select>
+    <select class="app-input us-select" [ngModel]="sort()" (ngModelChange)="setFilter('sort', $event)" aria-label="Tri">
+      <option value="recent">Inscription récente</option>
+      <option value="last_login">Dernière connexion</option>
+      <option value="questions">Plus de questions</option>
+    </select>
+  </div>
+
+  @if (error()) { <div class="app-error">{{ error() }}</div> }
+
+  <!-- Tableau -->
+  <div class="us-table app-panel">
+    <div class="us-row us-row--head">
+      <span>Utilisateur</span>
+      <span>Profil</span>
+      <span>Plan</span>
+      <span>Aujourd'hui</span>
+      <span>Questions</span>
+      <span>Dernière connexion</span>
+      <span>Statut</span>
+    </div>
+
+    @if (loading() && !users().length) {
+      <div class="us-skeleton">@for (i of [1,2,3,4,5]; track i) { <span></span> }</div>
+    } @else if (!users().length) {
+      <div class="app-empty">
+        <h3>Aucun compte trouvé</h3>
+        <p>Modifiez la recherche ou les filtres.</p>
+      </div>
+    } @else {
+      @for (u of users(); track u.id) {
+        <button type="button" class="us-row" [class.is-blocked]="!u.is_active" [class.is-open]="detail()?.id === u.id" (click)="openUser(u.id)">
+          <span class="us-user">
+            <span class="us-avatar">{{ initial(u.name) }}</span>
+            <span class="us-id">
+              <strong>{{ u.name }} @if (u.role === 'admin') { <span class="app-tag app-tag--accent">Admin</span> }</strong>
+              <small>{{ u.email }}</small>
+            </span>
+          </span>
+          <span class="us-cell">
+            {{ profileLabel(u.profile_type) }}
+            @if (u.organization) { <small>{{ u.organization }}</small> }
+          </span>
+          <span class="us-cell"><span class="app-tag" [class.app-tag--accent]="!u.is_free_tier">{{ u.plan_name }}</span></span>
+          <span class="us-cell us-quota">
+            <span>{{ u.questions_today }} / {{ limitLabel(u) }} @if (u.is_override) { <em title="Quota personnalisé">perso</em> }</span>
+            @if (u.daily_limit !== -1) {
+              <span class="us-meter"><span [style.width.%]="quotaPercent(u)" [class.is-full]="quotaPercent(u) >= 100"></span></span>
+            }
+          </span>
+          <span class="us-cell us-num">{{ u.questions_count }}</span>
+          <span class="us-cell">{{ relative(u.last_login) }}</span>
+          <span class="us-cell">
+            @if (u.is_active) { <span class="us-status">Actif</span> }
+            @else {
+              <span class="us-status is-blocked">Suspendu</span>
+              @if (u.blocked_until) { <small>jusqu'au {{ shortDay(u.blocked_until) }}</small> }
+            }
+          </span>
+        </button>
+      }
+    }
+  </div>
+
+  @if (total() > 0) {
+    <div class="us-pager">
+      <span>{{ pageLabel() }}</span>
+      <button class="app-btn app-btn--quiet app-btn--sm" (click)="prevPage()" [disabled]="page() === 0">Précédent</button>
+      <button class="app-btn app-btn--quiet app-btn--sm" (click)="nextPage()" [disabled]="!hasNext()">Suivant</button>
+    </div>
+  }
+</div>
+
+<!-- ══════════════ Fiche utilisateur (panneau latéral) ══════════════ -->
+@if (detail() || detailLoading()) {
+  <div class="dr-scrim" (click)="closeUser()"></div>
+  <aside class="dr" role="dialog" aria-modal="true" aria-label="Fiche utilisateur">
+    @if (detailLoading() && !detail()) {
+      <div class="app-loading"><span class="app-spinner"></span>Chargement de la fiche…</div>
+    }
+
+    @if (detail(); as d) {
+      <header class="dr-head">
+        <span class="dr-avatar">{{ initial(d.name) }}</span>
+        <div class="dr-id">
+          <h2>{{ d.name }}</h2>
+          <p>{{ d.email }}</p>
+          <div class="dr-tags">
+            @if (d.role === 'admin') { <span class="app-tag app-tag--accent">Administrateur</span> }
+            <span class="app-tag">{{ d.plan_name }}</span>
+            @if (d.auth_provider === 'google') { <span class="app-tag">Google</span> }
+            @if (d.ephemeral_mode) { <span class="app-tag">Mode éphémère</span> }
+            @if (!d.is_active) { <span class="us-status is-blocked">Suspendu</span> }
+          </div>
+        </div>
+        <button class="app-modal-close" (click)="closeUser()" aria-label="Fermer la fiche">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </header>
+
+      @if (!d.is_active) {
+        <div class="dr-banner">
+          <div>
+            <strong>Compte suspendu {{ d.blocked_at ? 'le ' + date(d.blocked_at, true) : '' }}</strong>
+            <p class="dr-until">{{ d.blocked_until ? 'Réactivation automatique le ' + date(d.blocked_until, true) + '.' : 'Sans échéance : réactivation manuelle.' }}</p>
+            <p>{{ d.blocked_reason || 'Aucun motif enregistré.' }}</p>
+          </div>
+          <button class="app-btn app-btn--sm" (click)="reactivate()" [disabled]="busy()">Réactiver</button>
+        </div>
+      }
+
+      <!-- Indicateurs -->
+      <div class="dr-kpis">
+        <div><span>Aujourd'hui</span><strong>{{ d.questions_today }}<small> / {{ limitLabel(d) }}</small></strong></div>
+        <div><span>Questions</span><strong>{{ d.questions_count }}</strong></div>
+        <div><span>Conversations</span><strong>{{ d.conversations_count }}</strong></div>
+        <div><span>Inscrit</span><strong class="dr-kpi-small">{{ date(d.created_at) }}</strong></div>
+      </div>
+
+      <div class="dr-tabs">
+        <div class="app-seg">
+          @for (t of tabs; track t.key) {
+            <button [class.active]="tab() === t.key" (click)="tab.set(t.key)">{{ t.label }}</button>
+          }
+        </div>
+      </div>
+
+      <div class="dr-body">
+
+        <!-- ── Aperçu ── -->
+        @if (tab() === 'overview') {
+          <section class="dr-section">
+            <h3>Identité</h3>
+            <dl class="dr-grid">
+              <div><dt>Profil</dt><dd>{{ profileLabel(d.profile_type) }}</dd></div>
+              <div><dt>Organisation</dt><dd>{{ d.organization || '—' }}</dd></div>
+              <div><dt>Ville</dt><dd>{{ d.city || '—' }}</dd></div>
+              <div><dt>Téléphone</dt><dd>{{ d.phone || '—' }}</dd></div>
+              <div><dt>Profession</dt><dd>{{ d.profession || '—' }}</dd></div>
+              <div><dt>N° barreau / tribunal</dt><dd>{{ d.bar_number || '—' }}</dd></div>
+              <div><dt>Connexion</dt><dd>{{ d.auth_provider === 'google' ? 'Google' : 'E-mail et mot de passe' }}</dd></div>
+              <div><dt>Dernière connexion</dt><dd>{{ date(d.last_login, true) }}</dd></div>
+              <div><dt>E-mail vérifié</dt><dd>{{ d.is_verified ? 'Oui' : 'Non' }}</dd></div>
+              <div><dt>Langue</dt><dd>{{ d.language === 'en' ? 'Anglais' : 'Français' }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="dr-section">
+            <h3>Questionnaire d'accueil</h3>
+            @if (!d.onboarding_survey) {
+              <p class="dr-muted">Pas encore rempli.</p>
+            } @else if (d.onboarding_survey['skipped']) {
+              <p class="dr-muted">Questionnaire passé par l'utilisateur.</p>
+            } @else {
+              <dl class="dr-grid dr-grid--one">
+                <div><dt>Domaines</dt><dd>
+                  @for (l of domainLabels(d.onboarding_survey['domains']); track l) { <span class="app-tag">{{ l }}</span> }
+                  @if (!domainLabels(d.onboarding_survey['domains']).length) { — }
+                </dd></div>
+                <div><dt>Usage principal</dt><dd>{{ usageLabel(d.onboarding_survey['usage']) || '—' }}</dd></div>
+                <div><dt>A connu JusticIA par</dt><dd>{{ sourceLabel(d.onboarding_survey['source']) || '—' }}</dd></div>
+              </dl>
+            }
+          </section>
+
+          <section class="dr-section">
+            <h3>Utilisation des modules</h3>
+            <div class="dr-usage">
+              <div><strong>{{ d.usage.cases }}</strong><span>Procès</span></div>
+              <div><strong>{{ d.usage.custom_agents }}</strong><span>Agents créés</span></div>
+              <div><strong>{{ d.usage.archives }}</strong><span>Résumés</span></div>
+              <div><strong>{{ d.usage.generated_documents }}</strong><span>Documents générés</span></div>
+              <div><strong>{{ d.usage.agenda_events }}</strong><span>Événements agenda</span></div>
+            </div>
+          </section>
+        }
+
+        <!-- ── Quota & plan ── -->
+        @if (tab() === 'quota') {
+          <section class="dr-section">
+            <h3>Consommation du jour</h3>
+            <div class="dr-meter-row">
+              <strong>{{ d.questions_today }}</strong>
+              <span>question{{ d.questions_today > 1 ? 's' : '' }} sur {{ d.daily_limit === -1 ? 'un quota illimité' : d.daily_limit + ' autorisée' + (d.daily_limit > 1 ? 's' : '') }}</span>
+              <button class="app-btn app-btn--quiet app-btn--sm" (click)="resetCounter()" [disabled]="busy() || !d.questions_today">Remettre à zéro</button>
+            </div>
+            @if (d.daily_limit !== -1) {
+              <div class="us-meter us-meter--lg"><span [style.width.%]="quotaPercent(d)" [class.is-full]="quotaPercent(d) >= 100"></span></div>
+            }
+          </section>
+
+          <section class="dr-section">
+            <h3>Quota journalier</h3>
+            <p class="dr-muted">Le plan {{ d.plan_name }} autorise {{ d.plan_limit === -1 ? 'un nombre illimité de questions' : d.plan_limit + ' question(s) par jour' }}. Vous pouvez fixer une limite propre à ce compte.</p>
+            <div class="dr-radios">
+              <label [class.is-on]="quotaMode === 'plan'">
+                <input type="radio" name="qm" value="plan" [(ngModel)]="quotaMode" />
+                <span><strong>Limite du plan</strong><small>{{ d.plan_limit === -1 ? 'Illimité' : d.plan_limit + ' / jour' }}</small></span>
+              </label>
+              <label [class.is-on]="quotaMode === 'custom'">
+                <input type="radio" name="qm" value="custom" [(ngModel)]="quotaMode" />
+                <span><strong>Quota personnalisé</strong>
+                  <span class="dr-inline">
+                    <input class="app-input" type="number" min="0" max="100000" [(ngModel)]="quotaValue" (focus)="quotaMode = 'custom'" aria-label="Questions par jour" />
+                    <small>questions / jour</small>
+                  </span>
+                </span>
+              </label>
+              <label [class.is-on]="quotaMode === 'unlimited'">
+                <input type="radio" name="qm" value="unlimited" [(ngModel)]="quotaMode" />
+                <span><strong>Illimité</strong><small>Aucune limite journalière</small></span>
+              </label>
+            </div>
+            <label class="dr-notify">
+              <input type="checkbox" [(ngModel)]="notifyUser" />
+              <span>Prévenir l'utilisateur (notification et e-mail) des changements de quota et de plan</span>
+            </label>
+            <button class="app-btn" (click)="saveQuota()" [disabled]="busy()">Enregistrer le quota</button>
+          </section>
+
+          <section class="dr-section">
+            <h3>Plan d'abonnement</h3>
+            <div class="dr-plan">
+              <div class="app-field">
+                <label for="dr-plan">Plan</label>
+                <select id="dr-plan" class="app-input" [(ngModel)]="planChoice">
+                  @for (p of d.available_plans; track p.plan_id) {
+                    <option [value]="p.plan_id">{{ p.name }}</option>
+                  }
+                </select>
+              </div>
+              @if (planChoice !== 'gratuit') {
+                <div class="app-field">
+                  <label for="dr-months">Durée</label>
+                  <select id="dr-months" class="app-input" [(ngModel)]="planMonths">
+                    <option [ngValue]="1">1 mois</option>
+                    <option [ngValue]="3">3 mois</option>
+                    <option [ngValue]="6">6 mois</option>
+                    <option [ngValue]="12">12 mois</option>
+                  </select>
+                </div>
+              }
+              <button class="app-btn app-btn--quiet" (click)="savePlan()" [disabled]="busy() || planChoice === (d.plan_id ?? 'gratuit')">Appliquer</button>
+            </div>
+
+            @if (d.subscriptions.length) {
+              <ul class="dr-list">
+                @for (s of d.subscriptions; track s.id) {
+                  <li>
+                    <span><strong>{{ s.plan_id }}</strong> · {{ s.payment_method === 'admin_override' ? 'attribué par un admin' : (s.payment_method || 'paiement') }}</span>
+                    <span class="dr-muted">{{ date(s.created_at) }}@if (s.renewal_date) { → {{ date(s.renewal_date) }} }</span>
+                    <span class="app-tag" [class.app-tag--accent]="s.status === 'active'">{{ s.status === 'active' ? 'Actif' : s.status === 'cancelled' ? 'Clôturé' : s.status }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        }
+
+        <!-- ── Activité ── -->
+        @if (tab() === 'activity') {
+          <section class="dr-section">
+            <h3>Questions sur 14 jours</h3>
+            <div class="dr-bars">
+              @for (a of d.activity; track a.date) {
+                <div class="dr-bar" [title]="shortDay(a.date) + ' : ' + a.count">
+                  <span [style.height.%]="(a.count / activityMax()) * 100" [class.is-zero]="!a.count"></span>
+                  <small>{{ shortDay(a.date).split(' ')[0] }}</small>
+                </div>
+              }
+            </div>
+            @if (d.ephemeral_mode) {
+              <p class="dr-muted">Mode éphémère actif : les questions posées dans ce mode ne sont pas enregistrées et n'apparaissent pas ici.</p>
+            }
+          </section>
+
+          <section class="dr-section">
+            <div class="dr-section-head">
+              <h3>Dernières questions</h3>
+              <a routerLink="/admin/questions" [queryParams]="{ user: d.id, name: d.name }">Tout voir</a>
+            </div>
+            @if (!d.recent_questions.length) {
+              <p class="dr-muted">Aucune question enregistrée.</p>
+            } @else {
+              <ul class="dr-questions">
+                @for (qn of d.recent_questions; track qn.id) {
+                  <li>
+                    <p>{{ qn.question }}</p>
+                    <small>{{ date(qn.created_at, true) }} · {{ agentLabel(qn.agent_id) }} · {{ qn.conversation_title }}</small>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        }
+
+        <!-- ── Modération ── -->
+        @if (tab() === 'moderation') {
+          <section class="dr-section">
+            <h3>{{ d.is_active ? 'Suspendre le compte' : 'Compte suspendu' }}</h3>
+            @if (d.is_active) {
+              <p class="dr-muted">L'utilisateur est déconnecté immédiatement et voit le motif à sa prochaine tentative de connexion.</p>
+              <div class="app-field">
+                <label for="dr-reason">Motif <span class="req">*</span></label>
+                <textarea id="dr-reason" class="app-input" rows="3" [(ngModel)]="blockReason" maxlength="500"
+                  placeholder="Ex. Usage abusif du service, contenu contraire aux CGU…"></textarea>
+              </div>
+              <div class="app-field">
+                <label>Durée</label>
+                <div class="app-seg dr-durations">
+                  @for (o of blockDurations; track o.label) {
+                    <button type="button" [class.active]="blockDays === o.days" (click)="blockDays = o.days">{{ o.label }}</button>
+                  }
+                </div>
+              </div>
+              <label class="dr-notify">
+                <input type="checkbox" [(ngModel)]="notifyUser" />
+                <span>Prévenir l'utilisateur (notification et e-mail)</span>
+              </label>
+              <button class="app-btn app-btn--danger" (click)="suspend()" [disabled]="busy() || d.id === myId()">Suspendre le compte</button>
+              @if (d.id === myId()) { <p class="dr-muted">Vous ne pouvez pas suspendre votre propre compte.</p> }
+            } @else {
+              <p class="dr-muted">Motif : {{ d.blocked_reason || '—' }}<br />{{ d.blocked_until ? 'Réactivation automatique le ' + date(d.blocked_until, true) + '.' : 'Sans échéance.' }}</p>
+              <label class="dr-notify">
+                <input type="checkbox" [(ngModel)]="notifyUser" />
+                <span>Prévenir l'utilisateur de la réactivation</span>
+              </label>
+              <button class="app-btn" (click)="reactivate()" [disabled]="busy()">Réactiver maintenant</button>
+            }
+          </section>
+
+          <section class="dr-section">
+            <h3>Rôle</h3>
+            <div class="dr-row-action">
+              <p>{{ d.role === 'admin' ? 'Administrateur : accès complet à l\'administration.' : 'Utilisateur standard.' }}</p>
+              <button class="app-btn app-btn--quiet app-btn--sm" (click)="toggleRole()" [disabled]="busy() || (d.id === myId() && d.role === 'admin')">
+                {{ d.role === 'admin' ? 'Retirer les droits admin' : 'Promouvoir administrateur' }}
+              </button>
+            </div>
+          </section>
+
+          <section class="dr-section">
+            <h3>Notes internes</h3>
+            <p class="dr-muted">Visibles uniquement par les administrateurs.</p>
+            <textarea class="app-input" rows="4" [(ngModel)]="notes" maxlength="5000" placeholder="Contexte, échanges avec l'utilisateur, décisions…"></textarea>
+            <button class="app-btn app-btn--quiet dr-mt" (click)="saveNotes()" [disabled]="busy() || notes === (d.admin_notes ?? '')">Enregistrer les notes</button>
+          </section>
+
+          <section class="dr-section dr-danger">
+            <h3>Zone sensible</h3>
+            <div class="dr-row-action">
+              <p>Supprimer les {{ d.conversations_count }} conversation(s) de ce compte.</p>
+              <button class="app-btn app-btn--quiet app-btn--sm dr-danger-btn" (click)="deleteConversations()" [disabled]="busy() || !d.conversations_count">Supprimer</button>
+            </div>
+            <div class="dr-row-action">
+              <p>Supprimer définitivement le compte et toutes ses données.</p>
+              <button class="app-btn app-btn--quiet app-btn--sm dr-danger-btn" (click)="deleteAccount()" [disabled]="busy() || d.id === myId()">Supprimer le compte</button>
+            </div>
+          </section>
+        }
+
+        <!-- ── Journal ── -->
+        @if (tab() === 'audit') {
+          <section class="dr-section">
+            <h3>Actions des administrateurs sur ce compte</h3>
+            @if (!d.audit.length) {
+              <p class="dr-muted">Aucune action enregistrée.</p>
+            } @else {
+              <ol class="dr-timeline">
+                @for (a of d.audit; track a.id) {
+                  <li>
+                    <strong>{{ auditLabel(a.action) }}</strong>
+                    @if (auditDetail(a)) { <span>{{ auditDetail(a) }}</span> }
+                    <small>{{ date(a.created_at, true) }} · par {{ a.admin_email }}</small>
+                  </li>
+                }
+              </ol>
+            }
+          </section>
+        }
+      </div>
+    }
+  </aside>
+}
+
+<!-- Confirmation -->
+@if (confirm(); as c) {
+  <div class="app-overlay us-confirm" (click)="cancelConfirm()">
+    <div class="app-modal" (click)="$event.stopPropagation()" role="alertdialog" aria-modal="true">
+      <div class="app-modal-head"><div><h3>{{ c.title }}</h3></div></div>
+      <div class="app-modal-body">
+        <p class="us-confirm-msg">{{ c.message }}</p>
+        @if (c.typeToConfirm) {
+          <div class="app-field">
+            <label for="confirm-text">Saisissez <strong>{{ c.typeToConfirm }}</strong> pour confirmer</label>
+            <input id="confirm-text" class="app-input" [(ngModel)]="confirmText" autocomplete="off" />
+          </div>
+        }
+      </div>
+      <div class="app-modal-foot">
+        <button class="app-btn app-btn--quiet" (click)="cancelConfirm()">Annuler</button>
+        <button class="app-btn" [class.app-btn--danger]="c.danger" (click)="runConfirm()"
+          [disabled]="!!c.typeToConfirm && confirmText.trim() !== c.typeToConfirm">{{ c.confirmLabel }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (toast()) { <div class="us-toast" role="status">{{ toast() }}</div> }

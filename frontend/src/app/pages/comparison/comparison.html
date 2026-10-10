@@ -1,0 +1,727 @@
+<div class="cmp-page">
+
+  <!-- ═══════════════ EN-TÊTE ═══════════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Assistant IA</p>
+      <h1 class="app-title">Comparaison de textes</h1>
+      <p class="app-sub">Comparez deux documents ou vérifiez la conformité d'un texte au droit guinéen.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+      <button [class.active]="activeTab() === 'compare'" (click)="switchTab('compare')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/>
+        </svg>
+        Deux textes
+      </button>
+      <button [class.active]="activeTab() === 'legal'" (click)="switchTab('legal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Conformité légale
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ TAB : DEUX TEXTES ═══════════════ -->
+  @if (activeTab() === 'compare') {
+
+    <!-- ─── IDLE / ERROR : Formulaire de saisie ─── -->
+    @if (cmpStage() === 'idle' || cmpStage() === 'error') {
+      <div class="cmp-section">
+        <div class="cmp-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/></svg>
+          Entrez les deux textes à comparer
+        </div>
+
+        <div class="cmp-inputs-grid">
+
+          <!-- Slot A -->
+          <div class="cmp-slot">
+            <div class="cmp-slot-header">
+              <div class="cmp-slot-badge cmp-slot-badge--a">A</div>
+              <input class="cmp-label-input" type="text"
+                placeholder="Nom du texte A…"
+                [value]="labelA()"
+                (input)="labelA.set($any($event.target).value)" />
+              <div class="cmp-mode-toggle">
+                <button class="cmp-mode-btn" [class.active]="modeA() === 'text'" (click)="setModeA('text')">Texte</button>
+                <button class="cmp-mode-btn" [class.active]="modeA() === 'file'" (click)="setModeA('file')">PDF</button>
+              </div>
+            </div>
+
+            @if (modeA() === 'text') {
+              <textarea class="cmp-textarea"
+                placeholder="Collez ici le texte A (contrat, article, clause…)"
+                [value]="textA()"
+                (input)="textA.set($any($event.target).value)"
+                rows="12"></textarea>
+              <div class="cmp-char-count">{{ textA().length }} caractères</div>
+            } @else {
+              <input #fileInputA type="file" accept=".pdf,application/pdf" style="display:none" (change)="onFileASelected($event)" />
+              <div class="cmp-dropzone"
+                [class.drag-over]="dragOverA()"
+                [class.has-file]="!!fileA()"
+                (dragover)="$event.preventDefault(); dragOverA.set(true)"
+                (dragleave)="dragOverA.set(false)"
+                (drop)="onDropA($event)"
+                (click)="openFileA()">
+                @if (!fileA()) {
+                  <div class="cmp-dz-inner">
+                    <div class="cmp-dz-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <p>Glissez votre PDF ou <span class="cmp-link">cliquez</span></p>
+                    <small>Max 25 Mo</small>
+                  </div>
+                } @else {
+                  <div class="cmp-dz-file">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="cmp-dz-fname">{{ fileA()!.name }}</span>
+                    <span class="cmp-dz-fsize">{{ fileSizeLabel(fileA()!.size) }}</span>
+                    <button class="cmp-dz-rm" (click)="fileA.set(null); $event.stopPropagation()">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Divider -->
+          <div class="cmp-vs-divider">
+            <div class="cmp-vs-line"></div>
+            <div class="cmp-vs-badge">VS</div>
+            <div class="cmp-vs-line"></div>
+          </div>
+
+          <!-- Slot B -->
+          <div class="cmp-slot">
+            <div class="cmp-slot-header">
+              <div class="cmp-slot-badge cmp-slot-badge--b">B</div>
+              <input class="cmp-label-input" type="text"
+                placeholder="Nom du texte B…"
+                [value]="labelB()"
+                (input)="labelB.set($any($event.target).value)" />
+              <div class="cmp-mode-toggle">
+                <button class="cmp-mode-btn" [class.active]="modeB() === 'text'" (click)="setModeB('text')">Texte</button>
+                <button class="cmp-mode-btn" [class.active]="modeB() === 'file'" (click)="setModeB('file')">PDF</button>
+              </div>
+            </div>
+
+            @if (modeB() === 'text') {
+              <textarea class="cmp-textarea"
+                placeholder="Collez ici le texte B (contrat, article, clause…)"
+                [value]="textB()"
+                (input)="textB.set($any($event.target).value)"
+                rows="12"></textarea>
+              <div class="cmp-char-count">{{ textB().length }} caractères</div>
+            } @else {
+              <input #fileInputB type="file" accept=".pdf,application/pdf" style="display:none" (change)="onFileBSelected($event)" />
+              <div class="cmp-dropzone"
+                [class.drag-over]="dragOverB()"
+                [class.has-file]="!!fileB()"
+                (dragover)="$event.preventDefault(); dragOverB.set(true)"
+                (dragleave)="dragOverB.set(false)"
+                (drop)="onDropB($event)"
+                (click)="openFileB()">
+                @if (!fileB()) {
+                  <div class="cmp-dz-inner">
+                    <div class="cmp-dz-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <p>Glissez votre PDF ou <span class="cmp-link">cliquez</span></p>
+                    <small>Max 25 Mo</small>
+                  </div>
+                } @else {
+                  <div class="cmp-dz-file">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="cmp-dz-fname">{{ fileB()!.name }}</span>
+                    <span class="cmp-dz-fsize">{{ fileSizeLabel(fileB()!.size) }}</span>
+                    <button class="cmp-dz-rm" (click)="fileB.set(null); $event.stopPropagation()">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+        </div>
+
+        @if (cmpError()) {
+          <div class="cmp-error-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ cmpError() }}
+          </div>
+        }
+
+        <div class="cmp-actions">
+          <button class="cmp-btn-primary" [disabled]="!cmpValid()" (click)="compare()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="4"/><path d="M5 9l7-7 7 7"/><path d="M5 15l7 7 7-7"/></svg>
+            Lancer la comparaison IA
+          </button>
+          <span class="cmp-hint">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+            Analyse par IA
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- ─── LOADING : Animation IA ─── -->
+    @if (cmpStage() === 'loading') {
+      <div class="cmp-ai-screen">
+        <div class="cmp-ai-core">
+          <div class="cmp-ai-ring cmp-ai-ring--3"></div>
+          <div class="cmp-ai-ring cmp-ai-ring--2"></div>
+          <div class="cmp-ai-ring cmp-ai-ring--1"></div>
+          <div class="cmp-ai-nucleus">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <line x1="12" y1="20" x2="12" y2="4"/><path d="M5 9l7-7 7 7"/><path d="M5 15l7 7 7-7"/>
+            </svg>
+          </div>
+        </div>
+        <div class="cmp-ai-text">
+          <h2>Comparaison en cours…</h2>
+          <p>{{ labelA() }} vs {{ labelB() }}</p>
+        </div>
+        <div class="cmp-ai-steps">
+          @for (msg of thinkingMessages; track $index) {
+            <div class="cmp-ai-step"
+              [class.done]="thinkingStep() > $index"
+              [class.active]="thinkingStep() === $index"
+              [class.pending]="thinkingStep() < $index">
+              <div class="cmp-ai-step-icon">
+                @if (thinkingStep() > $index) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                } @else if (thinkingStep() === $index) {
+                  <div class="cmp-step-spinner"></div>
+                } @else {
+                  <div class="cmp-step-dot"></div>
+                }
+              </div>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+        <div class="cmp-ai-bars">
+          @for (b of [1,2,3,4,5,6,7]; track b) {
+            <div class="cmp-ai-bar" [class]="'cmp-ai-bar--' + b"></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ─── DONE : Résultats ─── -->
+    @if (cmpStage() === 'done') {
+      @if (cmpResult(); as res) {
+        <div class="cmp-result">
+
+          <!-- Barre de résultat -->
+          <div class="cmp-result-topbar">
+            <div class="cmp-result-topbar-left">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Comparaison terminée
+              <span class="cmp-diff-count">{{ res.key_differences.length }} différences identifiées</span>
+            </div>
+            <button class="cmp-btn-secondary" (click)="resetCompare()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+              Nouvelle comparaison
+            </button>
+          </div>
+
+          <!-- Scores -->
+          <div class="cmp-scores-row">
+
+            <!-- Score similarité -->
+            <div class="cmp-score-card">
+              <div class="cmp-score-gauge">
+                <svg width="96" height="96" viewBox="0 0 96 96">
+                  <circle cx="48" cy="48" r="38" fill="none" stroke="var(--divider)" stroke-width="8"/>
+                  <circle cx="48" cy="48" r="38" fill="none"
+                    [attr.stroke]="similarityColor()" stroke-width="8" stroke-linecap="round"
+                    [attr.stroke-dasharray]="similarityDash()" stroke-dashoffset="0"
+                    transform="rotate(-90 48 48)" style="transition:stroke-dasharray 1s ease"/>
+                </svg>
+                <div class="cmp-score-value" [style.color]="similarityColor()">{{ res.similarity_score }}<span>%</span></div>
+              </div>
+              <div class="cmp-score-meta">
+                <div class="cmp-score-label">Similarité</div>
+                <div class="cmp-score-sub">entre les deux textes</div>
+              </div>
+            </div>
+
+            <!-- Risque A -->
+            <div class="cmp-risk-card">
+              <div class="cmp-slot-badge cmp-slot-badge--a">A</div>
+              <div class="cmp-risk-body">
+                <div class="cmp-risk-label">{{ labelA() }}</div>
+                <div class="cmp-risk-bar-wrap">
+                  <div class="cmp-risk-bar" [style.width.%]="res.risk_a" [style.background]="riskColorA()"></div>
+                </div>
+                <div class="cmp-risk-value" [style.color]="riskColorA()">Risque {{ res.risk_a }}%</div>
+              </div>
+            </div>
+
+            <!-- Risque B -->
+            <div class="cmp-risk-card">
+              <div class="cmp-slot-badge cmp-slot-badge--b">B</div>
+              <div class="cmp-risk-body">
+                <div class="cmp-risk-label">{{ labelB() }}</div>
+                <div class="cmp-risk-bar-wrap">
+                  <div class="cmp-risk-bar" [style.width.%]="res.risk_b" [style.background]="riskColorB()"></div>
+                </div>
+                <div class="cmp-risk-value" [style.color]="riskColorB()">Risque {{ res.risk_b }}%</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Résumé -->
+          <div class="cmp-summary-card">
+            <div class="cmp-summary-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <p>{{ res.summary }}</p>
+          </div>
+
+          <!-- Différences clés -->
+          @if (res.key_differences.length > 0) {
+            <div class="cmp-section-block">
+              <div class="cmp-block-title">Différences clés</div>
+
+              @if (critiques().length > 0) {
+                <div class="cmp-diff-group">
+                  <div class="cmp-diff-group-label critique">
+                    <ui-icon name="x-circle" [size]="14" /> Critiques ({{ critiques().length }})
+                  </div>
+                  @for (diff of critiques(); track $index) {
+                    <ng-container *ngTemplateOutlet="diffCard; context:{diff, la: labelA(), lb: labelB()}"></ng-container>
+                  }
+                </div>
+              }
+              @if (majeurs().length > 0) {
+                <div class="cmp-diff-group">
+                  <div class="cmp-diff-group-label majeur">
+                    <ui-icon name="alert-triangle" [size]="14" /> Majeurs ({{ majeurs().length }})
+                  </div>
+                  @for (diff of majeurs(); track $index) {
+                    <ng-container *ngTemplateOutlet="diffCard; context:{diff, la: labelA(), lb: labelB()}"></ng-container>
+                  }
+                </div>
+              }
+              @if (mineurs().length > 0) {
+                <div class="cmp-diff-group">
+                  <div class="cmp-diff-group-label mineur">
+                    <ui-icon name="help-circle" [size]="14" /> Mineurs ({{ mineurs().length }})
+                  </div>
+                  @for (diff of mineurs(); track $index) {
+                    <ng-container *ngTemplateOutlet="diffCard; context:{diff, la: labelA(), lb: labelB()}"></ng-container>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Forces & faiblesses -->
+          <div class="cmp-sw-grid">
+            <div class="cmp-sw-col">
+              <div class="cmp-sw-header cmp-sw-header--a">
+                <div class="cmp-slot-badge cmp-slot-badge--a">A</div>
+                {{ labelA() }}
+              </div>
+              @if ((res.text_a_strengths?.length ?? 0) > 0) {
+                <div class="cmp-sw-block cmp-sw-block--strength">
+                  <div class="cmp-sw-block-title"><ui-icon name="check-circle" [size]="14" /> Points forts</div>
+                  <ul>@for (s of res.text_a_strengths; track $index) { <li>{{ s }}</li> }</ul>
+                </div>
+              }
+              @if ((res.text_a_weaknesses?.length ?? 0) > 0) {
+                <div class="cmp-sw-block cmp-sw-block--weak">
+                  <div class="cmp-sw-block-title"><ui-icon name="alert-triangle" [size]="14" /> Points faibles</div>
+                  <ul>@for (w of res.text_a_weaknesses; track $index) { <li>{{ w }}</li> }</ul>
+                </div>
+              }
+            </div>
+            <div class="cmp-sw-col">
+              <div class="cmp-sw-header cmp-sw-header--b">
+                <div class="cmp-slot-badge cmp-slot-badge--b">B</div>
+                {{ labelB() }}
+              </div>
+              @if ((res.text_b_strengths?.length ?? 0) > 0) {
+                <div class="cmp-sw-block cmp-sw-block--strength">
+                  <div class="cmp-sw-block-title"><ui-icon name="check-circle" [size]="14" /> Points forts</div>
+                  <ul>@for (s of res.text_b_strengths; track $index) { <li>{{ s }}</li> }</ul>
+                </div>
+              }
+              @if ((res.text_b_weaknesses?.length ?? 0) > 0) {
+                <div class="cmp-sw-block cmp-sw-block--weak">
+                  <div class="cmp-sw-block-title"><ui-icon name="alert-triangle" [size]="14" /> Points faibles</div>
+                  <ul>@for (w of res.text_b_weaknesses; track $index) { <li>{{ w }}</li> }</ul>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Recommandation -->
+          @if (res.recommendation) {
+            <div class="cmp-recommendation">
+              <div class="cmp-reco-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Recommandation
+              </div>
+              <p>{{ res.recommendation }}</p>
+              <button class="cmp-copy-btn" (click)="copyText(res.recommendation)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copier
+              </button>
+            </div>
+          }
+
+        </div>
+      }
+    }
+
+  }
+
+  <!-- ═══════════════ TAB : CONFORMITÉ LÉGALE ═══════════════ -->
+  @if (activeTab() === 'legal') {
+
+    @if (legStage() === 'idle' || legStage() === 'error') {
+      <div class="cmp-section">
+        <div class="cmp-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Votre texte vs le droit guinéen
+        </div>
+
+        <div class="cmp-legal-layout">
+          <div class="cmp-legal-left">
+
+            <!-- Nom du document -->
+            <div class="cmp-field">
+              <label class="cmp-label">Nom du document</label>
+              <input class="cmp-input" type="text" placeholder="Mon contrat de travail…"
+                [value]="legLabel()"
+                (input)="legLabel.set($any($event.target).value)" />
+            </div>
+
+            <!-- Domaine juridique -->
+            <div class="cmp-field">
+              <label class="cmp-label">Domaine juridique</label>
+              <select class="cmp-input" [value]="legDomain()" (change)="legDomain.set($any($event.target).value)">
+                @for (d of LEGAL_DOMAINS; track d.value) {
+                  <option [value]="d.value">{{ d.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Mode saisie -->
+            <div class="cmp-field">
+              <label class="cmp-label">Texte à analyser</label>
+              <div class="cmp-mode-toggle" style="margin-bottom:.65rem">
+                <button class="cmp-mode-btn" [class.active]="legMode() === 'text'" (click)="legMode.set('text')">Coller le texte</button>
+                <button class="cmp-mode-btn" [class.active]="legMode() === 'file'" (click)="legMode.set('file')">Uploader PDF</button>
+              </div>
+
+              @if (legMode() === 'text') {
+                <textarea class="cmp-textarea"
+                  placeholder="Collez ici votre contrat, clause ou document juridique à analyser…"
+                  [value]="legText()"
+                  (input)="legText.set($any($event.target).value)"
+                  rows="14"></textarea>
+                <div class="cmp-char-count">{{ legText().length }} caractères</div>
+              } @else {
+                <input #fileInputL type="file" accept=".pdf,application/pdf" style="display:none" (change)="onFileLSelected($event)" />
+                <div class="cmp-dropzone"
+                  [class.drag-over]="legDrag()"
+                  [class.has-file]="!!legFile()"
+                  (dragover)="$event.preventDefault(); legDrag.set(true)"
+                  (dragleave)="legDrag.set(false)"
+                  (drop)="onDropL($event)"
+                  (click)="openFileL()">
+                  @if (!legFile()) {
+                    <div class="cmp-dz-inner">
+                      <div class="cmp-dz-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      </div>
+                      <p>Glissez votre PDF ou <span class="cmp-link">cliquez</span></p>
+                      <small>Max 25 Mo</small>
+                    </div>
+                  } @else {
+                    <div class="cmp-dz-file">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      <span class="cmp-dz-fname">{{ legFile()!.name }}</span>
+                      <span class="cmp-dz-fsize">{{ fileSizeLabel(legFile()!.size) }}</span>
+                      <button class="cmp-dz-rm" (click)="legFile.set(null); $event.stopPropagation()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (legError()) {
+              <div class="cmp-error-banner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                {{ legError() }}
+              </div>
+            }
+
+            <button class="cmp-btn-primary" [disabled]="!legValid()" (click)="compareLegal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Vérifier la conformité légale
+            </button>
+          </div>
+
+          <!-- Carte info légale -->
+          <div class="cmp-legal-info">
+            <div class="cmp-legal-info-title">Ce que l'IA vérifie</div>
+            <div class="cmp-legal-info-list">
+              @for (item of legalInfoItems; track item.t) {
+                <div class="cmp-info-item">
+                  <span class="cmp-info-icon"><ui-icon [name]="item.icon" [size]="18" /></span>
+                  <div>
+                    <strong>{{ item.t }}</strong>
+                    <span>{{ item.d }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="cmp-corpus-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              23 textes légaux guinéens · OHADA inclus
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ─── LOADING ─── -->
+    @if (legStage() === 'loading') {
+      <div class="cmp-ai-screen">
+        <div class="cmp-ai-core">
+          <div class="cmp-ai-ring cmp-ai-ring--3"></div>
+          <div class="cmp-ai-ring cmp-ai-ring--2"></div>
+          <div class="cmp-ai-ring cmp-ai-ring--1"></div>
+          <div class="cmp-ai-nucleus">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+        </div>
+        <div class="cmp-ai-text">
+          <h2>Analyse de conformité…</h2>
+          <p>{{ legLabel() }} · {{ domainLabel(legDomain()) }}</p>
+        </div>
+        <div class="cmp-ai-steps">
+          @for (msg of thinkingMessages; track $index) {
+            <div class="cmp-ai-step"
+              [class.done]="thinkingStep() > $index"
+              [class.active]="thinkingStep() === $index"
+              [class.pending]="thinkingStep() < $index">
+              <div class="cmp-ai-step-icon">
+                @if (thinkingStep() > $index) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                } @else if (thinkingStep() === $index) {
+                  <div class="cmp-step-spinner"></div>
+                } @else {
+                  <div class="cmp-step-dot"></div>
+                }
+              </div>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+        <div class="cmp-ai-bars">
+          @for (b of [1,2,3,4,5,6,7]; track b) {
+            <div class="cmp-ai-bar" [class]="'cmp-ai-bar--' + b"></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ─── DONE : Résultats légaux ─── -->
+    @if (legStage() === 'done') {
+      @if (legResult(); as res) {
+        <div class="cmp-result">
+
+          <div class="cmp-result-topbar">
+            <div class="cmp-result-topbar-left">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Analyse terminée
+              <span class="cmp-diff-count">{{ res.articles_compared.length }} articles vérifiés</span>
+              <span class="cmp-domain-chip">{{ res.domain }}</span>
+            </div>
+            <button class="cmp-btn-secondary" (click)="resetLegal()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+              Analyser un autre
+            </button>
+          </div>
+
+          <!-- Score + Résumé -->
+          <div class="cmp-legal-score-row">
+            <div class="cmp-score-card">
+              <div class="cmp-score-gauge">
+                <svg width="110" height="110" viewBox="0 0 110 110">
+                  <circle cx="55" cy="55" r="45" fill="none" stroke="var(--divider)" stroke-width="10"/>
+                  <circle cx="55" cy="55" r="45" fill="none"
+                    [attr.stroke]="conformityColor()" stroke-width="10" stroke-linecap="round"
+                    [attr.stroke-dasharray]="conformityDash()" stroke-dashoffset="0"
+                    transform="rotate(-90 55 55)" style="transition:stroke-dasharray 1s ease"/>
+                </svg>
+                <div class="cmp-score-value cmp-score-value--lg" [style.color]="conformityColor()">
+                  {{ res.conformity_score }}<span>%</span>
+                </div>
+              </div>
+              <div class="cmp-score-meta">
+                <div class="cmp-score-label">Score de conformité</div>
+                <div class="cmp-score-sub">{{ legLabel() }}</div>
+                <div class="cmp-conformity-level"
+                  [class.level-high]="res.conformity_score >= 75"
+                  [class.level-mid]="res.conformity_score >= 50 && res.conformity_score < 75"
+                  [class.level-low]="res.conformity_score < 50">
+                  {{ res.conformity_score >= 75 ? 'Conforme' : res.conformity_score >= 50 ? 'Partiellement conforme' : 'Non conforme' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="cmp-legal-summary-card">
+              <div class="cmp-legal-stats">
+                <div class="cmp-leg-stat cmp-leg-stat--ok">
+                  <span class="cmp-leg-stat-n">{{ articlesConformes().length }}</span>
+                  <span>Conformes</span>
+                </div>
+                <div class="cmp-leg-stat cmp-leg-stat--partial">
+                  <span class="cmp-leg-stat-n">{{ articlesPartiels().length }}</span>
+                  <span>Partiels</span>
+                </div>
+                <div class="cmp-leg-stat cmp-leg-stat--missing">
+                  <span class="cmp-leg-stat-n">{{ articlesManquants().length }}</span>
+                  <span>Manquants</span>
+                </div>
+                <div class="cmp-leg-stat cmp-leg-stat--violation">
+                  <span class="cmp-leg-stat-n">{{ articlesViolations().length }}</span>
+                  <span>Violations</span>
+                </div>
+              </div>
+              <p class="cmp-leg-summary">{{ res.summary }}</p>
+            </div>
+          </div>
+
+          <!-- Tableau des articles -->
+          @if (res.articles_compared.length > 0) {
+            <div class="cmp-section-block">
+              <div class="cmp-block-title">Analyse article par article</div>
+              <div class="cmp-articles-table">
+                @for (art of res.articles_compared; track $index) {
+                  <div class="cmp-article-row" [class]="'art-' + art.status">
+                    <div class="cmp-art-status">
+                      <span class="cmp-art-icon"><ui-icon [name]="statusIcon(art.status)" [size]="18" /></span>
+                      <span class="cmp-art-status-label" [class]="'status-' + art.status">
+                        {{ art.status === 'conforme' ? 'Conforme' : art.status === 'partiel' ? 'Partiel' : art.status === 'manquant' ? 'Manquant' : 'Violation' }}
+                      </span>
+                    </div>
+                    <div class="cmp-art-body">
+                      <div class="cmp-art-ref">{{ art.article }}</div>
+                      <div class="cmp-art-req">{{ art.requirement }}</div>
+                      @if (art.text_extract) {
+                        <div class="cmp-art-extract">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                          <em>{{ art.text_extract }}</em>
+                        </div>
+                      }
+                      @if (art.note) { <div class="cmp-art-note">{{ art.note }}</div> }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Clauses manquantes + Violations -->
+          @if ((res.missing_clauses?.length ?? 0) > 0 || (res.violations?.length ?? 0) > 0) {
+            <div class="cmp-leg-issues-grid">
+              @if ((res.missing_clauses?.length ?? 0) > 0) {
+                <div class="cmp-leg-issue-block cmp-leg-issue-block--missing">
+                  <div class="cmp-leg-issue-title">
+                    <ui-icon name="square" [size]="14" /> Clauses manquantes ({{ res.missing_clauses.length }})
+                  </div>
+                  <ul>@for (c of res.missing_clauses; track $index) {
+                    <li><ui-icon name="square" [size]="12" class="cmp-issue-li-icon" />{{ c }}</li>
+                  }</ul>
+                </div>
+              }
+              @if ((res.violations?.length ?? 0) > 0) {
+                <div class="cmp-leg-issue-block cmp-leg-issue-block--violation">
+                  <div class="cmp-leg-issue-title">
+                    <ui-icon name="x-circle" [size]="14" /> Violations ({{ res.violations.length }})
+                  </div>
+                  <ul>@for (v of res.violations; track $index) {
+                    <li><ui-icon name="x-circle" [size]="12" class="cmp-issue-li-icon cmp-issue-li-icon--violation" />{{ v }}</li>
+                  }</ul>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Recommandation -->
+          @if (res.recommendation) {
+            <div class="cmp-recommendation">
+              <div class="cmp-reco-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                Actions recommandées
+              </div>
+              <p>{{ res.recommendation }}</p>
+              <button class="cmp-copy-btn" (click)="copyText(res.recommendation)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copier
+              </button>
+            </div>
+          }
+
+        </div>
+      }
+    }
+
+  }
+
+</div>
+
+<!-- Template diff card -->
+<ng-template #diffCard let-diff="diff" let-la="la" let-lb="lb">
+  <div class="cmp-diff-card" [class]="'diff-' + diff.severity">
+    <div class="cmp-diff-card-bar"></div>
+    <div class="cmp-diff-card-body">
+      <div class="cmp-diff-top">
+        <span class="cmp-diff-theme">{{ diff.theme }}</span>
+        @if (diff.favors !== 'neutre' && diff.favors) {
+          <span class="cmp-favors-badge" [class.favors-a]="diff.favors === 'A'" [class.favors-b]="diff.favors === 'B'">
+            Avantage {{ diff.favors === 'A' ? la : lb }}
+          </span>
+        }
+      </div>
+      @if (diff.text_a_extract || diff.text_b_extract) {
+        <div class="cmp-diff-extracts">
+          @if (diff.text_a_extract) {
+            <div class="cmp-extract cmp-extract--a">
+              <div class="cmp-extract-label"><div class="cmp-slot-badge cmp-slot-badge--a cmp-slot-badge--sm">A</div> {{ la }}</div>
+              <p>{{ diff.text_a_extract }}</p>
+            </div>
+          }
+          @if (diff.text_b_extract) {
+            <div class="cmp-extract cmp-extract--b">
+              <div class="cmp-extract-label"><div class="cmp-slot-badge cmp-slot-badge--b cmp-slot-badge--sm">B</div> {{ lb }}</div>
+              <p>{{ diff.text_b_extract }}</p>
+            </div>
+          }
+        </div>
+      }
+      <div class="cmp-diff-impact">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        {{ diff.impact }}
+      </div>
+    </div>
+  </div>
+</ng-template>

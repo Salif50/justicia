@@ -1,0 +1,90 @@
+# ══════════════════════════════════════════════════════════════════════════
+#  JusticIA — backend (API + moteur IA) + PostgreSQL
+#  Même stack en local et sur le VPS. Le front Angular est déployé sur Vercel.
+#
+#    cd deploy
+#    cp .env.example .env      # puis remplir les secrets
+#    ./up.sh                   # = docker compose up -d --build
+# ══════════════════════════════════════════════════════════════════════════
+
+name: justicia
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-db_justicia}
+      POSTGRES_USER: ${POSTGRES_USER:-justicia}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [justicia]
+    # Pas de port publié : la base n'est joignable que par l'API.
+
+  api:
+    build:
+      context: ..                    # racine du projet
+      dockerfile: deploy/Dockerfile  # ignore : deploy/Dockerfile.dockerignore
+    image: justicia-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      RAG_MODEL_PATH: /app/model
+      HF_HOME: /app/.cache/huggingface
+      TOKENIZERS_PARALLELISM: "false"
+    ports:
+      - "${API_BIND:-127.0.0.1}:${API_PORT:-8000}:8000"
+    volumes:
+      # Le moteur IA n'est pas copié dans l'image : il est monté depuis ../model.
+      # Code et corpus en lecture seule ; l'index ChromaDB (SQLite) doit rester
+      # inscriptible, même pour une simple lecture (fichiers de verrou/journal).
+      # Mettre à jour l'index = remplacer model/ puis `docker compose restart api`.
+      - ../model:/app/model:ro
+      - ../model/03_vectorstore:/app/model/03_vectorstore
+      - uploads:/app/backend/uploads
+      - hf_cache:/app/.cache/huggingface
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    networks: [justicia]
+
+  # HTTPS automatique (Let's Encrypt) — uniquement sur le VPS :
+  #   API_DOMAIN=api.votre-domaine.com dans .env, puis ./up.sh (active ce profil)
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    environment:
+      API_DOMAIN: ${API_DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api]
+    networks: [justicia]
+
+volumes:
+  pgdata:
+  uploads:
+  hf_cache:
+  caddy_data:
+  caddy_config:
+
+networks:
+  justicia:
+    driver: bridge

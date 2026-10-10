@@ -1,0 +1,330 @@
+<div class="fm-page">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       VUE : BIBLIOTHÈQUE
+  ═══════════════════════════════════════════════════════════════════ -->
+  @if (viewMode() === 'library') {
+
+    <!-- En-tête -->
+    <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Ressources juridiques</p>
+      <h1 class="app-title">Formulaires juridiques</h1>
+      <p class="app-sub">Remplissez un modèle et voyez le document se composer en temps réel.</p>
+    </div>
+  </header>
+
+    <!-- Catégories pills -->
+    <div class="fm-cats">
+      <button class="fm-cat-pill" [class.active]="selectedCategory() === 'Tous'" (click)="selectCategory('Tous')">
+        Tous · {{ ALL_FORMS.length }}
+      </button>
+      @for (s of statsParCategorie(); track s.cat) {
+        <button class="fm-cat-pill" [class.active]="selectedCategory() === s.cat" (click)="selectCategory(s.cat)">
+          <ui-icon [name]="s.icon" [size]="14" /> {{ s.cat }}
+          <span class="fm-cat-count">{{ s.count }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Barre de recherche + filtres -->
+    <div class="fm-toolbar">
+      <div class="fm-search-wrap">
+        <svg class="fm-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input [(ngModel)]="searchQuery" class="fm-search" placeholder="Rechercher un formulaire…" />
+        @if (searchQuery()) {
+          <button class="fm-search-clear" (click)="clearSearch()"><ui-icon name="x" [size]="12" /></button>
+        }
+      </div>
+      <select [(ngModel)]="selectedDiff" class="fm-filter-select">
+        <option value="">Toutes difficultés</option>
+        <option value="Facile">Facile</option>
+        <option value="Moyen">Moyen</option>
+        <option value="Complexe">Complexe</option>
+      </select>
+      @if (searchQuery() || selectedDiff()) {
+        <button class="fm-reset-btn" (click)="clearFilters()">Réinitialiser</button>
+      }
+    </div>
+
+    <!-- Grille -->
+    @if (filteredForms().length > 0) {
+      <div class="fm-grid">
+        @for (f of filteredForms(); track f.id) {
+          <div class="fm-card" (click)="selectForm(f)">
+            <div class="fm-card-top">
+              <div class="fm-card-icon inline-icon-box"><ui-icon [name]="f.icon" [size]="20" /></div>
+              <div class="fm-card-meta">
+                <span class="fm-cat-badge">
+                  <ui-icon [name]="catIcon(f.categorie)" [size]="12" /> {{ f.categorie }}
+                </span>
+                <span class="fm-diff-badge {{ diffClass(f.difficulte) }}">{{ f.difficulte }}</span>
+              </div>
+            </div>
+            <h3 class="fm-card-title">{{ f.titre }}</h3>
+            <p class="fm-card-sub">{{ f.sous_titre }}</p>
+            <p class="fm-card-desc">{{ f.description }}</p>
+            <div class="fm-card-tags">
+              @for (tag of f.tags.slice(0, 3); track tag) {
+                <span class="fm-tag">#{{ tag }}</span>
+              }
+            </div>
+            <div class="fm-card-footer">
+              <div class="fm-card-info">
+                <span><ui-icon name="clock" [size]="12" /> {{ f.duree_fill }}</span>
+                <span>· {{ f.fields.length }} champs</span>
+              </div>
+              <button class="fm-fill-btn">
+                Remplir
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="fm-empty">
+        <div class="fm-empty-icon inline-icon-box"><ui-icon name="search" [size]="28" /></div>
+        <p>Aucun formulaire ne correspond à vos filtres.</p>
+        <button class="fm-reset-btn" (click)="clearFilters()">Tout afficher</button>
+      </div>
+    }
+
+    <!-- Notice bas de page -->
+    <div class="fm-notice">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Ces formulaires sont fournis à titre informatif. Pour tout acte engageant des enjeux importants, consultez un avocat inscrit au Barreau de Guinée.
+    </div>
+
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       VUE : REMPLISSAGE
+  ═══════════════════════════════════════════════════════════════════ -->
+  @if (viewMode() === 'fill' && activeForm()) {
+
+    <!-- Navigation -->
+    <div class="fm-fill-nav">
+      <button class="fm-back-btn" (click)="goBack()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Bibliothèque
+      </button>
+      <div class="fm-fill-breadcrumb">
+        <span class="fm-fill-cat">
+          <ui-icon [name]="catIcon(activeForm()!.categorie)" [size]="14" /> {{ activeForm()!.categorie }}
+        </span>
+        <span>›</span>
+        <span>{{ activeForm()!.titre }}</span>
+      </div>
+    </div>
+
+    <!-- Titre + progression -->
+    <div class="fm-fill-header">
+      <div class="fm-fill-icon inline-icon-box"><ui-icon [name]="activeForm()!.icon" [size]="22" /></div>
+      <div class="fm-fill-title-block">
+        <h2>{{ activeForm()!.titre }}</h2>
+        <p>{{ activeForm()!.base_legale }}</p>
+      </div>
+      <div class="fm-progress-block">
+        <div class="fm-progress-label">
+          {{ filledCount() }}/{{ requiredCount() }} champs obligatoires
+          <strong>{{ fillProgress() }}%</strong>
+        </div>
+        <div class="fm-progress-bar">
+          <div class="fm-progress-fill" [style.width.%]="fillProgress()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout 2 colonnes : champs | prévisualisation -->
+    <div class="fm-fill-layout">
+
+      <!-- ── Panneau gauche : champs ─────────────────────────────── -->
+      <div class="fm-fields-panel">
+
+        @for (sec of formSections(); track sec.section) {
+          <div class="fm-section">
+            <button class="fm-section-head" (click)="toggleSection(sec.section)">
+              <span class="fm-section-title">{{ sec.section }}</span>
+              <span class="fm-section-filled">
+                {{ sectionFilledCount(sec.fields) }}/{{ sec.fields.length }}
+              </span>
+              <svg class="fm-section-chevron" [class.open]="isSectionExpanded(sec.section)"
+                   width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            @if (isSectionExpanded(sec.section)) {
+              <div class="fm-section-body">
+                @for (field of sec.fields; track field.key) {
+                  <div class="fm-field" [class.fm-field--required]="field.required" [class.fm-field--filled]="getField(field.key)">
+
+                    <div class="fm-field-head">
+                      <label [for]="'f_' + field.key">
+                        {{ field.label }}
+                        @if (field.required) { <span class="fm-req">*</span> }
+                      </label>
+                      <button class="fm-help-btn"
+                        [class.active]="helpFieldKey() === field.key"
+                        (click)="askHelp(field)"
+                        title="Aide IA pour ce champ">
+                        @if (helpFieldKey() === field.key && helpStage() === 'loading') {
+                          <span class="fm-help-spin"><ui-icon name="rotate" [size]="13" /></span>
+                        } @else {
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+                          Aide IA
+                        }
+                      </button>
+                    </div>
+
+                    <!-- Aide IA inline -->
+                    @if (helpFieldKey() === field.key) {
+                      <div class="fm-help-box" [class.fm-help-box--loading]="helpStage() === 'loading'">
+                        @if (helpStage() === 'loading') {
+                          <span class="fm-help-thinking">L'IA analyse votre champ…</span>
+                        }
+                        @if (helpStage() === 'done') {
+                          <div class="fm-help-content">
+                            <div class="fm-help-text">{{ helpText() }}</div>
+                            <button class="fm-help-close" (click)="closeHelp()"><ui-icon name="x" [size]="12" /></button>
+                          </div>
+                        }
+                        @if (helpStage() === 'error') {
+                          <span class="fm-help-error">{{ helpError() }}</span>
+                        }
+                      </div>
+                    }
+
+                    <!-- Input -->
+                    @if (field.type === 'text' || field.type === 'number') {
+                      <input
+                        [id]="'f_' + field.key"
+                        [type]="field.type"
+                        [placeholder]="field.placeholder"
+                        [value]="getField(field.key)"
+                        (input)="setField(field.key, $any($event.target).value)"
+                        class="fm-input"
+                      />
+                    }
+                    @if (field.type === 'date') {
+                      <input
+                        [id]="'f_' + field.key"
+                        type="date"
+                        [value]="getField(field.key)"
+                        (input)="setField(field.key, $any($event.target).value)"
+                        class="fm-input"
+                      />
+                    }
+                    @if (field.type === 'textarea') {
+                      <textarea
+                        [id]="'f_' + field.key"
+                        [placeholder]="field.placeholder"
+                        [value]="getField(field.key)"
+                        (input)="setField(field.key, $any($event.target).value)"
+                        rows="4"
+                        class="fm-input"
+                      ></textarea>
+                    }
+                    @if (field.type === 'select') {
+                      <select
+                        [id]="'f_' + field.key"
+                        [value]="getField(field.key)"
+                        (change)="setField(field.key, $any($event.target).value)"
+                        class="fm-input"
+                      >
+                        <option value="">Sélectionner…</option>
+                        @for (opt of field.options; track opt) {
+                          <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    }
+
+                    @if (field.hint && helpFieldKey() !== field.key) {
+                      <small class="fm-hint">{{ field.hint }}</small>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Actions IA -->
+        <div class="fm-ia-actions">
+          <button class="fm-ia-btn" (click)="polishWithAI()"
+            [disabled]="!canPolish() || polishStage() === 'loading'"
+            [class.loading]="polishStage() === 'loading'">
+            @if (polishStage() === 'loading') {
+              <span class="fm-ia-spin"><ui-icon name="rotate" [size]="16" /></span>
+              {{ thinkingMessages[thinkingStep()] }}
+            } @else {
+              <ui-icon name="sparkles" [size]="16" /> Améliorer avec l'IA
+            }
+          </button>
+          <small class="fm-ia-note">
+            @if (!canPolish()) {
+              Remplissez au moins 50% des champs requis
+            } @else {
+              L'IA va compléter et perfectionner le document
+            }
+          </small>
+        </div>
+
+        @if (polishStage() === 'error') {
+          <div class="fm-error-box">{{ polishError() }}</div>
+        }
+
+      </div>
+
+      <!-- ── Panneau droit : prévisualisation ────────────────────── -->
+      <div class="fm-preview-panel">
+        <div class="fm-preview-header">
+          <div class="fm-preview-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            @if (polishStage() === 'done') {
+              Document amélioré par l'IA
+            } @else {
+              Prévisualisation en temps réel
+            }
+          </div>
+          <div class="fm-preview-actions">
+            <button class="fm-preview-btn" (click)="copyDoc()" [class.copied]="copied()">
+              @if (copied()) { <ui-icon name="check" [size]="13" /> Copié ! } @else { <ui-icon name="clipboard" [size]="13" /> Copier }
+            </button>
+            <button class="fm-preview-btn" (click)="printDoc()">
+              <ui-icon name="printer" [size]="13" /> Imprimer
+            </button>
+          </div>
+        </div>
+
+        <!-- Document prévisualisé -->
+        <div class="fm-preview-body">
+          @if (polishStage() === 'loading') {
+            <div class="fm-preview-thinking">
+              <div class="fm-thinking-ring"></div>
+              <div class="fm-thinking-steps">
+                @for (msg of thinkingMessages; track msg; let i = $index) {
+                  <div class="fm-thinking-step" [class.active]="i === thinkingStep()">{{ msg }}</div>
+                }
+              </div>
+            </div>
+          } @else if (polishStage() === 'done' && polishedDoc()) {
+            <pre class="fm-doc-text fm-doc-text--polished">{{ polishedDoc() }}</pre>
+          } @else {
+            <pre class="fm-doc-text">{{ previewText() }}</pre>
+          }
+        </div>
+
+        @if (hasEmptyRequired() && polishStage() !== 'done') {
+          <div class="fm-preview-warning">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Les champs <code>_______________</code> sont à compléter
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

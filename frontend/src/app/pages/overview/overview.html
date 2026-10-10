@@ -1,0 +1,185 @@
+<div class="ov">
+
+  <!-- ── En-tête ──────────────────────────────────────────────── -->
+  <header class="ov-head">
+    <div>
+      <p class="ov-date">{{ formatDate() }}</p>
+      <h2 class="ov-title">{{ getGreeting() }}, {{ userName() }}.</h2>
+      <p class="ov-sub">Votre espace de travail juridique.</p>
+    </div>
+  </header>
+
+  <!-- ── Saisie rapide ─────────────────────────────────────────── -->
+  <a routerLink="/dashboard/chat" class="ov-ask">
+    <svg class="ov-ask-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="ov-ask-text">Posez une question juridique en français…</span>
+    <span class="ov-ask-btn">
+      Nouvelle consultation
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </span>
+  </a>
+
+  <!-- ── Indicateurs ───────────────────────────────────────────── -->
+  <div class="ov-stats">
+    <div class="ov-stat" [class.is-alert]="!usage()?.is_unlimited && (usage()?.remaining ?? 1) === 0">
+      <span class="ov-stat-label">Questions aujourd'hui</span>
+      @if (usage()?.is_unlimited) {
+        <span class="ov-stat-value">Illimitées</span>
+      } @else if (usage()) {
+        <span class="ov-stat-value">{{ usage()!.questions_today }}<small> / {{ usage()!.daily_limit }}</small></span>
+        <span class="ov-meter"><span [style.width.%]="getQuotaPercent()"></span></span>
+      } @else {
+        <span class="ov-stat-value">—</span>
+      }
+      <span class="ov-stat-foot">Plan {{ usage()?.plan_name || 'Gratuit' }}</span>
+    </div>
+    <a routerLink="/dashboard/history" class="ov-stat">
+      <span class="ov-stat-label">Conversations</span>
+      <span class="ov-stat-value">{{ stats().conversationsTotal }}</span>
+      <span class="ov-stat-foot">Voir l'historique</span>
+    </a>
+    <a routerLink="/dashboard/cases" class="ov-stat">
+      <span class="ov-stat-label">Dossiers actifs</span>
+      <span class="ov-stat-value">{{ stats().casesTotal }}</span>
+      <span class="ov-stat-foot">Gérer les dossiers</span>
+    </a>
+    <a routerLink="/dashboard/agenda" class="ov-stat" [class.is-alert]="stats().upcomingEvents > 0">
+      <span class="ov-stat-label">Échéances à venir</span>
+      <span class="ov-stat-value">{{ stats().upcomingEvents }}</span>
+      <span class="ov-stat-foot">Ouvrir l'agenda</span>
+    </a>
+  </div>
+
+  <!-- ── Corps ─────────────────────────────────────────────────── -->
+  <div class="ov-grid">
+
+    <div class="ov-col">
+      <section class="ov-panel">
+        <header class="ov-panel-head">
+          <h3>Conversations récentes</h3>
+          <a routerLink="/dashboard/history">Tout l'historique</a>
+        </header>
+
+        @if (isLoading()) {
+          <div class="ov-skeleton">@for (i of [1,2,3]; track i) {<span></span>}</div>
+        } @else if (recentConvs().length === 0) {
+          <div class="ov-empty">
+            <p>Aucune conversation pour l'instant.</p>
+            <a routerLink="/dashboard/chat">Poser une première question</a>
+          </div>
+        } @else {
+          <ul class="ov-rows">
+            @for (conv of recentConvs(); track conv.id) {
+              <li>
+                <a [routerLink]="['/dashboard/chat', conv.id]" class="ov-row">
+                  <span class="ov-row-main">
+                    <strong>{{ conv.title }}</strong>
+                    <small>{{ agentLabel(conv.agent_id) }} · {{ conv.message_count }} messages</small>
+                  </span>
+                  <span class="ov-row-meta">{{ formatConvDate(conv.updated_at) }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="ov-panel">
+        <header class="ov-panel-head">
+          <h3>Outils</h3>
+        </header>
+        <div class="ov-tools">
+          @for (action of quickActions; track action.route) {
+            <a [routerLink]="action.route" class="ov-tool">
+              <span class="ov-tool-icon">
+                @switch (action.icon) {
+                  @case ('chat') { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> }
+                  @case ('case') { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> }
+                  @case ('doc') { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> }
+                  @case ('generate') { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> }
+                  @case ('agent') { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> }
+                  @case ('agenda') { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> }
+                }
+              </span>
+              <span class="ov-tool-label">{{ action.label }}</span>
+              <svg class="ov-tool-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="ov-col">
+      <section class="ov-panel">
+        <header class="ov-panel-head">
+          <h3>Prochaines échéances</h3>
+          <a routerLink="/dashboard/agenda">Agenda</a>
+        </header>
+
+        @if (isLoading()) {
+          <div class="ov-skeleton">@for (i of [1,2]; track i) {<span></span>}</div>
+        } @else if (upcomingEvents().length === 0) {
+          <div class="ov-empty">
+            <p>Aucune échéance à venir.</p>
+            <a routerLink="/dashboard/agenda">Planifier une échéance</a>
+          </div>
+        } @else {
+          <ul class="ov-rows">
+            @for (ev of upcomingEvents(); track ev.id) {
+              <li class="ov-row ov-row--static" [class.is-urgent]="isEventUrgent(ev.start_at)">
+                <span class="ov-row-icon"><ui-icon [name]="eventIcon(ev.event_type)" [size]="15" /></span>
+                <span class="ov-row-main">
+                  <strong>{{ ev.title }}</strong>
+                  @if (ev.case_name) { <small>{{ ev.case_name }}</small> }
+                </span>
+                <span class="ov-row-meta ov-row-date">{{ formatEventDate(ev.start_at) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="ov-panel">
+        <header class="ov-panel-head">
+          <h3>Dossiers actifs</h3>
+          <a routerLink="/dashboard/cases">Tous les dossiers</a>
+        </header>
+
+        @if (isLoading()) {
+          <div class="ov-skeleton">@for (i of [1,2]; track i) {<span></span>}</div>
+        } @else if (cases().length === 0) {
+          <div class="ov-empty">
+            <p>Aucun dossier ouvert.</p>
+            <a routerLink="/dashboard/cases">Créer un dossier</a>
+          </div>
+        } @else {
+          <ul class="ov-rows">
+            @for (c of cases().slice(0, 4); track c.id) {
+              <li>
+                <a [routerLink]="['/dashboard/cases', c.id]" class="ov-row">
+                  <span class="ov-row-main">
+                    <strong>{{ c.name }}</strong>
+                    <small>{{ c.document_count }} document(s)</small>
+                  </span>
+                  <svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="ov-panel">
+        <header class="ov-panel-head">
+          <h3>Ressources</h3>
+        </header>
+        <ul class="ov-rows">
+          <li><a routerLink="/dashboard/encyclopedia" class="ov-row"><span class="ov-row-main"><strong>Encyclopédie juridique</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
+          <li><a routerLink="/dashboard/glossary" class="ov-row"><span class="ov-row-main"><strong>Glossaire juridique</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
+          <li><a routerLink="/dashboard/procedures" class="ov-row"><span class="ov-row-main"><strong>Guide des démarches</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
+        </ul>
+      </section>
+    </div>
+
+  </div>
+</div>

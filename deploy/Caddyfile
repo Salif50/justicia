@@ -1,0 +1,6 @@
+# Reverse proxy HTTPS devant l'API (certificat Let's Encrypt automatique).
+# Le DNS de API_DOMAIN doit pointer vers l'IP du VPS, ports 80 et 443 ouverts.
+{$API_DOMAIN} {
+	encode gzip
+	reverse_proxy api:8000
+}

@@ -1,0 +1,305 @@
+<app-header></app-header>
+
+<section class="auth-page">
+  <div class="auth-layout">
+
+    <!-- Image hero plein écran (contenu à gauche, espace formulaire à droite) -->
+    <div class="auth-visual">
+      <img src="/lojusticia.png?v=1" alt="" class="auth-hero-img" />
+      <div class="auth-caption">
+        <p class="pub-eyebrow">Rejoindre JusticIA</p>
+        <blockquote>Des réponses juridiques <em>sourcées</em>, au service de votre pratique.</blockquote>
+      </div>
+    </div>
+
+    <!-- Formulaire — zone droite de l'image -->
+    <main class="auth-form-panel">
+      <div class="auth-card signup-card">
+        <div class="auth-header">
+          <h1>Créer un compte</h1>
+          <p>Rejoignez JusticIA et transformez votre pratique juridique</p>
+        </div>
+
+        <div class="social-login">
+          <button type="button" class="btn-google" (click)="signUpWithGoogle()" [disabled]="isLoading()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span>Continuer avec Google</span>
+          </button>
+        </div>
+
+        <div class="auth-divider"><span>ou</span></div>
+
+        <form (ngSubmit)="onSubmit()" class="auth-form">
+          @if (error()) {
+            <div class="error-message">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{{ error() }}</span>
+            </div>
+          }
+
+          <div class="form-row signup-row">
+            <div class="form-group">
+              <label for="name">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Nom complet</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                [value]="name()"
+                (input)="name.set($any($event.target).value)"
+                placeholder="Votre nom"
+                required
+                autocomplete="name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="email">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>Email</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                [value]="email()"
+                (input)="email.set($any($event.target).value)"
+                placeholder="votre@email.com"
+                required
+                autocomplete="email"
+              />
+            </div>
+          </div>
+
+          <div class="form-row signup-row">
+            <div class="form-group">
+              <label for="password">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <span>Mot de passe</span>
+              </label>
+              <input
+                type="password"
+                id="password"
+                [value]="password()"
+                (input)="password.set($any($event.target).value)"
+                placeholder="••••••••"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <span>Confirmer le mot de passe</span>
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                [value]="confirmPassword()"
+                (input)="confirmPassword.set($any($event.target).value)"
+                placeholder="••••••••"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
+
+          <div class="terms-checkbox">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [checked]="acceptTerms()"
+                (change)="acceptTerms.set($any($event.target).checked)"
+                required
+              />
+              <span>
+                J'accepte les
+                <button type="button" class="terms-link" (click)="openTermsModal()">conditions d'utilisation</button>
+                et la
+                <button type="button" class="terms-link" (click)="openTermsModal()">politique de confidentialité</button>
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-primary btn-submit" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="spinner">
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              <span>Inscription...</span>
+            } @else {
+              <span>Créer mon compte</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            }
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Déjà un compte ? <a routerLink="/login">Se connecter</a></p>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  @if (showTermsModal()) {
+    <div class="terms-modal-overlay" (click)="closeTermsModal()">
+      <div class="terms-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Conditions d'utilisation et Politique de confidentialité</h2>
+          <button type="button" class="modal-close" (click)="closeTermsModal()" aria-label="Fermer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-content">
+          <div class="terms-section">
+            <h3>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+              Clause 1 : Nature du Service et Limite de Responsabilité
+            </h3>
+            <p class="section-intro">
+              <strong>Ceci est la clause la plus importante qui vous protège.</strong> JusticIA est un outil d'assistance, pas un professionnel du droit.
+            </p>
+            <div class="terms-subsection">
+              <h4>Non-Conseil Juridique</h4>
+              <p>
+                <strong>JusticIA n'est pas un cabinet d'avocats, ni un substitut à une consultation juridique professionnelle.</strong>
+                Les informations fournies constituent une <em>assistance documentaire et analytique</em> basée sur les textes légaux guinéens en vigueur.
+              </p>
+            </div>
+            <div class="terms-subsection">
+              <h4>Responsabilité</h4>
+              <p>
+                L'Utilisateur reconnaît et accepte que <strong>les réponses et analyses de JusticIA sont fournies à titre informatif et ne sauraient engager la responsabilité de la Société</strong>.
+                L'utilisateur est seul responsable de l'interprétation et de l'usage des informations et doit consulter un avocat ou un professionnel du droit pour toute décision engageante.
+              </p>
+            </div>
+            <div class="terms-subsection">
+              <h4>Fiabilité des Sources</h4>
+              <p>
+                Bien que l'outil s'efforce de référencer fidèlement les lois en vigueur en Guinée, la Société ne garantit pas l'exhaustivité ni l'actualité des textes juridiques et décline toute responsabilité en cas de mise à jour légale non encore intégrée.
+              </p>
+            </div>
+          </div>
+
+          <div class="terms-section">
+            <h3>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Clause 2 : Collecte et Traitement des Données de l'Utilisateur
+            </h3>
+            <p class="section-intro">
+              Transparence sur ce qui est collecté pour améliorer le service, tout en rassurant sur la confidentialité des conversations.
+            </p>
+            <div class="terms-subsection">
+              <h4>Principe des Données de Conversation</h4>
+              <p>
+                Par défaut, les conversations tenues avec JusticIA sont considérées comme <strong>éphémères</strong> et sont <strong>supprimées après une courte période</strong> (24h ou fin de session),
+                sauf si l'utilisateur choisit explicitement de les conserver.
+              </p>
+            </div>
+            <div class="terms-subsection">
+              <h4>Conservation Volontaire</h4>
+              <p>
+                L'Utilisateur a la possibilité, via une fonctionnalité dédiée, de <strong>sauvegarder activement</strong> certaines conversations ou analyses pour un usage ultérieur.
+                Dans ce cas, ces données sont stockées sécuritairement sur nos serveurs.
+              </p>
+            </div>
+            <div class="terms-subsection">
+              <h4>Collecte à des Fins d'Amélioration</h4>
+              <p>
+                La Société se réserve le droit d'utiliser des <strong>données de conversation anonymisées et agrégées</strong> (ne permettant pas d'identifier l'utilisateur)
+                à des fins d'amélioration de la qualité des réponses (pertinence de la recherche dans les textes de loi) et d'analyse de l'usage. Ces données ne servent pas à entraîner un modèle d'IA.
+              </p>
+            </div>
+          </div>
+
+          <div class="terms-section">
+            <h3>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              Clause 3 : Historique de Navigation et d'Usage sur la Plateforme
+            </h3>
+            <p class="section-intro">
+              Détail de ce qui est enregistré pour les besoins du service par abonnement.
+            </p>
+            <div class="terms-subsection">
+              <h4>Historique d'Usage</h4>
+              <p>
+                Pour le bon fonctionnement du service d'abonnement, la Société enregistre l'historique des <strong>interactions et des requêtes</strong> de l'utilisateur
+                (date, type de requête, domaine juridique interrogé).
+              </p>
+            </div>
+            <div class="terms-subsection">
+              <h4>Suivi des Démarches</h4>
+              <p>
+                Si l'utilisateur utilise des fonctionnalités de <strong>suivi de démarches</strong> ou de génération de documents (Rapports, plans, etc.),
+                ces informations sont conservées sous le profil de l'utilisateur pour lui permettre d'y revenir.
+              </p>
+            </div>
+            <div class="terms-subsection">
+              <h4>Finalité du Suivi</h4>
+              <p>
+                Ces données sont utilisées exclusivement pour la <strong>gestion du compte utilisateur</strong>, la facturation de l'abonnement et l'amélioration de la pertinence des réponses pour cet utilisateur.
+              </p>
+            </div>
+          </div>
+
+          <div class="terms-section">
+            <h3>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon warning-icon">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Avertissement Important
+            </h3>
+            <p class="warning-text">
+              <strong>JusticIA est un outil d'assistance et ne peut en aucun cas être considéré comme un substitut à un avocat professionnel.</strong>
+              Pour des conseils juridiques personnalisés et officiels, consultez toujours un avocat qualifié.
+            </p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-accept" (click)="acceptTerms.set(true); closeTermsModal()">
+              J'accepte les conditions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,87 @@
+<div class="app-page">
+
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Gestion des affaires</p>
+      <h1 class="app-title">Mes procès</h1>
+      <p class="app-sub">Organisez vos dossiers judiciaires et analysez leurs pièces avec l'assistant.</p>
+    </div>
+    <div class="app-head-actions">
+      <button class="app-btn" (click)="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouveau procès
+      </button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="app-loading"><span class="app-spinner"></span>Chargement des dossiers…</div>
+  } @else if (cases().length === 0) {
+    <div class="app-panel app-empty">
+      <h3>Aucun dossier pour l'instant</h3>
+      <p>Créez un premier procès pour y rassembler les pièces, suivre l'affaire et interroger l'assistant sur le dossier.</p>
+      <button class="app-btn" (click)="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Créer mon premier dossier
+      </button>
+    </div>
+  } @else {
+    <div class="cases">
+      @for (case_ of cases(); track case_.id) {
+        <button type="button" class="case" (click)="openCase(case_.id)">
+          <span class="case-meta">
+            <span>Ouvert le {{ formatDate(case_.created_at) }}</span>
+            <span class="app-tag">{{ case_.document_count }} pièce{{ case_.document_count !== 1 ? 's' : '' }}</span>
+          </span>
+          <span class="case-name">{{ case_.name }}</span>
+          <span class="case-desc" [class.is-empty]="!case_.description">{{ case_.description || 'Aucune description' }}</span>
+          <span class="case-foot">
+            <span>Modifié {{ formatDate(case_.updated_at) }}</span>
+            <span class="case-open">Ouvrir
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </span>
+        </button>
+      }
+    </div>
+  }
+</div>
+
+@if (showModal()) {
+  <div class="app-overlay" (click)="closeModal()">
+    <div class="app-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="app-modal-head">
+        <div>
+          <h3>Nouveau dossier judiciaire</h3>
+          <p>Vous pourrez ajouter les pièces juste après.</p>
+        </div>
+        <button class="app-modal-close" (click)="closeModal()" aria-label="Fermer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="app-modal-body">
+        @if (createError()) { <div class="app-error">{{ createError() }}</div> }
+        <div class="app-field">
+          <label for="case-name">Nom du dossier <span class="req">*</span></label>
+          <input id="case-name" class="app-input" type="text"
+            [value]="newName()" (input)="newName.set($any($event.target).value)"
+            placeholder="Ex. Affaire Camara c/ Diallo 2024" />
+        </div>
+        <div class="app-field">
+          <label for="case-desc">Description</label>
+          <textarea id="case-desc" class="app-input" rows="4"
+            [value]="newDescription()" (input)="newDescription.set($any($event.target).value)"
+            placeholder="Parties, juridiction, nature de l'affaire…"></textarea>
+        </div>
+      </div>
+
+      <div class="app-modal-foot">
+        <button class="app-btn app-btn--quiet" (click)="closeModal()">Annuler</button>
+        <button class="app-btn" (click)="create()" [disabled]="isCreating() || !newName().trim()">
+          @if (isCreating()) { <span class="app-spinner"></span> Création… } @else { Créer le dossier }
+        </button>
+      </div>
+    </div>
+  </div>
+}

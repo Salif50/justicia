@@ -1,0 +1,166 @@
+<div class="app-page pf">
+
+  @if (isLoading()) {
+    <div class="app-loading"><span class="app-spinner"></span>Chargement du profil…</div>
+  } @else {
+
+    <header class="app-head">
+      <div class="pf-id">
+        <span class="pf-avatar" aria-hidden="true">{{ (name() || email() || '?').charAt(0).toUpperCase() }}</span>
+        <div>
+          <p class="app-eyebrow">Compte</p>
+          <h1 class="app-title">{{ name() || 'Mon profil' }}</h1>
+          <p class="app-sub">{{ email() }}@if (joinDate()) { · membre depuis {{ joinDate() | date:'MMMM yyyy' }} }</p>
+        </div>
+      </div>
+      <div class="app-head-actions">
+        @if (isEditing()) {
+          <button class="app-btn app-btn--quiet" (click)="toggleEdit()">Annuler</button>
+          <button class="app-btn" (click)="saveProfile()" [disabled]="isSaving()">
+            @if (isSaving()) { <span class="app-spinner"></span> Enregistrement… } @else { Enregistrer }
+          </button>
+        } @else {
+          <button class="app-btn app-btn--quiet" (click)="toggleEdit()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Modifier le profil
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (saveSuccess()) { <div class="pf-alert is-ok">Profil mis à jour.</div> }
+    @if (saveError()) { <div class="pf-alert is-err">{{ saveError() }}</div> }
+    @if (passwordSuccess()) { <div class="pf-alert is-ok">Mot de passe modifié.</div> }
+
+    <!-- Activité -->
+    <div class="pf-stats">
+      <div class="pf-stat"><span class="pf-stat-label">Conversations</span><span class="pf-stat-value">{{ stats().conversations }}</span></div>
+      <div class="pf-stat"><span class="pf-stat-label">Questions posées</span><span class="pf-stat-value">{{ stats().questions }}</span></div>
+      <div class="pf-stat"><span class="pf-stat-label">Agents utilisés</span><span class="pf-stat-value">{{ stats().agents }}</span></div>
+      <div class="pf-stat"><span class="pf-stat-label">Documents consultés</span><span class="pf-stat-value">{{ stats().documents }}</span></div>
+    </div>
+
+    <!-- Informations -->
+    <section class="pf-section">
+      <div class="pf-section-info">
+        <h2>Informations personnelles</h2>
+        <p>Utilisées pour personnaliser vos réponses et vos documents générés.</p>
+      </div>
+      <div class="pf-list">
+        <div class="pf-row">
+          <label for="pf-name">Nom complet</label>
+          @if (isEditing()) {
+            <input id="pf-name" class="app-input" type="text" [value]="name()" (input)="name.set($any($event.target).value)" placeholder="Votre nom complet" />
+          } @else { <span class="pf-value" [class.is-empty]="!name()">{{ name() || 'Non renseigné' }}</span> }
+        </div>
+        <div class="pf-row">
+          <label>Adresse e-mail</label>
+          <span class="pf-value">{{ email() || 'Non renseigné' }}</span>
+        </div>
+        <div class="pf-row">
+          <label for="pf-phone">Téléphone</label>
+          @if (isEditing()) {
+            <input id="pf-phone" class="app-input" type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" placeholder="+224 6XX XX XX XX" />
+          } @else { <span class="pf-value" [class.is-empty]="!phone()">{{ phone() || 'Non renseigné' }}</span> }
+        </div>
+        <div class="pf-row">
+          <label for="pf-birth">Date de naissance</label>
+          @if (isEditing()) {
+            <input id="pf-birth" class="app-input" type="date" [value]="birthDate()" (input)="birthDate.set($any($event.target).value)" />
+          } @else { <span class="pf-value" [class.is-empty]="!birthDate()">{{ birthDate() || 'Non renseigné' }}</span> }
+        </div>
+        <div class="pf-row">
+          <label for="pf-job">Profession</label>
+          @if (isEditing()) {
+            <input id="pf-job" class="app-input" type="text" [value]="profession()" (input)="profession.set($any($event.target).value)" placeholder="Votre profession" />
+          } @else { <span class="pf-value" [class.is-empty]="!profession()">{{ profession() || 'Non renseigné' }}</span> }
+        </div>
+        <div class="pf-row">
+          <label for="pf-addr">Adresse</label>
+          @if (isEditing()) {
+            <textarea id="pf-addr" class="app-input" rows="2" [value]="address()" (input)="address.set($any($event.target).value)" placeholder="Votre adresse"></textarea>
+          } @else { <span class="pf-value" [class.is-empty]="!address()">{{ address() || 'Non renseigné' }}</span> }
+        </div>
+      </div>
+    </section>
+
+    <!-- Sécurité -->
+    <section class="pf-section">
+      <div class="pf-section-info">
+        <h2>Sécurité</h2>
+        <p>
+          @if (lastLogin()) { Dernière connexion le {{ lastLogin() | date:'dd MMMM yyyy à HH:mm' }}. }
+          @else { Protégez l'accès à vos dossiers. }
+        </p>
+      </div>
+      <div class="pf-list">
+        @if (!isGoogleAccount()) {
+          <div class="pf-row pf-row--action">
+            <div>
+              <strong>Mot de passe</strong>
+              <span class="pf-hint">Modifiez votre mot de passe de connexion.</span>
+            </div>
+            <button class="app-btn app-btn--quiet app-btn--sm" (click)="showPasswordForm.set(!showPasswordForm())">
+              {{ showPasswordForm() ? 'Annuler' : 'Changer' }}
+            </button>
+          </div>
+          @if (showPasswordForm()) {
+            <div class="pf-password">
+              @if (passwordError()) { <div class="app-error">{{ passwordError() }}</div> }
+              <input class="app-input" type="password" [value]="currentPassword()" (input)="currentPassword.set($any($event.target).value)" placeholder="Mot de passe actuel" autocomplete="current-password" />
+              <input class="app-input" type="password" [value]="newPassword()" (input)="newPassword.set($any($event.target).value)" placeholder="Nouveau mot de passe (8 caractères min.)" autocomplete="new-password" />
+              <input class="app-input" type="password" [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" />
+              <div><button class="app-btn" (click)="changePassword()" [disabled]="isChangingPassword()">
+                {{ isChangingPassword() ? 'Modification…' : 'Mettre à jour le mot de passe' }}
+              </button></div>
+            </div>
+          }
+        } @else {
+          <div class="pf-row pf-row--action">
+            <div>
+              <strong>Compte Google</strong>
+              <span class="pf-hint">Votre mot de passe se gère depuis votre compte Google.</span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Préférences -->
+    <section class="pf-section">
+      <div class="pf-section-info">
+        <h2>Préférences</h2>
+        <p>Les autres réglages se trouvent dans Paramètres.</p>
+      </div>
+      <div class="pf-list">
+        <div class="pf-row pf-row--action">
+          <div>
+            <strong>Langue</strong>
+            <span class="pf-hint">Langue de l'interface.</span>
+          </div>
+          <select class="app-input pf-select" [value]="language()" (change)="language.set($any($event.target).value)">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Suppression -->
+    <section class="pf-section">
+      <div class="pf-section-info">
+        <h2>Supprimer le compte</h2>
+        <p>Action définitive : vos conversations, dossiers et documents seront effacés.</p>
+      </div>
+      <div class="pf-list">
+        <div class="pf-row pf-row--action">
+          <div>
+            <strong>Supprimer mon compte</strong>
+            <span class="pf-hint">Cette action est irréversible.</span>
+          </div>
+          <button class="app-btn app-btn--quiet app-btn--sm pf-danger" (click)="deleteAccount()">Supprimer</button>
+        </div>
+      </div>
+    </section>
+  }
+</div>

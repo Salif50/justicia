@@ -1,0 +1,537 @@
+<div class="dashboard">
+
+  <!-- Header -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Pilotage</p>
+      <h1 class="app-title">Tableau de bord</h1>
+      <p class="app-sub">Vue d'ensemble de l'activité de la plateforme JusticIA.</p>
+    </div>
+    <div class="app-head-actions">
+      <button class="app-btn app-btn--quiet" (click)="refresh()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Actualiser
+    </button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="app-seg dash-seg">
+    <button [class.active]="activeTab() === 'overview'" (click)="switchTab('overview')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Vue d'ensemble
+    </button>
+    <button [class.active]="activeTab() === 'metrics'" (click)="switchTab('metrics')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6"  y1="20" x2="6"  y2="14"/>
+      </svg>
+      Métriques de performance
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <span>Chargement des données...</span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert-error">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════
+       TAB 1 — VUE D'ENSEMBLE
+  ════════════════════════════════════════════ -->
+  @if (activeTab() === 'overview' && stats(); as s) {
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ s.total_users | number }}</div>
+          <div class="kpi-label">Utilisateurs</div>
+          <div class="kpi-meta">
+            <span class="dot-green"></span>{{ s.active_users }} actifs
+            <span class="sep">·</span>
+            <span class="role-badge">{{ s.admin_users }} admins</span>
+          </div>
+        </div>
+        <div class="kpi-bg-icon">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ s.total_conversations | number }}</div>
+          <div class="kpi-label">Conversations</div>
+          <div class="kpi-meta">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+            </svg>
+            {{ s.total_messages | number }} messages
+          </div>
+        </div>
+        <div class="kpi-bg-icon">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ s.total_messages | number }}</div>
+          <div class="kpi-label">Messages échangés</div>
+          <div class="kpi-meta">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Activité IA
+          </div>
+        </div>
+        <div class="kpi-bg-icon">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-card" [class.kpi-orange]="s.unread_contacts === 0" [class.kpi-red]="s.unread_contacts > 0">
+        <div class="kpi-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ s.total_contacts | number }}</div>
+          <div class="kpi-label">Messages reçus</div>
+          <div class="kpi-meta">
+            @if (s.unread_contacts > 0) {
+              <span class="unread-dot"></span>
+              <strong>{{ s.unread_contacts }} non lu(s)</strong>
+            } @else {
+              <span class="dot-green"></span> Tous lus
+            }
+          </div>
+        </div>
+        @if (s.unread_contacts > 0) {
+          <div class="kpi-badge-top">{{ s.unread_contacts }}</div>
+        }
+        <div class="kpi-bg-icon">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Second row: platform health + quick actions -->
+    <div class="dash-row">
+
+      <!-- Platform health -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <h3>Santé de la plateforme</h3>
+        </div>
+        <div class="health-list">
+          <div class="health-item">
+            <span class="health-label">Taux d'activation</span>
+            <div class="health-bar-wrap">
+              <div class="health-bar" [style.width.%]="activationRate(s.active_users, s.total_users)"></div>
+            </div>
+            <span class="health-pct">{{ activationRate(s.active_users, s.total_users) }}%</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">Msgs / conversation</span>
+            <div class="health-bar-wrap">
+              <div class="health-bar health-bar-purple"
+                [style.width.%]="msgsPerConvBar(s.total_messages, s.total_conversations)"></div>
+            </div>
+            <span class="health-pct">{{ msgsPerConv(s.total_messages, s.total_conversations) }}</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">Taux de lecture contacts</span>
+            <div class="health-bar-wrap">
+              <div class="health-bar health-bar-green"
+                [style.width.%]="readRate(s.total_contacts, s.unread_contacts)"></div>
+            </div>
+            <span class="health-pct">{{ readRate(s.total_contacts, s.unread_contacts) }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <h3>Actions rapides</h3>
+        </div>
+        <div class="quick-grid">
+          <a routerLink="/admin/users" class="quick-btn">
+            <div class="qb-icon blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <span>Utilisateurs</span>
+          </a>
+          <a routerLink="/admin/contacts" class="quick-btn">
+            <div class="qb-icon" [class.orange]="s.unread_contacts === 0" [class.red]="s.unread_contacts > 0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <span>Messages
+              @if (s.unread_contacts > 0) {
+                <b class="badge-red">{{ s.unread_contacts }}</b>
+              }
+            </span>
+          </a>
+          <a routerLink="/admin/pricing" class="quick-btn">
+            <div class="qb-icon green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <span>Tarifs</span>
+          </a>
+          <a routerLink="/admin/faq" class="quick-btn">
+            <div class="qb-icon purple">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/>
+              </svg>
+            </div>
+            <span>FAQ</span>
+          </a>
+          <a routerLink="/admin/testimonials" class="quick-btn">
+            <div class="qb-icon teal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <span>Témoignages</span>
+          </a>
+          <a routerLink="/admin/config" class="quick-btn">
+            <div class="qb-icon indigo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/>
+              </svg>
+            </div>
+            <span>Configuration</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+  <!-- ════════════════════════════════════════════
+       TAB 2 — MÉTRIQUES DE PERFORMANCE
+  ════════════════════════════════════════════ -->
+  @if (activeTab() === 'metrics') {
+
+    @if (metricsLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Chargement des métriques...</span>
+      </div>
+    }
+
+    @if (metrics(); as m) {
+
+      <!-- Growth summary chips -->
+      <div class="growth-row">
+        <div class="growth-chip" [class.up]="trendUp(m.growth.this_week_users, m.growth.last_week_users)"
+                                 [class.down]="!trendUp(m.growth.this_week_users, m.growth.last_week_users)">
+          <div class="gc-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="gc-body">
+            <div class="gc-value">{{ m.growth.this_week_users }}</div>
+            <div class="gc-label">Inscriptions cette semaine</div>
+          </div>
+          <div class="gc-trend">{{ trendLabel(m.growth.this_week_users, m.growth.last_week_users) }}</div>
+        </div>
+
+        <div class="growth-chip" [class.up]="trendUp(m.growth.this_week_convs, m.growth.last_week_convs)"
+                                 [class.down]="!trendUp(m.growth.this_week_convs, m.growth.last_week_convs)">
+          <div class="gc-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <div class="gc-body">
+            <div class="gc-value">{{ m.growth.this_week_convs }}</div>
+            <div class="gc-label">Conversations cette semaine</div>
+          </div>
+          <div class="gc-trend">{{ trendLabel(m.growth.this_week_convs, m.growth.last_week_convs) }}</div>
+        </div>
+
+        <div class="growth-chip up">
+          <div class="gc-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="gc-body">
+            <div class="gc-value">
+              {{ providerPct(m.auth_providers['google'] || 0, m.auth_providers) }}%
+            </div>
+            <div class="gc-label">Connexion via Google</div>
+          </div>
+          <div class="gc-trend">OAuth</div>
+        </div>
+      </div>
+
+      <!-- Charts grid 2x2 -->
+      <div class="charts-grid">
+
+        <!-- Chart: Inscriptions -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title-row">
+              <div class="chart-dot blue"></div>
+              <h3>Inscriptions</h3>
+            </div>
+            <div class="chart-subtitle">30 derniers jours · {{ maxVal(m.users_per_day) }} max/jour</div>
+          </div>
+          @if (m.users_per_day.length > 0) {
+            <div class="chart-body">
+              <svg viewBox="0 0 500 90" preserveAspectRatio="none" class="line-chart">
+                <defs>
+                  <linearGradient id="gradBlue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stop-color="#1565c0" stop-opacity="0.25"/>
+                    <stop offset="100%" stop-color="#1565c0" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path [attr.d]="areaPath(m.users_per_day)" fill="url(#gradBlue)"/>
+                <path [attr.d]="linePath(m.users_per_day)"  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                @for (p of chartPoints(m.users_per_day); track $index) {
+                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="3.5" fill="currentColor" stroke="currentColor" stroke-width="1.5">
+                    <title>{{ p.date }} : {{ p.count }} inscription(s)</title>
+                  </circle>
+                }
+                @for (lbl of xLabels(m.users_per_day); track lbl.pos) {
+                  <text [attr.x]="lbl.pos" y="100" text-anchor="middle" font-size="8" fill="currentColor">{{ lbl.label }}</text>
+                }
+              </svg>
+            </div>
+          } @else {
+            <div class="chart-empty">Aucune donnée sur les 30 derniers jours</div>
+          }
+        </div>
+
+        <!-- Chart: Conversations (bars) -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title-row">
+              <div class="chart-dot purple"></div>
+              <h3>Conversations</h3>
+            </div>
+            <div class="chart-subtitle">30 derniers jours · {{ maxVal(m.conversations_per_day) }} max/jour</div>
+          </div>
+          @if (m.conversations_per_day.length > 0) {
+            <div class="chart-body">
+              <div class="bar-chart">
+                @for (d of m.conversations_per_day; track d.date) {
+                  <div class="bar-wrap" [title]="d.date + ' : ' + d.count + ' conversation(s)'">
+                    <div class="bar purple" [style.height.%]="barHeight(d.count, m.conversations_per_day)"></div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="chart-empty">Aucune donnée sur les 30 derniers jours</div>
+          }
+        </div>
+
+        <!-- Chart: Messages (line) -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title-row">
+              <div class="chart-dot green"></div>
+              <h3>Messages échangés</h3>
+            </div>
+            <div class="chart-subtitle">30 derniers jours · {{ maxVal(m.messages_per_day) }} max/jour</div>
+          </div>
+          @if (m.messages_per_day.length > 0) {
+            <div class="chart-body">
+              <svg viewBox="0 0 500 90" preserveAspectRatio="none" class="line-chart">
+                <defs>
+                  <linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stop-color="#2e7d32" stop-opacity="0.25"/>
+                    <stop offset="100%" stop-color="#2e7d32" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path [attr.d]="areaPath(m.messages_per_day)" fill="url(#gradGreen)"/>
+                <path [attr.d]="linePath(m.messages_per_day)"  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                @for (p of chartPoints(m.messages_per_day); track $index) {
+                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="3.5" fill="currentColor" stroke="currentColor" stroke-width="1.5">
+                    <title>{{ p.date }} : {{ p.count }} message(s)</title>
+                  </circle>
+                }
+                @for (lbl of xLabels(m.messages_per_day); track lbl.pos) {
+                  <text [attr.x]="lbl.pos" y="100" text-anchor="middle" font-size="8" fill="currentColor">{{ lbl.label }}</text>
+                }
+              </svg>
+            </div>
+          } @else {
+            <div class="chart-empty">Aucune donnée sur les 30 derniers jours</div>
+          }
+        </div>
+
+        <!-- Chart: Contacts (bars) -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title-row">
+              <div class="chart-dot orange"></div>
+              <h3>Contacts reçus</h3>
+            </div>
+            <div class="chart-subtitle">30 derniers jours · {{ maxVal(m.contacts_per_day) }} max/jour</div>
+          </div>
+          @if (m.contacts_per_day.length > 0) {
+            <div class="chart-body">
+              <div class="bar-chart">
+                @for (d of m.contacts_per_day; track d.date) {
+                  <div class="bar-wrap" [title]="d.date + ' : ' + d.count + ' message(s)'">
+                    <div class="bar orange" [style.height.%]="barHeight(d.count, m.contacts_per_day)"></div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="chart-empty">Aucune donnée sur les 30 derniers jours</div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Auth providers + summary stats -->
+      <div class="dash-row">
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 8 12 12 16 14"/>
+            </svg>
+            <h3>Méthodes d'authentification</h3>
+          </div>
+          <div class="provider-list">
+            @for (entry of providerEntries(m.auth_providers); track entry.key) {
+              <div class="provider-row">
+                <div class="provider-info">
+                  @if (entry.key === 'google') {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20.283 10.356h-8.327v3.451h4.792c-.446 2.193-2.313 3.453-4.792 3.453a5.27 5.27 0 0 1-5.279-5.28 5.27 5.27 0 0 1 5.279-5.279c1.259 0 2.397.447 3.29 1.178l2.6-2.599c-1.584-1.381-3.615-2.233-5.89-2.233a8.908 8.908 0 0 0-8.934 8.934 8.907 8.907 0 0 0 8.934 8.934c4.467 0 8.529-3.249 8.529-8.934 0-.528-.081-1.097-.202-1.625z"/>
+                    </svg>
+                    <span>Google OAuth</span>
+                  } @else {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span>Email / Mot de passe</span>
+                  }
+                </div>
+                <div class="provider-bar-wrap">
+                  <div class="provider-bar" [class.google]="entry.key === 'google'" [class.local]="entry.key !== 'google'"
+                       [style.width.%]="providerPct(entry.count, m.auth_providers)"></div>
+                </div>
+                <div class="provider-stats">
+                  <strong>{{ entry.count }}</strong>
+                  <span>{{ providerPct(entry.count, m.auth_providers) }}%</span>
+                </div>
+              </div>
+            }
+            @if (!m.auth_providers || providerEntries(m.auth_providers).length === 0) {
+              <p class="chart-empty">Aucune donnée</p>
+            }
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <h3>Récapitulatif 30 jours</h3>
+          </div>
+          <div class="recap-list">
+            <div class="recap-row">
+              <span class="recap-label">Nouvelles inscriptions</span>
+              <strong class="recap-val">{{ total(m.users_per_day) }}</strong>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Conversations créées</span>
+              <strong class="recap-val">{{ total(m.conversations_per_day) }}</strong>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Messages échangés</span>
+              <strong class="recap-val">{{ total(m.messages_per_day) }}</strong>
+            </div>
+            <div class="recap-row">
+              <span class="recap-label">Messages de contact</span>
+              <strong class="recap-val">{{ total(m.contacts_per_day) }}</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    }
+  }
+
+</div>

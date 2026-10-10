@@ -1,0 +1,191 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Accueil — LIGHT THEME (charte orange JusticIA)
+   ═══════════════════════════════════════════════════════════════════ */
+:host-context([data-theme="light"]) {
+
+  /* ── Hero ─────────────────────────────────────────────────────── */
+  .hero-bg .grid-overlay {
+    background-image:
+      linear-gradient(rgba(255,138,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,138,0,0.04) 1px, transparent 1px);
+  }
+
+  .hero-h1       { color: #171717; }
+  .h1-accent     { color: #FF8A00; }
+  .hero-desc     { color: #444444; }
+  .hero-flag-label { color: #666666; }
+  .htag          { color: #555555; border-color: rgba(23,23,23,0.10); }
+  .scroll-hint   { color: #888888; }
+
+  .chat-card {
+    background: rgba(255,255,255,0.97);
+    border-color: rgba(255,138,0,0.18);
+    box-shadow: 0 24px 64px rgba(255,138,0,0.14);
+  }
+  .cc-header { background: #fffaf6; border-color: rgba(255,138,0,0.10); }
+  .cc-avatar { background: #FF8A00; color: #fff; }
+  .cc-name   { color: #171717; }
+  .cc-status { color: #666666; }
+  .msg.ai    { background: #f5f5f5; border-color: #eeeeee; color: #292929; }
+  .msg.ai strong { color: #FF8A00; }
+  .msg.user  { background: #FF8A00; color: #fff; }
+  .msg.typing span { background: rgba(255,138,0,0.4); }
+  .cc-input  { background: #fffaf6; border-color: rgba(255,138,0,0.10); }
+  .cc-input span { color: #888888; }
+  .cc-send   { background: #FF8A00; color: #fff; }
+
+  .chat-float {
+    background: rgba(255,255,255,0.95);
+    border-color: rgba(255,138,0,0.18);
+    color: #292929;
+    box-shadow: 0 8px 24px rgba(255,138,0,0.12);
+    svg { color: #FF8A00; }
+  }
+
+  /* ── Trust bar ────────────────────────────────────────────────── */
+  .trust-bar {
+    background: #ffffff;
+    border-color: rgba(255,138,0,0.12);
+  }
+  .trust-num { color: #171717; }
+  .trust-lbl { color: #666666; }
+  .trust-sep { background: rgba(255,138,0,0.15); }
+
+  /* ── Sections fond ────────────────────────────────────────────── */
+  .features, .how-it-works, .for-who, .about,
+  .testimonials, .partners, .contact {
+    background: #fffaf6;
+  }
+
+  .orb-feat-1, .orb-feat-2, .orb-about-1, .orb-about-2 {
+    opacity: 0.5;
+    background: radial-gradient(circle, rgba(255,138,0,0.08), transparent 70%);
+  }
+
+  /* ── Cards génériques ─────────────────────────────────────────── */
+  .feat-card, .step-card, .profile-card, .ac-card,
+  .testi-card, .partner-card, .ci-card {
+    background: #ffffff !important;
+    border-color: rgba(255,138,0,0.14) !important;
+    box-shadow: 0 2px 12px rgba(255,138,0,0.06);
+
+    &:hover {
+      border-color: rgba(255,138,0,0.30) !important;
+      box-shadow: 0 8px 28px rgba(255,138,0,0.12);
+    }
+
+    h3, h4, .step-title, .profile-name, .ac-title,
+    .testi-name, .partner-name, .ci-label {
+      color: #171717 !important;
+    }
+    p, .step-desc, .profile-desc, .ac-desc, .testi-text,
+    .partner-type, .ci-value {
+      color: #555555 !important;
+    }
+  }
+
+  .feat-card.feat-main {
+    background: #fff8f0 !important;
+    border-color: rgba(255,138,0,0.20) !important;
+  }
+
+  .feat-card h3, .step-card h3 { color: #171717; }
+  .feat-card p, .step-card p  { color: #555555; }
+
+  .fc-tag {
+    background: rgba(255,138,0,0.10);
+    color: #FF8A00;
+    border-color: rgba(255,138,0,0.20);
+  }
+
+  .step-num {
+    background: rgba(255,138,0,0.10);
+    color: #FF8A00;
+    border-color: rgba(255,138,0,0.20);
+  }
+  .step-arrow { color: rgba(255,138,0,0.30); }
+
+  .profile-card .profile-footer {
+    color: #888888;
+    border-color: rgba(255,138,0,0.10);
+  }
+  .profile-card li { color: #555555; }
+  .profile-card li::before { background: #FF8A00; }
+
+  /* ── About ────────────────────────────────────────────────────── */
+  .about-p  { color: #555555; }
+  .about-p strong { color: #171717; }
+  .val-item {
+    background: #ffffff;
+    border-color: rgba(255,138,0,0.12);
+    color: #444444;
+  }
+  .val-item strong { color: #171717; }
+
+  .about-stats {
+    background: #ffffff;
+    border-color: rgba(255,138,0,0.14);
+  }
+  .as-num  { color: #171717; }
+  .as-lbl  { color: #666666; }
+
+  /* ── Testimonials ─────────────────────────────────────────────── */
+  .testi-card {
+    .testi-quote { color: #444444; }
+    .testi-role  { color: #888888; }
+    .testi-avatar { background: #fff3e8; color: #FF8A00; border-color: rgba(255,138,0,0.15); }
+  }
+
+  /* ── CTA ──────────────────────────────────────────────────────── */
+  .cta-bg {
+    background: #FF8A00;
+  }
+  .cta-tag {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.30);
+    color: #ffffff;
+  }
+  .cta-h2   { color: #ffffff; }
+  .cta-desc { color: rgba(255,255,255,0.85); }
+  .cta-trust span { color: rgba(255,255,255,0.80); }
+  .cta-btns .btn-primary {
+    background: #ffffff;
+    color: #FF8A00;
+    &:hover { background: #fff8f0; color: #FF5A00; }
+  }
+  .cta-btns .btn-ghost {
+    color: #ffffff;
+    border-color: rgba(255,255,255,0.50);
+    &:hover { color: #ffffff; border-color: #ffffff; }
+  }
+
+  /* ── Partners ─────────────────────────────────────────────────── */
+  .partner-card {
+    background: #ffffff;
+    border-color: rgba(255,138,0,0.12);
+    color: #666666;
+    &:hover { border-color: rgba(255,138,0,0.30); }
+  }
+
+  /* ── Contact ──────────────────────────────────────────────────── */
+  .contact-form {
+    background: #ffffff;
+    border-color: rgba(255,138,0,0.14);
+
+    label { color: #444444; }
+    input, textarea, select {
+      background: #fffaf6;
+      border-color: rgba(255,138,0,0.18);
+      color: #171717;
+      &::placeholder { color: #aaaaaa; }
+      &:focus { border-color: #FF8A00; box-shadow: 0 0 0 3px rgba(255,138,0,0.12); }
+    }
+  }
+  .ci-card {
+    background: #ffffff;
+    border-color: rgba(255,138,0,0.12);
+    h4 { color: #171717; }
+    p, a { color: #555555; }
+    small { color: #888888; }
+  }
+}

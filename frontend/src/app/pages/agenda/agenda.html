@@ -1,0 +1,618 @@
+<div class="ag-page">
+
+  <!-- ══════════════════════════════════════════════════
+       EN-TÊTE
+  ══════════════════════════════════════════════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Gestion des affaires</p>
+      <h1 class="app-title">Agenda &amp; échéances</h1>
+      <p class="app-sub">Audiences, délais et rendez-vous de vos dossiers.</p>
+      @if (stats()) {
+        <div class="ag-stats-chips">
+          @if (stats()!.overdue > 0) {
+            <span class="ag-chip ag-chip--danger">{{ stats()!.overdue }} en retard</span>
+          }
+          @if (stats()!.today > 0) {
+            <span class="ag-chip ag-chip--today">{{ stats()!.today }} aujourd'hui</span>
+          }
+          <span class="ag-chip ag-chip--upcoming">{{ stats()!.upcoming }} à venir</span>
+        </div>
+      }
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+        <button [class.active]="viewMode() === 'month'" (click)="setView('month')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+          </svg>
+          Mois
+        </button>
+        <button [class.active]="viewMode() === 'upcoming'" (click)="setView('upcoming')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+          </svg>
+          À venir
+        </button>
+        <button [class.active]="viewMode() === 'list'" (click)="setView('list')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          Liste
+        </button>
+      </div>
+      <button class="app-btn app-btn--quiet" (click)="showSyncModal.set(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+        Synchroniser
+      </button>
+      <button class="app-btn" (click)="openNew()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouvel événement
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════
+       MAIN LAYOUT : SIDEBAR + CONTENU
+  ══════════════════════════════════════════════════ -->
+  <div class="ag-layout">
+
+    <!-- ── SIDEBAR GAUCHE ─────────────────────────── -->
+    <aside class="ag-sidebar">
+
+      <!-- Mini-calendrier (navigation) ───────────── -->
+      <div class="ag-mini-cal">
+        <div class="amc-nav">
+          <button (click)="prevMonth()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span>{{ monthLabel() }}</span>
+          <button (click)="nextMonth()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="amc-grid">
+          @for (d of daysFr; track d) {
+            <div class="amc-dow">{{ d }}</div>
+          }
+          @for (day of calendarDays(); track day.date.toISOString()) {
+            <div class="amc-day"
+              [class.other]="!day.isCurrentMonth"
+              [class.today]="day.isToday"
+              [class.has-events]="day.events.length > 0"
+              (click)="day.isCurrentMonth && openNew(day.date)">
+              {{ day.date.getDate() }}
+              @if (day.events.length > 0) {
+                <span class="amc-dot"></span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Prochains événements ─────────────────────── -->
+      <div class="ag-next-section">
+        <div class="ag-next-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+          </svg>
+          Prochains événements
+        </div>
+        @if ((stats()?.next_events ?? []).length === 0) {
+          <p class="ag-next-empty">Aucun événement à venir</p>
+        }
+        @for (ev of (stats()?.next_events ?? []); track ev.id) {
+          <div class="ag-next-item" [class.overdue]="isOverdue(ev)" (click)="openDetail(ev, $event)">
+            <div class="ag-next-dot" [style.background]="getTypeConfig(ev.event_type).color"></div>
+            <div class="ag-next-info">
+              <div class="ag-next-item-title">{{ ev.title }}</div>
+              <div class="ag-next-date">{{ formatRelative(ev.start_at) }}</div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Filtre par type ─────────────────────────── -->
+      <div class="ag-legend">
+        <div class="ag-legend-title">Types d'événements</div>
+        @for (t of eventTypes; track t.value) {
+          <div class="ag-legend-item">
+            <span class="ag-legend-dot" [style.background]="t.color"></span>
+            <span class="ag-legend-icon"><ui-icon [name]="t.icon" [size]="14" /></span>
+            <span>{{ t.label }}</span>
+          </div>
+        }
+      </div>
+    </aside>
+
+    <!-- ── CONTENU PRINCIPAL ──────────────────────── -->
+    <main class="ag-main">
+
+      @if (loading()) {
+        <div class="ag-loading">
+          <div class="ag-spinner"></div>
+          <span>Chargement…</span>
+        </div>
+      }
+
+      <!-- ════════════════ VUE MOIS ════════════════ -->
+      @if (viewMode() === 'month' && !loading()) {
+        <div class="ag-calendar">
+
+          <!-- Nav mois -->
+          <div class="ag-cal-nav">
+            <button class="ag-nav-btn" (click)="prevMonth()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <h2>{{ monthLabel() }}</h2>
+            <button class="ag-nav-btn" (click)="nextMonth()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="ag-today-btn" (click)="goToToday()">Aujourd'hui</button>
+          </div>
+
+          <!-- Entête jours semaine -->
+          <div class="ag-cal-head">
+            @for (d of daysFr; track d) { <div>{{ d }}</div> }
+          </div>
+
+          <!-- Grille -->
+          <div class="ag-cal-grid">
+            @for (day of calendarDays(); track day.date.toISOString()) {
+              <div class="ag-cal-cell"
+                [class.other-month]="!day.isCurrentMonth"
+                [class.today]="day.isToday"
+                (click)="day.isCurrentMonth && openNew(day.date)">
+
+                <div class="ag-cell-num" [class.today-num]="day.isToday">
+                  {{ day.date.getDate() }}
+                </div>
+
+                <div class="ag-cell-events">
+                  @for (ev of day.events.slice(0, 3); track ev.id) {
+                    <div class="ag-cal-event"
+                      [style.background]="getTypeConfig(ev.event_type).color + '22'"
+                      [style.border-left-color]="getTypeConfig(ev.event_type).color"
+                      [class.done]="ev.status === 'done'"
+                      [class.cancelled]="ev.status === 'cancelled'"
+                      (click)="openDetail(ev, $event)">
+                      <span class="ace-icon"><ui-icon [name]="getTypeConfig(ev.event_type).icon" [size]="12" /></span>
+                      <span class="ace-title">{{ ev.title }}</span>
+                    </div>
+                  }
+                  @if (day.events.length > 3) {
+                    <div class="ag-more-events">+{{ day.events.length - 3 }} autres</div>
+                  }
+                </div>
+
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- ════════════════ VUE À VENIR ═════════════ -->
+      @if (viewMode() === 'upcoming' && !loading()) {
+        <div class="ag-list-view">
+
+          @if (overdueEvents().length > 0) {
+            <div class="agl-section agl-section--overdue">
+              <div class="agl-section-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                En retard ({{ overdueEvents().length }})
+              </div>
+              @for (ev of overdueEvents(); track ev.id) {
+                <ng-container *ngTemplateOutlet="eventCard; context: {$implicit: ev}"></ng-container>
+              }
+            </div>
+          }
+
+          @if (upcomingEvents().length === 0 && overdueEvents().length === 0) {
+            <ng-container *ngTemplateOutlet="emptyState"></ng-container>
+          } @else {
+            @for (ev of upcomingEvents(); track ev.id; let i = $index) {
+              <!-- Séparateur de date -->
+              @if (i === 0 || !_isSameDateStr(upcomingEvents()[i-1].start_at, ev.start_at)) {
+                <div class="agl-date-sep">
+                  @if (isToday(ev.start_at)) { <span class="agl-today-badge">Aujourd'hui</span> }
+                  {{ formatDate(ev.start_at) }}
+                </div>
+              }
+              <ng-container *ngTemplateOutlet="eventCard; context: {$implicit: ev}"></ng-container>
+            }
+          }
+        </div>
+      }
+
+      <!-- ════════════════ VUE LISTE ════════════════ -->
+      @if (viewMode() === 'list' && !loading()) {
+        <div class="ag-list-view">
+          @if (listEvents().length === 0) {
+            <ng-container *ngTemplateOutlet="emptyState"></ng-container>
+          } @else {
+            @for (ev of listEvents(); track ev.id; let i = $index) {
+              @if (i === 0 || !_isSameDateStr(listEvents()[i-1].start_at, ev.start_at)) {
+                <div class="agl-date-sep">{{ formatDate(ev.start_at) }}</div>
+              }
+              <ng-container *ngTemplateOutlet="eventCard; context: {$implicit: ev}"></ng-container>
+            }
+          }
+        </div>
+      }
+
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       MODAL CRÉATION / ÉDITION
+  ══════════════════════════════════════════════════ -->
+  @if (showModal()) {
+    <div class="ag-overlay" (click)="showModal.set(false)">
+      <div class="ag-modal" (click)="$event.stopPropagation()">
+
+        <div class="agm-header">
+          <h2>{{ editingId() ? 'Modifier l\'événement' : 'Nouvel événement' }}</h2>
+          <button class="agm-close" (click)="showModal.set(false)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="agm-body">
+
+          <!-- Titre -->
+          <div class="agm-field">
+            <label>Titre <span class="req">*</span></label>
+            <input type="text" [value]="form.title()" (input)="form.title.set($any($event.target).value)"
+              placeholder="Ex : Audience correctionnelle" />
+          </div>
+
+          <!-- Type -->
+          <div class="agm-field">
+            <label>Type d'événement</label>
+            <div class="agm-type-grid">
+              @for (t of eventTypes; track t.value) {
+                <button class="agm-type-btn"
+                  [class.selected]="form.event_type() === t.value"
+                  [style.border-color]="form.event_type() === t.value ? t.color : ''"
+                  [style.background]="form.event_type() === t.value ? t.color + '18' : ''"
+                  (click)="form.event_type.set(t.value)">
+                  <span class="agm-type-icon"><ui-icon [name]="t.icon" [size]="18" /></span>
+                  <span>{{ t.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="agm-row">
+            <div class="agm-field">
+              <label>Date de début <span class="req">*</span></label>
+              <input type="date" [value]="form.start_date()" (change)="form.start_date.set($any($event.target).value)" />
+            </div>
+            @if (!form.is_all_day()) {
+              <div class="agm-field">
+                <label>Heure de début</label>
+                <input type="time" [value]="form.start_time()" (change)="form.start_time.set($any($event.target).value)" />
+              </div>
+            }
+          </div>
+
+          <div class="agm-row">
+            <div class="agm-field">
+              <label>Date de fin</label>
+              <input type="date" [value]="form.end_date()" (change)="form.end_date.set($any($event.target).value)" />
+            </div>
+            @if (!form.is_all_day()) {
+              <div class="agm-field">
+                <label>Heure de fin</label>
+                <input type="time" [value]="form.end_time()" (change)="form.end_time.set($any($event.target).value)" />
+              </div>
+            }
+          </div>
+
+          <!-- Journée entière -->
+          <div class="agm-check">
+            <input id="allday" type="checkbox" [checked]="form.is_all_day()" (change)="form.is_all_day.set($any($event.target).checked)" />
+            <label for="allday">Journée entière</label>
+          </div>
+
+          <!-- Procès lié -->
+          <div class="agm-field">
+            <label>Procès lié (optionnel)</label>
+            <select [value]="form.case_id()" (change)="form.case_id.set($any($event.target).value)">
+              <option value="">— Aucun procès —</option>
+              @for (c of cases(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Lieu -->
+          <div class="agm-field">
+            <label>Lieu</label>
+            <input type="text" [value]="form.location()" (input)="form.location.set($any($event.target).value)"
+              placeholder="Ex : Tribunal de première instance de Conakry" />
+          </div>
+
+          <!-- Rappel -->
+          <div class="agm-field">
+            <label>Rappel</label>
+            <select [value]="form.reminder_days()" (change)="form.reminder_days.set(+$any($event.target).value)">
+              <option value="0">Pas de rappel</option>
+              <option value="1">1 jour avant</option>
+              <option value="2">2 jours avant</option>
+              <option value="3">3 jours avant</option>
+              <option value="7">1 semaine avant</option>
+              <option value="14">2 semaines avant</option>
+              <option value="30">1 mois avant</option>
+            </select>
+          </div>
+
+          <!-- Description -->
+          <div class="agm-field">
+            <label>Description</label>
+            <textarea [value]="form.description()" (input)="form.description.set($any($event.target).value)"
+              rows="3" placeholder="Détails, notes, instructions…"></textarea>
+          </div>
+
+        </div>
+
+        <div class="agm-footer">
+          <button class="agm-btn agm-btn--cancel" (click)="showModal.set(false)">Annuler</button>
+          <button class="agm-btn agm-btn--save" (click)="saveEvent()" [disabled]="!form.title() || saving()">
+            @if (saving()) { <span class="btn-spinner"></span> Enregistrement… }
+            @else { {{ editingId() ? 'Modifier' : 'Créer l\'événement' }} }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════════════════
+       MODAL SYNCHRONISATION
+  ══════════════════════════════════════════════════ -->
+  @if (showSyncModal()) {
+    <div class="ag-overlay" (click)="showSyncModal.set(false)">
+      <div class="ag-sync-modal" (click)="$event.stopPropagation()">
+
+        <div class="agm-header">
+          <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+            </svg>
+            Synchroniser avec votre agenda
+          </h2>
+          <button class="agm-close" (click)="showSyncModal.set(false)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="ag-sync-body">
+          <p class="ag-sync-intro">
+            Exportez vos événements JusticIA vers votre application de calendrier préférée.
+          </p>
+
+          <!-- Option iCal -->
+          <div class="ag-sync-option" (click)="downloadIcal(); showSyncModal.set(false)">
+            <div class="ag-sync-icon"><ui-icon name="calendar" [size]="24" /></div>
+            <div class="ag-sync-info">
+              <strong>Télécharger le fichier iCal (.ics)</strong>
+              <span>Compatible avec Apple Calendar, Thunderbird et tout client iCal</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+
+          <!-- Google Calendar -->
+          <div class="ag-sync-option" (click)="syncToGoogle()">
+            <div class="ag-sync-icon" style="background:#fef2f2">
+              <img src="https://www.google.com/favicon.ico" width="24" height="24" alt="Google" style="border-radius:4px" />
+            </div>
+            <div class="ag-sync-info">
+              <strong>Ajouter à Google Calendar</strong>
+              <span>Importer le fichier .ics dans Google Calendar</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+
+          <!-- Outlook -->
+          <div class="ag-sync-option" (click)="downloadIcal(); showSyncModal.set(false)">
+            <div class="ag-sync-icon"><ui-icon name="laptop" [size]="24" /></div>
+            <div class="ag-sync-info">
+              <strong>Outlook / Office 365</strong>
+              <span>Téléchargez le .ics et importez-le dans Outlook</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+
+          <div class="ag-sync-instructions">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Comment importer un fichier .ics : téléchargez le fichier, puis dans votre application de calendrier, choisissez <em>"Importer"</em> ou <em>"Ouvrir avec"</em>.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════════════════
+       PANEL DÉTAIL ÉVÉNEMENT (slide-over)
+  ══════════════════════════════════════════════════ -->
+  @if (detailEvent()) {
+    <div class="ag-detail-backdrop" (click)="detailEvent.set(null)"></div>
+    <div class="ag-detail-panel">
+
+      <!-- Couleur de type ────────────────────────── -->
+      <div class="agd-color-bar"
+        [style.background]="getTypeConfig(detailEvent()!.event_type).color">
+      </div>
+
+      <div class="agd-body">
+        <!-- En-tête -->
+        <div class="agd-header">
+          <span class="agd-type-badge" [style.background]="getTypeConfig(detailEvent()!.event_type).color + '22'"
+            [style.color]="getTypeConfig(detailEvent()!.event_type).color">
+            <ui-icon [name]="getTypeConfig(detailEvent()!.event_type).icon" [size]="14" />
+            {{ getTypeConfig(detailEvent()!.event_type).label }}
+          </span>
+          <button class="agd-close" (click)="detailEvent.set(null)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <h2 class="agd-title">{{ detailEvent()!.title }}</h2>
+
+        <!-- Statut -->
+        <div class="agd-status" [class]="'agd-status--' + detailEvent()!.status">
+          @if (detailEvent()!.status === 'upcoming') {
+            @if (isOverdue(detailEvent()!)) { <ui-icon name="alert-triangle" [size]="14" /> En retard } @else { <ui-icon name="bell" [size]="14" /> À venir }
+          } @else if (detailEvent()!.status === 'done') { <ui-icon name="check-circle" [size]="14" /> Terminé
+          } @else { <ui-icon name="x-circle" [size]="14" /> Annulé }
+        </div>
+
+        <!-- Infos -->
+        <div class="agd-info-list">
+          <div class="agd-info-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>{{ formatDate(detailEvent()!.start_at) }}</span>
+          </div>
+          @if (!detailEvent()!.is_all_day) {
+            <div class="agd-info-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>{{ formatTime(detailEvent()!.start_at) }}{{ detailEvent()!.end_at ? ' → ' + formatTime(detailEvent()!.end_at!) : '' }}</span>
+            </div>
+          }
+          @if (detailEvent()!.location) {
+            <div class="agd-info-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>{{ detailEvent()!.location }}</span>
+            </div>
+          }
+          @if (detailEvent()!.case_name) {
+            <div class="agd-info-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="18" rx="2"/>
+              </svg>
+              <a [routerLink]="['/dashboard/cases', detailEvent()!.case_id]" class="agd-case-link">
+                {{ detailEvent()!.case_name }}
+              </a>
+            </div>
+          }
+          @if (detailEvent()!.reminder_days > 0) {
+            <div class="agd-info-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              </svg>
+              <span>Rappel {{ detailEvent()!.reminder_days }}j avant</span>
+            </div>
+          }
+        </div>
+
+        @if (detailEvent()!.description) {
+          <p class="agd-desc">{{ detailEvent()!.description }}</p>
+        }
+
+        <!-- Actions -->
+        <div class="agd-actions">
+          @if (detailEvent()!.status === 'upcoming') {
+            <button class="agd-btn agd-btn--done" (click)="markDone(detailEvent()!)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Marquer fait
+            </button>
+            <button class="agd-btn agd-btn--cancel" (click)="cancelEvent(detailEvent()!)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Annuler
+            </button>
+          }
+          <button class="agd-btn agd-btn--edit" (click)="openEdit(detailEvent()!)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Modifier
+          </button>
+          <button class="agd-btn agd-btn--del" (click)="deleteEvent(detailEvent()!)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            Supprimer
+          </button>
+        </div>
+
+        <!-- Ajouter à Google / Outlook -->
+        <div class="agd-ext-actions">
+          <span class="agd-ext-label">Ajouter à :</span>
+          <button class="agd-ext-btn" (click)="openGoogleCalendar(detailEvent()!)">Google Calendar</button>
+          <button class="agd-ext-btn" (click)="openOutlook(detailEvent()!)">Outlook</button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- ── Templates réutilisables ──────────────────────── -->
+<ng-template #emptyState>
+  <div class="ag-empty">
+    <div class="ag-empty-icon"><ui-icon name="calendar" [size]="40" /></div>
+    <h3>Aucun événement</h3>
+    <p>Créez votre premier événement pour gérer vos audiences, délais et échéances.</p>
+    <button class="ag-btn ag-btn--primary" (click)="openNew()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Créer un événement
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #eventCard let-ev>
+  <div class="agl-card" [class.overdue]="isOverdue(ev)" [class.done]="ev.status === 'done'" [class.cancelled]="ev.status === 'cancelled'">
+    <div class="agl-card-stripe" [style.background]="getTypeConfig(ev.event_type).color"></div>
+    <div class="agl-card-icon"><ui-icon [name]="getTypeConfig(ev.event_type).icon" [size]="20" /></div>
+    <div class="agl-card-body">
+      <div class="agl-card-title">{{ ev.title }}</div>
+      <div class="agl-card-meta">
+        @if (!ev.is_all_day) { <span>{{ formatTime(ev.start_at) }}</span> }
+        @if (ev.location) { <span><ui-icon name="map-pin" [size]="12" /> {{ ev.location }}</span> }
+        @if (ev.case_name) { <span><ui-icon name="scale" [size]="12" /> {{ ev.case_name }}</span> }
+      </div>
+    </div>
+    <div class="agl-card-right">
+      <span class="agl-relative" [class.overdue-text]="isOverdue(ev)">{{ formatRelative(ev.start_at) }}</span>
+      <div class="agl-card-actions">
+        @if (ev.status === 'upcoming') {
+          <button class="agl-btn agl-btn--done" (click)="markDone(ev); $event.stopPropagation()" title="Marquer fait"><ui-icon name="check" [size]="12" /></button>
+        }
+        <button class="agl-btn" (click)="openDetail(ev, $event)" title="Détail">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>

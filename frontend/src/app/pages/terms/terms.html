@@ -1,0 +1,402 @@
+<app-header></app-header>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════════ -->
+<section class="pub-hero">
+  <div class="pub-container">
+    <p class="pub-eyebrow pub-eyebrow--light">Document officiel · En vigueur depuis le 1er janvier 2025</p>
+    <h1 class="pub-hero-title">Politique et conditions <em>d'utilisation</em>.</h1>
+    <p class="pub-hero-lead">
+      Lisez attentivement ce document avant d'utiliser JusticIA. L'utilisation de la plateforme
+      vaut acceptation de l'ensemble de ces conditions.
+    </p>
+    <ul class="hero-notes">
+      <li>JusticIA n'est pas un cabinet d'avocats</li>
+      <li>Les réponses sont informatives, non consultatives</li>
+      <li>Données traitées en toute confidentialité</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CONTENU PRINCIPAL
+═══════════════════════════════════════════════════════════════ -->
+<section class="pcu-body">
+  <div class="pub-container">
+    <div class="pcu-layout">
+
+      <!-- ── Navigation latérale ── -->
+      <aside class="pcu-nav">
+        <div class="nav-sticky">
+          <p class="nav-title">Table des matières</p>
+          <ul>
+            @for (s of sections; track s.id) {
+              <li>
+                <button
+                  [class.active]="activeSection() === s.id"
+                  (click)="scrollTo(s.id)">
+                  {{ s.label }}
+                </button>
+              </li>
+            }
+          </ul>
+          <div class="nav-update">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Dernière mise à jour<br>1er janvier 2025
+          </div>
+        </div>
+      </aside>
+
+      <!-- ── Articles ── -->
+      <main class="pcu-content">
+
+        <!-- 1. Introduction -->
+        <article id="introduction" class="pcu-article">
+          <div class="article-num">01</div>
+          <h2>Introduction</h2>
+          <p>
+            Bienvenue sur <strong>JusticIA</strong>, la plateforme d'assistance juridique intelligente dédiée au
+            droit de la République de Guinée. JusticIA est éditée et exploitée par la société JusticIA SARL,
+            dont le siège social est établi en République de Guinée (ci-après « <strong>JusticIA</strong> »,
+            « <strong>nous</strong> » ou « <strong>la Plateforme</strong> »).
+          </p>
+          <p>
+            Les présentes Politiques et Conditions d'Utilisation (ci-après « <strong>PCU</strong> ») régissent
+            l'accès et l'utilisation de la plateforme JusticIA, accessible à l'adresse
+            <strong>justicia.gn</strong>, ainsi que de toutes ses fonctionnalités, services et contenus associés.
+          </p>
+          <p>
+            En accédant à la plateforme ou en l'utilisant, vous reconnaissez avoir lu, compris et accepté
+            l'intégralité des présentes PCU. Si vous n'acceptez pas ces conditions, vous devez cesser
+            immédiatement d'utiliser la Plateforme.
+          </p>
+        </article>
+
+        <!-- 2. Définition du service -->
+        <article id="definition" class="pcu-article">
+          <div class="article-num">02</div>
+          <h2>Définition du service</h2>
+          <p>
+            JusticIA est un <strong>outil d'assistance juridique basé sur l'Intelligence Artificielle (IA)</strong>.
+            La Plateforme offre les fonctionnalités suivantes :
+          </p>
+          <ul class="feature-list">
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Réponses automatisées à des questions juridiques relatives au droit guinéen, générées par un
+              modèle d'IA entraîné sur le corpus législatif et réglementaire guinéen.
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Consultation et analyse de documents juridiques via un système de traitement automatisé (RAG —
+              Retrieval-Augmented Generation).
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Gestion de dossiers judiciaires, prise de notes et suivi de procédures à titre organisationnel.
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Accès à une base de données structurée des textes législatifs guinéens (codes, lois, décrets,
+              ordonnances, constitution).
+            </li>
+          </ul>
+          <p>
+            JusticIA utilise des technologies de pointe en matière d'IA pour fournir des informations aussi
+            précises et pertinentes que possible. Cependant, ces technologies ont des <strong>limites inhérentes</strong>
+            qui sont détaillées aux articles suivants.
+          </p>
+        </article>
+
+        <!-- 3. Avertissement juridique -->
+        <article id="avertissement" class="pcu-article">
+          <div class="article-num">03</div>
+          <h2>Avertissement juridique important</h2>
+
+          <div class="warning-box">
+            <div class="warning-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div>
+              <strong>JusticIA n'est PAS un cabinet d'avocats et ne fournit PAS de conseil juridique.</strong>
+              Les informations générées par la Plateforme ont une nature strictement informative et éducative.
+              Elles ne constituent en aucun cas un avis juridique, une consultation, une représentation légale
+              ou toute autre forme de prestation juridique au sens de la loi guinéenne.
+            </div>
+          </div>
+
+          <p>En particulier, il est établi que :</p>
+          <ul class="legal-list">
+            <li>
+              <strong>JusticIA n'est pas un avocat.</strong> La Plateforme ne peut pas représenter un
+              utilisateur devant un tribunal, une juridiction administrative ou tout autre organe de règlement
+              des litiges.
+            </li>
+            <li>
+              <strong>Les réponses de l'IA peuvent être inexactes ou incomplètes.</strong> Les modèles
+              d'IA peuvent produire des informations erronées (phénomène dit d'« hallucination ») ou ne pas
+              refléter les évolutions législatives les plus récentes.
+            </li>
+            <li>
+              <strong>Le droit guinéen est en constante évolution.</strong> La base de données de JusticIA
+              est mise à jour périodiquement mais peut ne pas intégrer les dernières lois, décrets ou
+              jurisprudences en vigueur au moment de votre consultation.
+            </li>
+            <li>
+              <strong>Chaque situation juridique est unique.</strong> Les réponses générées sont basées sur
+              des questions générales et ne peuvent pas prendre en compte toutes les spécificités de votre
+              situation personnelle, familiale, professionnelle ou contractuelle.
+            </li>
+            <li>
+              <strong>Consultez toujours un professionnel qualifié.</strong> Pour toute décision juridique
+              importante, tout litige, toute procédure judiciaire ou toute question ayant des conséquences
+              légales significatives, nous vous recommandons de consulter un avocat inscrit au Barreau de
+              Guinée ou un notaire habilité.
+            </li>
+          </ul>
+        </article>
+
+        <!-- 4. Limitation de responsabilité -->
+        <article id="responsabilite" class="pcu-article">
+          <div class="article-num">04</div>
+          <h2>Limitation de responsabilité</h2>
+          <p>
+            Dans toute la mesure permise par le droit applicable, JusticIA et ses dirigeants, employés,
+            partenaires, agents, fournisseurs ou affiliés <strong>déclinent expressément toute responsabilité</strong>
+            pour :
+          </p>
+
+          <div class="resp-grid">
+            <div class="resp-card">
+              <div class="resp-icon resp-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <h4>Décisions prises sur la base des réponses IA</h4>
+              <p>Toute décision juridique, commerciale, financière ou personnelle prise en se fondant sur les
+              informations fournies par la Plateforme relève de l'entière responsabilité de l'utilisateur.</p>
+            </div>
+            <div class="resp-card">
+              <div class="resp-icon resp-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <h4>Inexactitudes et erreurs de l'IA</h4>
+              <p>Les informations générées par l'IA peuvent contenir des erreurs, omissions ou imprécisions.
+              JusticIA ne garantit pas l'exactitude, l'exhaustivité ou l'actualité des réponses produites.</p>
+            </div>
+            <div class="resp-card">
+              <div class="resp-icon resp-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <h4>Préjudices directs ou indirects</h4>
+              <p>Tout préjudice direct, indirect, accessoire, spécial, punitif ou consécutif découlant de
+              l'utilisation ou de l'impossibilité d'utiliser la Plateforme.</p>
+            </div>
+            <div class="resp-card">
+              <div class="resp-icon resp-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <h4>Interruptions de service</h4>
+              <p>Toute interruption temporaire ou définitive de la Plateforme, perte de données ou dysfonctionnement
+              technique indépendant de notre volonté (force majeure, défaillance serveur, etc.).</p>
+            </div>
+            <div class="resp-card">
+              <div class="resp-icon resp-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <h4>Conséquences judiciaires</h4>
+              <p>Tout résultat défavorable dans une procédure judiciaire résultant d'une stratégie adoptée
+              sur la base des informations de la Plateforme sans consultation d'un professionnel habilité.</p>
+            </div>
+            <div class="resp-card">
+              <div class="resp-icon resp-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <h4>Évolutions législatives non intégrées</h4>
+              <p>Tout préjudice résultant d'informations basées sur des textes de loi modifiés, abrogés ou
+              remplacés postérieurement à la dernière mise à jour de notre base de données.</p>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p>
+              En aucun cas la responsabilité totale de JusticIA ne pourra excéder le montant des sommes
+              effectivement payées par l'utilisateur pour le service au cours des trois (3) derniers mois
+              précédant le fait générateur du litige.
+            </p>
+          </div>
+        </article>
+
+        <!-- 5. Conditions d'utilisation -->
+        <article id="utilisation" class="pcu-article">
+          <div class="article-num">05</div>
+          <h2>Conditions d'utilisation</h2>
+
+          <h3>5.1 Éligibilité</h3>
+          <p>
+            La Plateforme est destinée aux personnes physiques majeures (âgées d'au moins 18 ans) ou morales
+            légalement constituées. En créant un compte, vous déclarez et garantissez remplir ces conditions.
+          </p>
+
+          <h3>5.2 Compte utilisateur</h3>
+          <p>
+            Vous êtes responsable de la confidentialité de vos identifiants de connexion et de toutes les
+            activités réalisées depuis votre compte. Vous vous engagez à nous notifier immédiatement de toute
+            utilisation non autorisée de votre compte à l'adresse <strong>contact&#64;justicia.gn</strong>.
+          </p>
+
+          <h3>5.3 Usages interdits</h3>
+          <p>Il est strictement interdit d'utiliser la Plateforme pour :</p>
+          <ul class="legal-list">
+            <li>Toute activité illégale ou contraire à la législation guinéenne ou internationale.</li>
+            <li>Tenter de contourner les mesures de sécurité ou accéder à des données non autorisées.</li>
+            <li>Reproduire, vendre ou exploiter commercialement les contenus générés sans autorisation écrite préalable.</li>
+            <li>Soumettre des informations fausses, trompeuses ou portant atteinte à des tiers.</li>
+            <li>Utiliser des scripts automatisés ou robots pour accéder à la Plateforme.</li>
+            <li>Harceler, menacer ou porter atteinte à d'autres utilisateurs ou à l'équipe JusticIA.</li>
+          </ul>
+
+          <h3>5.4 Quotas et abonnements</h3>
+          <p>
+            L'accès aux fonctionnalités est conditionné au plan d'abonnement souscrit. Les quotas journaliers
+            (nombre de questions, dossiers, etc.) sont définis par votre plan et ne sont pas reportables d'un
+            jour à l'autre. JusticIA se réserve le droit de modifier les tarifs et fonctionnalités avec un
+            préavis de 30 jours.
+          </p>
+        </article>
+
+        <!-- 6. Données personnelles -->
+        <article id="donnees" class="pcu-article">
+          <div class="article-num">06</div>
+          <h2>Données personnelles et confidentialité</h2>
+          <p>
+            La collecte et le traitement de vos données personnelles sont régis par notre
+            <strong>Politique de Confidentialité</strong> disponible sur la Plateforme. En résumé :
+          </p>
+          <ul class="feature-list">
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Les données relatives à vos dossiers juridiques et conversations sont stockées de manière
+              sécurisée et ne sont <strong>jamais partagées avec des tiers</strong> sans votre consentement explicite.
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Les conversations avec l'IA peuvent être utilisées de manière anonymisée et agrégée pour
+              améliorer la qualité du service, sauf opposition explicite de votre part.
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Vous disposez d'un droit d'accès, de rectification, de portabilité et de suppression de vos
+              données en adressant une demande à <strong>privacy&#64;justicia.gn</strong>.
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              En cas d'abonnement Enterprise ou Cabinet, un Accord de Traitement des Données (DPA) spécifique
+              peut être signé sur demande.
+            </li>
+          </ul>
+        </article>
+
+        <!-- 7. Propriété intellectuelle -->
+        <article id="propriete" class="pcu-article">
+          <div class="article-num">07</div>
+          <h2>Propriété intellectuelle</h2>
+          <p>
+            L'ensemble des éléments constituant la Plateforme JusticIA (logo, interface, algorithmes, modèles
+            d'IA, base de données structurée, textes éditoriaux) sont la propriété exclusive de JusticIA SARL
+            et sont protégés par les lois applicables en matière de propriété intellectuelle.
+          </p>
+          <p>
+            Les textes législatifs guinéens intégrés dans la base de données (codes, lois, décrets,
+            constitution) sont des documents officiels de la République de Guinée et appartiennent au domaine
+            public. Leur reproduction fidèle à des fins informatives est permise.
+          </p>
+          <p>
+            Les réponses générées par l'IA à partir de vos questions vous appartiennent. Vous pouvez les
+            conserver et les utiliser à titre personnel, sous réserve de ne pas les présenter comme un avis
+            juridique professionnel.
+          </p>
+        </article>
+
+        <!-- 8. Modifications -->
+        <article id="modifications" class="pcu-article">
+          <div class="article-num">08</div>
+          <h2>Modifications des conditions</h2>
+          <p>
+            JusticIA se réserve le droit de modifier les présentes PCU à tout moment. En cas de modification
+            substantielle, vous serez informé par :
+          </p>
+          <ul class="legal-list">
+            <li>Un e-mail envoyé à l'adresse associée à votre compte.</li>
+            <li>Une notification visible lors de votre prochaine connexion à la Plateforme.</li>
+            <li>La mise à jour de la date de « Dernière mise à jour » en haut de la présente page.</li>
+          </ul>
+          <p>
+            La poursuite de l'utilisation de la Plateforme après notification des modifications vaut
+            acceptation des nouvelles conditions. Si vous refusez les modifications, vous devez fermer votre
+            compte avant la date d'entrée en vigueur des nouvelles conditions.
+          </p>
+          <p>
+            Le droit applicable aux présentes PCU est le droit guinéen. Tout litige relatif à leur
+            interprétation ou exécution sera soumis à la compétence exclusive des juridictions compétentes
+            de la République de Guinée.
+          </p>
+        </article>
+
+        <!-- 9. Acceptation -->
+        <article id="acceptation" class="pcu-article">
+          <div class="article-num">09</div>
+          <h2>Acceptation et engagement</h2>
+
+          <div class="accept-box">
+            <div class="accept-check">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div>
+              <h3>En utilisant JusticIA, vous confirmez :</h3>
+              <ul>
+                <li>Avoir lu et compris l'intégralité des présentes Politiques et Conditions d'Utilisation.</li>
+                <li>Accepter que JusticIA est un outil informatif et non un prestataire de services juridiques.</li>
+                <li>Assumer l'entière responsabilité de toute décision prise sur la base des informations fournies.</li>
+                <li>Vous engager à consulter un professionnel qualifié pour toute situation juridique sérieuse.</li>
+                <li>Accepter la limitation de responsabilité telle que définie à l'article 04 des présentes.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="contact-cta">
+            Pour toute question relative aux présentes PCU, contactez-nous à
+            <strong>legal&#64;justicia.gn</strong> ou via notre
+            <a routerLink="/support">page de support</a>.
+          </p>
+        </article>
+
+      </main>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>

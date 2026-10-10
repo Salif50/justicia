@@ -1,0 +1,373 @@
+<div class="enc-page">
+
+  <!-- ═══════════ EN-TÊTE ═══════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Ressources juridiques</p>
+      <h1 class="app-title">Encyclopédie juridique</h1>
+      <p class="app-sub">Les codes et textes législatifs de la République de Guinée, consultables article par article.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+      <button [class.active]="activeTab() === 'library'" (click)="switchTab('library')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Bibliothèque
+      </button>
+      <button [class.active]="activeTab() === 'search'" (click)="switchTab('search')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Recherche IA
+        <span class="app-tag app-tag--accent">RAG</span>
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- Stats row -->
+  <div class="enc-stats-row">
+    <div class="enc-stat">
+      <div class="enc-stat-num">{{ CODES.length }}</div>
+      <div class="enc-stat-label">Textes de loi</div>
+    </div>
+    <div class="enc-stat-sep"></div>
+    <div class="enc-stat">
+      <div class="enc-stat-num">{{ totalArticles() | number }}</div>
+      <div class="enc-stat-label">Articles indexés</div>
+    </div>
+    <div class="enc-stat-sep"></div>
+    <div class="enc-stat">
+      <div class="enc-stat-num">{{ fondamentaux() }}</div>
+      <div class="enc-stat-label">Textes fondamentaux</div>
+    </div>
+    <div class="enc-stat-sep"></div>
+    <div class="enc-stat">
+      <div class="enc-stat-num">{{ categoriesCount() }}</div>
+      <div class="enc-stat-label">Domaines juridiques</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TAB : BIBLIOTHÈQUE ═══════════ -->
+  @if (activeTab() === 'library') {
+
+    <!-- Filtres -->
+    <div class="enc-filters">
+      <div class="enc-search-wrap">
+        <svg class="enc-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="enc-search"
+          type="text"
+          placeholder="Rechercher par titre, domaine, description…"
+          [value]="localSearch()"
+          (input)="localSearch.set($any($event.target).value)" />
+        @if (localSearch()) {
+          <button class="enc-clear" (click)="localSearch.set('')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        }
+      </div>
+
+      <div class="enc-cats">
+        @for (cat of CATEGORIES; track cat) {
+          <button class="enc-cat-btn"
+            [class.active]="selectedCategory() === cat"
+            (click)="selectedCategory.set(cat)">
+            @if (cat !== 'Tous') { <ui-icon [name]="catIcon(cat)" [size]="16" /> }
+            {{ cat }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Résultats count -->
+    <div class="enc-results-count">
+      @if (localSearch() || selectedCategory() !== 'Tous') {
+        <span>{{ filteredCodes().length }} résultat{{ filteredCodes().length > 1 ? 's' : '' }}</span>
+        @if (selectedCategory() !== 'Tous') { <span class="enc-filter-pill" (click)="selectedCategory.set('Tous')">{{ selectedCategory() }} <ui-icon name="x" [size]="12" /></span> }
+        @if (localSearch()) { <span class="enc-filter-pill" (click)="localSearch.set('')">« {{ localSearch() }} » <ui-icon name="x" [size]="12" /></span> }
+      }
+    </div>
+
+    <!-- Grille -->
+    @if (filteredCodes().length === 0) {
+      <div class="enc-empty">
+        <div class="enc-empty-icon inline-icon-box"><ui-icon name="book-open" [size]="28" /></div>
+        <p>Aucun texte trouvé pour « {{ localSearch() }} »</p>
+        <button class="enc-empty-reset" (click)="localSearch.set(''); selectedCategory.set('Tous')">Réinitialiser les filtres</button>
+      </div>
+    } @else {
+      <div class="enc-grid">
+        @for (code of filteredCodes(); track code.id) {
+          <div class="enc-card"
+            [class.expanded]="expandedId() === code.id">
+
+            <!-- Barre de couleur catégorie -->
+            <div class="enc-card-stripe"></div>
+
+            <div class="enc-card-body" (click)="toggleCard(code.id)">
+
+              <div class="enc-card-top">
+                <span class="enc-cat-badge"><ui-icon [name]="catIcon(code.categorie)" [size]="12" /> {{ code.categorie }}</span>
+                <span class="enc-imp-badge" [ngClass]="importanceBadge(code.importance).cls">
+                  {{ importanceBadge(code.importance).label }}
+                </span>
+              </div>
+
+              <h2 class="enc-card-titre">{{ code.titre }}</h2>
+
+              <div class="enc-card-meta">
+                <span class="enc-meta-item">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  {{ code.annee }}
+                </span>
+                <span class="enc-meta-item">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  {{ code.articles | number }} articles
+                </span>
+              </div>
+
+              <div class="enc-chevron" [class.open]="expandedId() === code.id">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+
+            <!-- Section expansée -->
+            @if (expandedId() === code.id) {
+              <div class="enc-expanded" (click)="$event.stopPropagation()">
+
+                <p class="enc-card-desc">{{ code.description }}</p>
+
+                <div class="enc-domaines">
+                  @for (d of code.domaines; track d) {
+                    <span class="enc-domaine-chip">{{ d }}</span>
+                  }
+                </div>
+
+                <!-- Actions principales -->
+                <div class="enc-card-actions">
+                  <button class="enc-action-btn enc-action-btn--primary" (click)="goToChat(code)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Consulter avec l'IA
+                  </button>
+                  <button class="enc-action-btn enc-action-btn--secondary"
+                    (click)="askingCardId() === code.id ? closeAsk() : openAsk(code.id); $event.stopPropagation()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    {{ askingCardId() === code.id ? 'Fermer' : 'Poser une question' }}
+                  </button>
+                </div>
+
+                <!-- Zone Q&A inline -->
+                @if (askingCardId() === code.id) {
+                  <div class="enc-ask-zone">
+
+                    @if (askStage() !== 'loading' && askStage() !== 'done') {
+                      <div class="enc-ask-input-row">
+                        <input class="enc-ask-input"
+                          type="text"
+                          placeholder="Ex : Quelles sont les sanctions prévues ? Quels sont mes droits ?"
+                          [value]="askQuestion()"
+                          (input)="askQuestion.set($any($event.target).value)"
+                          (keydown)="onAskKeydown($event, code)" />
+                        <button class="enc-ask-submit" [disabled]="!askValid()" (click)="submitAsk(code)">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                      </div>
+                    }
+
+                    @if (askStage() === 'loading') {
+                      <div class="enc-ask-loading">
+                        <div class="enc-ask-spinner">
+                          @for (msg of thinkingMessages; track $index) {
+                            @if (thinkingStep() === $index) {
+                              <span class="enc-ask-step">{{ msg }}</span>
+                            }
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    @if (askStage() === 'error') {
+                      <div class="enc-ask-error">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                        {{ askError() }}
+                      </div>
+                    }
+
+                    @if (askStage() === 'done') {
+                      @if (askResult(); as res) {
+                        <div class="enc-ask-result">
+                          <div class="enc-ask-result-header">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
+                            Réponse de JusticIA
+                            <button class="enc-ask-reset" (click)="askStage.set('idle'); askResult.set(null); askQuestion.set('')">
+                              Nouvelle question
+                            </button>
+                          </div>
+                          <div class="enc-ask-answer">{{ res.answer }}</div>
+                          @if ((res.sources?.length ?? 0) > 0) {
+                            <div class="enc-ask-sources">
+                              @for (src of res.sources.slice(0, 3); track $index) {
+                                <div class="enc-ask-source-item">
+                                  <span class="enc-src-ref">{{ src.article_ref || src.nom_doc }}</span>
+                                  @if (src.texte) { <span class="enc-src-text">{{ src.texte | slice:0:120 }}…</span> }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- ═══════════ TAB : RECHERCHE IA ═══════════ -->
+  @if (activeTab() === 'search') {
+
+    @if (searchStage() === 'idle' || searchStage() === 'error') {
+      <div class="enc-search-hero">
+        <div class="enc-search-hero-icon inline-icon-box"><ui-icon name="search" [size]="28" /></div>
+        <h2>Recherche dans les textes de loi</h2>
+        <p>Posez une question ou entrez des mots-clés pour trouver les articles pertinents dans les {{ CODES.length }} textes juridiques guinéens.</p>
+
+        <div class="enc-search-bar">
+          <input class="enc-search-bar-input"
+            type="text"
+            placeholder="Ex : indemnité de licenciement, droits d'un mineur devant le tribunal, expropriation foncière…"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            (keydown)="onSearchKey($event)" />
+          <button class="enc-search-bar-btn" [disabled]="!searchValid()" (click)="search()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Rechercher
+          </button>
+        </div>
+
+        @if (searchStage() === 'error') {
+          <div class="enc-search-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+            {{ searchError() }}
+          </div>
+        }
+
+        <div class="enc-search-suggestions">
+          <p>Exemples de recherches :</p>
+          <div class="enc-suggest-pills">
+            @for (s of ['Licenciement abusif', 'Droits de l\'enfant', 'Contrat de bail', 'Fraude fiscale', 'Garde à vue', 'Permis minier']; track s) {
+              <button class="enc-suggest-pill" (click)="searchQuery.set(s); search()">{{ s }}</button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- LOADING -->
+    @if (searchStage() === 'loading') {
+      <div class="enc-ai-screen">
+        <div class="enc-ai-core">
+          <div class="enc-ai-ring enc-ai-ring--3"></div>
+          <div class="enc-ai-ring enc-ai-ring--2"></div>
+          <div class="enc-ai-ring enc-ai-ring--1"></div>
+          <div class="enc-ai-nucleus">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+        </div>
+        <div class="enc-ai-text">
+          <h2>Recherche en cours…</h2>
+          <p>« {{ searchQuery() }} »</p>
+        </div>
+        <div class="enc-ai-steps">
+          @for (msg of thinkingMessages; track $index) {
+            <div class="enc-ai-step"
+              [class.done]="thinkingStep() > $index"
+              [class.active]="thinkingStep() === $index"
+              [class.pending]="thinkingStep() < $index">
+              <div class="enc-ai-step-icon">
+                @if (thinkingStep() > $index) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                } @else if (thinkingStep() === $index) {
+                  <div class="enc-step-spinner"></div>
+                } @else {
+                  <div class="enc-step-dot"></div>
+                }
+              </div>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- RÉSULTATS -->
+    @if (searchStage() === 'done') {
+      @if (searchResult(); as res) {
+        <div class="enc-search-results">
+
+          <!-- Barre de résultats -->
+          <div class="enc-results-bar">
+            <div class="enc-results-bar-left">
+              <span class="enc-results-query">« {{ res.query }} »</span>
+              <span class="enc-results-badge">{{ res.total }} article{{ res.total > 1 ? 's' : '' }} trouvé{{ res.total > 1 ? 's' : '' }}</span>
+            </div>
+            <button class="enc-new-search-btn" (click)="resetSearch()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+              Nouvelle recherche
+            </button>
+          </div>
+
+          <!-- Résumé IA -->
+          @if (res.ai_summary) {
+            <div class="enc-summary-card">
+              <div class="enc-summary-header">
+                <div class="enc-summary-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <span>Synthèse IA</span>
+              </div>
+              <div class="enc-summary-text">{{ res.ai_summary }}</div>
+            </div>
+          }
+
+          <!-- Articles trouvés -->
+          @if (res.results.length > 0) {
+            <div class="enc-articles-grid">
+              @for (art of res.results; track $index) {
+                <div class="enc-article-card">
+                  <div class="enc-article-header">
+                    <div class="enc-article-ref">{{ art.article_ref || 'Article' }}</div>
+                    <div class="enc-article-score">
+                      <div class="enc-score-bar">
+                        <div class="enc-score-fill" [style.width.%]="scorePercent(art.score)"></div>
+                      </div>
+                      <span>{{ scorePercent(art.score) }}%</span>
+                    </div>
+                  </div>
+                  <div class="enc-article-source">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    {{ art.nom_doc }}
+                    @if (art.domaine) { · <span class="enc-article-domaine">{{ art.domaine }}</span> }
+                  </div>
+                  @if (art.texte) {
+                    <p class="enc-article-text">{{ art.texte | slice:0:300 }}{{ art.texte.length > 300 ? '…' : '' }}</p>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="enc-no-articles">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <p>Aucun article spécifique trouvé. Essayez d'autres termes.</p>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  }
+
+</div>

@@ -1,0 +1,9 @@
+# Scripts exécutés sur le VPS (Linux) : toujours en fins de ligne Unix
+*.sh            text eol=lf
+Caddyfile       text eol=lf
+Dockerfile      text eol=lf
+*.yml           text eol=lf
+
+# Données : pas de diff ligne à ligne sur les gros fichiers JSON du corpus
+model/corpus/corpus.jsonl            -diff linguist-generated
+model/corpus/articles/*.json         linguist-generated

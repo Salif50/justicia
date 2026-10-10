@@ -1,0 +1,320 @@
+<div class="pr-page">
+
+  <!-- ═══════════ EN-TÊTE ═══════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Ressources juridiques</p>
+      <h1 class="app-title">Guide des démarches</h1>
+      <p class="app-sub">Les démarches administratives et judiciaires courantes, étape par étape.</p>
+    </div>
+  </header>
+
+  <!-- ═══════════ CATÉGORIES ═══════════ -->
+  <div class="pr-cats-bar">
+    <button class="pr-cat-pill" [class.active]="selectedCategory() === 'Toutes'" (click)="selectCategory('Toutes')">
+      Toutes · {{ DEMARCHES().length }}
+    </button>
+    @for (s of statsParCategorie(); track s.cat) {
+      <button class="pr-cat-pill"
+        [class.active]="selectedCategory() === s.cat"
+        (click)="selectCategory(s.cat)">
+        <span class="pr-cat-dot"></span>
+        <ui-icon [name]="s.icon" [size]="14" /> {{ s.cat }}
+        <span class="pr-cat-count">{{ s.count }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ═══════════ RECHERCHE ═══════════ -->
+  <div class="pr-search-wrap">
+    <svg class="pr-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="pr-search"
+      type="text"
+      placeholder="Rechercher une démarche, une étape, un mot-clé…"
+      [value]="searchQuery()"
+      (input)="searchQuery.set($any($event.target).value)" />
+    @if (searchQuery()) {
+      <button class="pr-search-clear" (click)="searchQuery.set('')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    }
+  </div>
+
+  <!-- ═══════════ RÉSULTATS ═══════════ -->
+  @if (filteredDemarches().length === 0) {
+    <div class="pr-empty">
+      <div class="pr-empty-icon inline-icon-box"><ui-icon name="clipboard" [size]="28" /></div>
+      <p>Aucune démarche trouvée pour « {{ searchQuery() }} »</p>
+      <button class="pr-empty-reset" (click)="searchQuery.set(''); selectCategory('Toutes')">Réinitialiser</button>
+    </div>
+  } @else {
+    <div class="pr-list">
+      @for (d of filteredDemarches(); track d.id) {
+        <div class="pr-card" [class.pr-card--expanded]="expandedId() === d.id" [class.pr-card--urgent]="d.urgence">
+
+          <!-- ── En-tête carte ── -->
+          <div class="pr-card-head" (click)="toggle(d.id)">
+
+            <div class="pr-card-icon-wrap">
+              <span class="pr-icon inline-icon-box"><ui-icon [name]="d.icon" [size]="22" /></span>
+              @if (d.urgence) {
+                <span class="pr-urgence-dot" title="Délais importants — agir vite"></span>
+              }
+            </div>
+
+            <div class="pr-card-info">
+              <div class="pr-card-top-row">
+                <h2 class="pr-card-titre">{{ d.titre }}</h2>
+                <span class="pr-cat-badge">
+                  <ui-icon [name]="catIcon(d.categorie)" [size]="12" /> {{ d.categorie }}
+                </span>
+                @if (d.urgence) {
+                  <span class="pr-urgence-badge"><ui-icon name="zap" [size]="12" /> Délais légaux</span>
+                }
+              </div>
+              <p class="pr-card-desc">{{ d.description }}</p>
+              <div class="pr-card-meta">
+                <span class="pr-meta">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {{ d.duree_totale }}
+                </span>
+                <span class="pr-meta">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  {{ d.cout_estime }}
+                </span>
+                <span class="pr-diffi" [ngClass]="difficulteClass(d.difficulte)">{{ d.difficulte }}</span>
+                <span class="pr-steps-count">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  {{ d.etapes.length }} étapes
+                </span>
+                <!-- Barres de progression -->
+                @if (stepsCompletedCount(d.id) > 0 || docsCheckedCount(d.id) > 0) {
+                  <span class="pr-progress-mini">
+                    <span class="pr-progress-mini-bar" [style.width.%]="stepsProgress(d.id, d.etapes.length)"></span>
+                  </span>
+                  <span class="pr-progress-label">{{ stepsCompletedCount(d.id) }}/{{ d.etapes.length }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="pr-chevron" [class.open]="expandedId() === d.id">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+
+          <!-- ── Corps développé ── -->
+          @if (expandedId() === d.id) {
+            <div class="pr-card-body">
+
+              <!-- Progression globale -->
+              <div class="pr-progress-row">
+                <div class="pr-progress-block">
+                  <div class="pr-progress-label-row">
+                    <span><ui-icon name="file" [size]="13" /> Documents préparés</span>
+                    <strong>{{ docsCheckedCount(d.id) }} / {{ d.docs_requis.length }}</strong>
+                  </div>
+                  <div class="pr-progress-bar"><div class="pr-progress-fill pr-progress-fill--doc" [style.width.%]="docsProgress(d.id, d.docs_requis.length)"></div></div>
+                </div>
+                <div class="pr-progress-block">
+                  <div class="pr-progress-label-row">
+                    <span><ui-icon name="check-circle" [size]="13" /> Étapes complétées</span>
+                    <strong>{{ stepsCompletedCount(d.id) }} / {{ d.etapes.length }}</strong>
+                  </div>
+                  <div class="pr-progress-bar"><div class="pr-progress-fill pr-progress-fill--step" [style.width.%]="stepsProgress(d.id, d.etapes.length)"></div></div>
+                </div>
+              </div>
+
+              <!-- Documents requis -->
+              <div class="pr-section">
+                <div class="pr-section-title">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Documents requis
+                  <span class="pr-section-count">{{ docsCheckedCount(d.id) }}/{{ d.docs_requis.length }} prêts</span>
+                </div>
+                <div class="pr-docs-grid">
+                  @for (doc of d.docs_requis; track doc) {
+                    <label class="pr-doc-item" [class.checked]="isDocChecked(d.id, doc)" (click)="toggleDoc(d.id, doc, $event)">
+                      <span class="pr-doc-check">
+                        @if (isDocChecked(d.id, doc)) {
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        }
+                      </span>
+                      <span class="pr-doc-label">{{ doc }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <!-- Étapes -->
+              <div class="pr-section">
+                <div class="pr-section-title">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  Procédure étape par étape
+                </div>
+                <div class="pr-steps">
+                  @for (e of d.etapes; track e.num) {
+                    <div class="pr-step" [class.pr-step--done]="isStepDone(d.id, e.num)" [class.pr-step--optional]="e.optionnel">
+                      <div class="pr-step-line-wrap">
+                        <button class="pr-step-num" (click)="toggleStep(d.id, e.num, $event)" [title]="isStepDone(d.id, e.num) ? 'Marquer comme à faire' : 'Marquer comme fait'">
+                          @if (isStepDone(d.id, e.num)) {
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          } @else {
+                            {{ e.num }}
+                          }
+                        </button>
+                        @if (!$last) { <div class="pr-step-connector"></div> }
+                      </div>
+                      <div class="pr-step-content">
+                        <div class="pr-step-head">
+                          <span class="pr-step-titre">{{ e.titre }}</span>
+                          @if (e.optionnel) { <span class="pr-opt-badge">Optionnel</span> }
+                        </div>
+                        <p class="pr-step-desc">{{ e.description }}</p>
+                        <div class="pr-step-chips">
+                          @if (e.duree) {
+                            <span class="pr-chip-sm pr-chip-sm--time">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                              {{ e.duree }}
+                            </span>
+                          }
+                          @if (e.lieu) {
+                            <span class="pr-chip-sm pr-chip-sm--lieu">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                              {{ e.lieu }}
+                            </span>
+                          }
+                          @if (e.cout) {
+                            <span class="pr-chip-sm pr-chip-sm--cout">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                              {{ e.cout }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Conseil pratique -->
+              <div class="pr-conseil">
+                <div class="pr-conseil-icon"><ui-icon name="lightbulb" [size]="20" /></div>
+                <div>
+                  <div class="pr-conseil-title">Conseil pratique</div>
+                  <p>{{ d.conseil }}</p>
+                </div>
+              </div>
+
+              <!-- IA Questions suggérées -->
+              <div class="pr-ia-section">
+                <div class="pr-ia-header">
+                  <div class="pr-ia-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/><path d="M12 8v4M12 16h.01"/></svg>
+                    Questions fréquentes sur cette démarche
+                  </div>
+                  @if (askingId() === d.id) {
+                    <button class="pr-ia-close" (click)="closeAsk(); $event.stopPropagation()">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  }
+                </div>
+
+                <!-- Questions cliquables -->
+                @if (askingId() !== d.id || askStage() === 'idle') {
+                  <div class="pr-questions">
+                    @for (q of d.questions_ia; track q) {
+                      <button class="pr-q-btn" (click)="askWithQuestion(d, q, $event)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        {{ q }}
+                      </button>
+                    }
+                  </div>
+                }
+
+                <!-- Chargement -->
+                @if (askingId() === d.id && askStage() === 'loading') {
+                  <div class="pr-ia-loading">
+                    <div class="pr-ia-asked-q">{{ askQuestion() }}</div>
+                    <div class="pr-ia-spin-row">
+                      <div class="pr-ia-spin-wrap">
+                        <div class="pr-ia-ring"></div>
+                        <span class="pr-ia-ring-lbl">IA</span>
+                      </div>
+                      <div class="pr-ia-steps">
+                        @for (step of thinkingMessages; track step; let i = $index) {
+                          <span class="pr-step-th" [class.active]="thinkingStep() === i" [class.done]="thinkingStep() > i">
+                            @if (thinkingStep() > i) {
+                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                            }
+                            {{ step }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- Résultat IA -->
+                @if (askingId() === d.id && askStage() === 'done' && askResult()) {
+                  <div class="pr-ia-result">
+                    <div class="pr-ia-asked-q">{{ askQuestion() }}</div>
+                    <div class="pr-ia-answer-badge">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      Réponse de JusticIA
+                    </div>
+                    <p class="pr-ia-answer">{{ askResult()?.answer }}</p>
+                    @if (askResult()?.sources?.length) {
+                      <div class="pr-ia-sources">
+                        @for (s of (askResult()?.sources ?? []).slice(0, 3); track s.article_ref) {
+                          <div class="pr-ia-src">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--glow-cyan)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            {{ s.nom_doc }}{{ s.article_ref ? ' · ' + s.article_ref : '' }}
+                          </div>
+                        }
+                      </div>
+                    }
+                    <!-- Reposer une question -->
+                    <div class="pr-questions pr-questions--inline">
+                      @for (q of d.questions_ia; track q) {
+                        <button class="pr-q-btn" (click)="askWithQuestion(d, q, $event)">{{ q }}</button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Erreur -->
+                @if (askingId() === d.id && askStage() === 'error') {
+                  <div class="pr-ia-error">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {{ askError() }}
+                    <button class="pr-retry-btn" (click)="askWithQuestion(d, askQuestion(), $event)">Réessayer</button>
+                  </div>
+                }
+              </div>
+
+              <!-- Footer base légale + CTA chat -->
+              <div class="pr-card-footer">
+                <div class="pr-base-legale">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  {{ d.base_legale }}
+                </div>
+                <button class="pr-chat-btn" (click)="goToChat(d)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  Poser d'autres questions à l'IA
+                </button>
+              </div>
+
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Notice légale -->
+  <div class="pr-notice">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Ces guides sont fournis à titre informatif. Les délais et coûts sont indicatifs et peuvent varier selon les juridictions. Consultez un avocat inscrit au Barreau de Guinée pour votre situation spécifique.
+  </div>
+
+</div>

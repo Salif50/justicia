@@ -1,0 +1,117 @@
+<div class="hist">
+  <header class="hist-head">
+    <div>
+      <p class="hist-eyebrow">Vos consultations</p>
+      <h2 class="hist-title">Historique</h2>
+      <p class="hist-sub">Retrouvez et reprenez vos consultations précédentes.</p>
+    </div>
+    <div class="hist-actions">
+      @if (conversations().length > 0) {
+        <button class="btn-quiet btn-danger-quiet" (click)="askDeleteAll($event)">Tout supprimer</button>
+      }
+      <a routerLink="/dashboard/chat" class="btn-solid">
+        Nouvelle consultation
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="hist-panel hist-skeleton">@for (i of [1,2,3,4]; track i) {<span></span>}</div>
+  } @else if (conversations().length === 0) {
+    <div class="hist-panel hist-empty">
+      <h3>Aucune consultation pour l'instant</h3>
+      <p>Vos consultations enregistrées apparaîtront ici, prêtes à être reprises.</p>
+      <a routerLink="/dashboard/chat" class="btn-solid">Poser une première question</a>
+    </div>
+  } @else {
+    <div class="hist-panel">
+      <div class="hist-row hist-row--head" aria-hidden="true">
+        <span>Consultation</span>
+        <span>Domaine</span>
+        <span>Messages</span>
+        <span>Dernière activité</span>
+        <span></span>
+      </div>
+      @for (conversation of conversations(); track conversation.id) {
+        <div class="hist-row" [routerLink]="['/dashboard/chat', conversation.id]" role="link" tabindex="0">
+          <span class="hist-cell-title">{{ conversation.title }}</span>
+          <span class="hist-cell">{{ getAgentLabel(conversation.agent_id) }}</span>
+          <span class="hist-cell">{{ conversation.message_count }}</span>
+          <span class="hist-cell">{{ formatDate(conversation.updated_at) }}</span>
+          <button class="hist-delete" (click)="askDelete(conversation.id, conversation.title, $event)" title="Supprimer" aria-label="Supprimer la consultation">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ── Modal confirmation suppression d'une conversation ────────────────── -->
+@if (showDeleteModal()) {
+  <div class="confirm-overlay" (click)="cancelDelete()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-icon danger">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+      <h3>Supprimer la conversation</h3>
+      <p class="confirm-subtitle">Cette action est irréversible.</p>
+      <p class="confirm-title-preview">"{{ deleteTargetTitle() }}"</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="isDeleting()">
+          Annuler
+        </button>
+        <button class="btn-confirm-delete" (click)="confirmDelete()" [disabled]="isDeleting()">
+          @if (isDeleting()) {
+            <span class="btn-spinner"></span>
+            Suppression...
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Supprimer
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modal confirmation tout supprimer ────────────────────────────────── -->
+@if (showDeleteAllModal()) {
+  <div class="confirm-overlay" (click)="cancelDeleteAll()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-icon danger">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h3>Supprimer tout l'historique</h3>
+      <p class="confirm-subtitle">Vous êtes sur le point de supprimer <strong>{{ conversations().length }} conversation{{ conversations().length > 1 ? 's' : '' }}</strong>. Cette action est irréversible.</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelDeleteAll()" [disabled]="isDeleting()">
+          Annuler
+        </button>
+        <button class="btn-confirm-delete" (click)="confirmDeleteAll()" [disabled]="isDeleting()">
+          @if (isDeleting()) {
+            <span class="btn-spinner"></span>
+            Suppression...
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Tout supprimer
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

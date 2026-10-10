@@ -1,0 +1,53 @@
+<header class="header" [class.scrolled]="isScrolled()">
+  <div class="container">
+    <div class="header-inner">
+
+      <!-- Logo -->
+      <a routerLink="/" class="logo">
+        <img src="/justicia-logo.png" alt="JusticIA" class="logo-img" />
+      </a>
+
+      <!-- Nav desktop -->
+      <nav class="nav" [class.open]="isMenuOpen()">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link" (click)="isMenuOpen.set(false)">Accueil</a>
+        <a routerLink="/pricing" routerLinkActive="active" class="nav-link" (click)="isMenuOpen.set(false)">Tarifs</a>
+        <a routerLink="/support" routerLinkActive="active" class="nav-link" (click)="isMenuOpen.set(false)">Support</a>
+        <a routerLink="/guide" routerLinkActive="active" class="nav-link" (click)="isMenuOpen.set(false)">Guide</a>
+        <a routerLink="/terms" routerLinkActive="active" class="nav-link" (click)="isMenuOpen.set(false)">PCU</a>
+
+        @if (!isAuthenticated()) {
+          <a routerLink="/login" class="nav-link nav-login" (click)="isMenuOpen.set(false)">Connexion</a>
+        }
+
+        <div class="nav-divider"></div>
+
+        @if (!isAuthenticated()) {
+          <a routerLink="/signup" class="nav-cta" (click)="isMenuOpen.set(false)">
+            Commencer
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        } @else {
+          <a routerLink="/dashboard" class="nav-cta" (click)="isMenuOpen.set(false)">
+            Dashboard
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </a>
+        }
+      </nav>
+
+      <!-- Mobile toggle -->
+      <button class="burger" (click)="toggleMenu()" [class.open]="isMenuOpen()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+    </div>
+  </div>
+</header>

@@ -1,0 +1,45 @@
+<main class="payment-return-page">
+  <section class="return-card" [attr.data-state]="state()">
+    <div class="brand-row">
+      <div class="brand-mark">M</div>
+      <div><span>Paiement traité par</span><strong>Mosagix Pay</strong></div>
+    </div>
+
+    <div class="state-icon">
+      @if (state() === 'confirming') {
+        <span class="return-spinner"></span>
+      } @else if (state() === 'success') {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+      } @else if (state() === 'cancelled') {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      }
+    </div>
+
+    @switch (state()) {
+      @case ('confirming') { <h1>Confirmation en cours</h1> }
+      @case ('success') { <h1>Paiement confirmé</h1> }
+      @case ('cancelled') { <h1>Paiement annulé</h1> }
+      @case ('failed') { <h1>Paiement non abouti</h1> }
+      @case ('pending') { <h1>Confirmation en attente</h1> }
+      @default { <h1>Retour de paiement invalide</h1> }
+    }
+    <p class="return-message">{{ message() }}</p>
+
+    @if (amount) {
+      <div class="return-amount"><span>Montant</span><strong>{{ amount | number }} {{ currency }}</strong></div>
+    }
+    @if (paymentId) {
+      <div class="return-reference"><span>Référence Mosagix</span><code>{{ paymentId }}</code></div>
+    }
+
+    <div class="return-actions">
+      @if (state() === 'pending' || state() === 'invalid') {
+        <button type="button" class="btn-retry" (click)="retry()" [disabled]="!paymentId">Vérifier à nouveau</button>
+      }
+      <a routerLink="/dashboard/subscription" class="btn-back">Retour à mon abonnement</a>
+    </div>
+    <p class="security-note">L’abonnement n’est jamais activé sur la seule base de cette page de retour.</p>
+  </section>
+</main>

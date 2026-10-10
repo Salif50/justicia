@@ -1,0 +1,282 @@
+<div class="adm-proc">
+
+  <!-- ═══════════ EN-TÊTE ═══════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Intelligence artificielle</p>
+      <h1 class="app-title">Démarches juridiques</h1>
+      <p class="app-sub">Guides pas à pas affichés dans le module « Guide des démarches ».</p>
+      <div class="adm-proc-chips">
+        <span class="adm-chip">{{ procedures().length }} total</span>
+        <span class="adm-chip adm-chip--green">{{ activeCount() }} actives</span>
+        @if (urgentCount() > 0) {
+          <span class="adm-chip adm-chip--orange">{{ urgentCount() }} urgentes</span>
+        }
+      </div>
+    </div>
+    <div class="app-head-actions">
+      @if (viewMode() === 'list') {
+      <button class="app-btn" (click)="openCreate()">
+        Nouvelle démarche
+      </button>
+    } @else {
+      <button class="app-btn app-btn--quiet" (click)="cancel()">
+        ← Retour à la liste
+      </button>
+    }
+    </div>
+  </header>
+
+  <!-- ═══════════ MESSAGES ═══════════ -->
+  @if (success()) {
+    <div class="adm-alert adm-alert--success">{{ success() }}</div>
+  }
+  @if (error() && viewMode() === 'list') {
+    <div class="adm-alert adm-alert--error">{{ error() }}</div>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════════
+       VUE : LISTE
+  ══════════════════════════════════════════════════════════════════ -->
+  @if (viewMode() === 'list') {
+    @if (isLoading()) {
+      <div class="adm-loading">Chargement…</div>
+    } @else {
+      <div class="adm-proc-table-wrap">
+        <table class="adm-proc-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Démarche</th>
+              <th>Catégorie</th>
+              <th>Difficulté</th>
+              <th>Durée</th>
+              <th>Docs</th>
+              <th>Étapes</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of procedures(); track p.id) {
+              <tr [class.adm-row--inactive]="!p.actif">
+                <td class="adm-cell-order">{{ p.ordre }}</td>
+                <td class="adm-cell-titre">
+                  <span class="adm-cell-icon">{{ p.icon }}</span>
+                  <div>
+                    <div class="adm-cell-name">{{ p.titre }}</div>
+                    <div class="adm-cell-slug">{{ p.slug }}</div>
+                  </div>
+                  @if (p.urgence) {
+                    <span class="adm-urgence-dot" title="Urgent">⚡</span>
+                  }
+                </td>
+                <td><span class="adm-badge adm-badge--cat">{{ p.categorie }}</span></td>
+                <td><span class="adm-badge {{ diffBadge(p.difficulte) }}">{{ p.difficulte }}</span></td>
+                <td class="adm-cell-meta">{{ p.duree_totale }}</td>
+                <td class="adm-cell-meta adm-text-center">{{ p.docs_requis.length }}</td>
+                <td class="adm-cell-meta adm-text-center">{{ p.etapes.length }}</td>
+                <td>
+                  <button class="adm-toggle" [class.adm-toggle--on]="p.actif" (click)="toggle(p)">
+                    {{ p.actif ? 'Actif' : 'Inactif' }}
+                  </button>
+                </td>
+                <td class="adm-cell-actions">
+                  <button class="adm-btn-icon" title="Modifier" (click)="openEdit(p)">✏️</button>
+                  <button class="adm-btn-icon adm-btn-icon--del" title="Supprimer" (click)="delete(p)">🗑️</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+
+  <!-- ══════════════════════════════════════════════════════════════
+       VUE : FORMULAIRE
+  ══════════════════════════════════════════════════════════════════ -->
+  @if (viewMode() === 'form') {
+    <div class="adm-proc-form">
+
+      @if (error()) {
+        <div class="adm-alert adm-alert--error">{{ error() }}</div>
+      }
+
+      <!-- ── Infos de base ─────────────────────────────────────── -->
+      <div class="adm-section">
+        <h3 class="adm-section-title">Informations générales</h3>
+        <div class="adm-grid-2">
+          <div class="adm-field">
+            <label>Slug <span class="adm-req">*</span></label>
+            <input [(ngModel)]="form.slug" placeholder="ex: divorce" class="adm-input" [disabled]="editingId() !== null" />
+            <small>Identifiant unique non modifiable après création</small>
+          </div>
+          <div class="adm-field">
+            <label>Icône</label>
+            <input [(ngModel)]="form.icon" placeholder="📋" class="adm-input adm-input--icon" />
+          </div>
+        </div>
+        <div class="adm-field">
+          <label>Titre <span class="adm-req">*</span></label>
+          <input [(ngModel)]="form.titre" placeholder="Titre de la démarche" class="adm-input" />
+        </div>
+        <div class="adm-grid-2">
+          <div class="adm-field">
+            <label>Catégorie <span class="adm-req">*</span></label>
+            <select [(ngModel)]="form.categorie" class="adm-input">
+              @for (cat of CATEGORIES; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
+          <div class="adm-field">
+            <label>Difficulté</label>
+            <select [(ngModel)]="form.difficulte" class="adm-input">
+              @for (d of DIFFICULTES; track d) {
+                <option [value]="d">{{ d }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="adm-field">
+          <label>Description</label>
+          <textarea [(ngModel)]="form.description" rows="3" placeholder="Description courte de la démarche" class="adm-input"></textarea>
+        </div>
+        <div class="adm-grid-2">
+          <div class="adm-field">
+            <label>Durée totale estimée</label>
+            <input [(ngModel)]="form.duree_totale" placeholder="ex: 3 à 12 mois" class="adm-input" />
+          </div>
+          <div class="adm-field">
+            <label>Coût estimé</label>
+            <input [(ngModel)]="form.cout_estime" placeholder="ex: 500 000 – 2 000 000 FG" class="adm-input" />
+          </div>
+        </div>
+        <div class="adm-grid-2">
+          <div class="adm-field">
+            <label>Base légale</label>
+            <input [(ngModel)]="form.base_legale" placeholder="ex: Code civil, Art. 303-380" class="adm-input" />
+          </div>
+          <div class="adm-field">
+            <label>Ordre d'affichage</label>
+            <input [(ngModel)]="form.ordre" type="number" min="0" class="adm-input" />
+          </div>
+        </div>
+        <div class="adm-field">
+          <label>Conseil pratique</label>
+          <textarea [(ngModel)]="form.conseil" rows="2" placeholder="Conseil affiché en bas de la démarche" class="adm-input"></textarea>
+        </div>
+        <div class="adm-checkboxes">
+          <label class="adm-checkbox-label">
+            <input type="checkbox" [(ngModel)]="form.urgence" />
+            <span>⚡ Marquer comme urgente</span>
+          </label>
+          <label class="adm-checkbox-label">
+            <input type="checkbox" [(ngModel)]="form.actif" />
+            <span>Visible (active)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── Documents requis ──────────────────────────────────── -->
+      <div class="adm-section">
+        <div class="adm-section-header">
+          <h3 class="adm-section-title">Documents requis</h3>
+          <button type="button" class="adm-btn adm-btn--sm" (click)="addDoc()">+ Ajouter</button>
+        </div>
+        <div class="adm-dynamic-list">
+          @for (doc of formDocs; track $index) {
+            <div class="adm-dynamic-row">
+              <input [(ngModel)]="formDocs[$index]" placeholder="Document requis…" class="adm-input" />
+              <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeDoc($index)" title="Supprimer">✕</button>
+            </div>
+          }
+          @if (formDocs.length === 0) {
+            <p class="adm-hint">Aucun document — cliquez sur + Ajouter</p>
+          }
+        </div>
+      </div>
+
+      <!-- ── Étapes ────────────────────────────────────────────── -->
+      <div class="adm-section">
+        <div class="adm-section-header">
+          <h3 class="adm-section-title">Étapes de la procédure</h3>
+          <button type="button" class="adm-btn adm-btn--sm" (click)="addEtape()">+ Ajouter une étape</button>
+        </div>
+        <div class="adm-etapes-list">
+          @for (etape of formEtapes; track $index) {
+            <div class="adm-etape-card">
+              <div class="adm-etape-header">
+                <span class="adm-etape-num">Étape {{ etape.num }}</span>
+                <div class="adm-etape-actions">
+                  <button type="button" class="adm-btn-icon" (click)="moveEtape($index, -1)" [disabled]="$index === 0" title="Monter">↑</button>
+                  <button type="button" class="adm-btn-icon" (click)="moveEtape($index, 1)" [disabled]="$index === formEtapes.length - 1" title="Descendre">↓</button>
+                  <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeEtape($index)" title="Supprimer">✕</button>
+                </div>
+              </div>
+              <div class="adm-field">
+                <label>Titre de l'étape</label>
+                <input [(ngModel)]="etape.titre" placeholder="Ex : Consultation d'un avocat" class="adm-input" />
+              </div>
+              <div class="adm-field">
+                <label>Description</label>
+                <textarea [(ngModel)]="etape.description" rows="2" placeholder="Description détaillée de l'étape" class="adm-input"></textarea>
+              </div>
+              <div class="adm-grid-3">
+                <div class="adm-field">
+                  <label>Durée</label>
+                  <input [(ngModel)]="etape.duree" placeholder="ex: 1-2 semaines" class="adm-input" />
+                </div>
+                <div class="adm-field">
+                  <label>Coût</label>
+                  <input [(ngModel)]="etape.cout" placeholder="ex: 50 000 FG" class="adm-input" />
+                </div>
+                <div class="adm-field">
+                  <label>Lieu</label>
+                  <input [(ngModel)]="etape.lieu" placeholder="ex: Tribunal de Première Instance" class="adm-input" />
+                </div>
+              </div>
+              <label class="adm-checkbox-label adm-checkbox-label--sm">
+                <input type="checkbox" [(ngModel)]="etape.optionnel" />
+                <span>Étape optionnelle</span>
+              </label>
+            </div>
+          }
+          @if (formEtapes.length === 0) {
+            <p class="adm-hint">Aucune étape — cliquez sur + Ajouter une étape</p>
+          }
+        </div>
+      </div>
+
+      <!-- ── Questions IA suggérées ────────────────────────────── -->
+      <div class="adm-section">
+        <div class="adm-section-header">
+          <h3 class="adm-section-title">Questions IA suggérées</h3>
+          <button type="button" class="adm-btn adm-btn--sm" (click)="addQuestion()">+ Ajouter</button>
+        </div>
+        <div class="adm-dynamic-list">
+          @for (q of formQuestions; track $index) {
+            <div class="adm-dynamic-row">
+              <input [(ngModel)]="formQuestions[$index]" placeholder="Question suggérée pour l'IA…" class="adm-input" />
+              <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeQuestion($index)" title="Supprimer">✕</button>
+            </div>
+          }
+          @if (formQuestions.length === 0) {
+            <p class="adm-hint">Aucune question — cliquez sur + Ajouter</p>
+          }
+        </div>
+      </div>
+
+      <!-- ── Actions formulaire ────────────────────────────────── -->
+      <div class="adm-form-footer">
+        <button class="adm-btn adm-btn--ghost" type="button" (click)="cancel()">Annuler</button>
+        <button class="adm-btn adm-btn--primary" type="button" (click)="save()" [disabled]="saving()">
+          @if (saving()) { Enregistrement… } @else { {{ editingId() ? 'Mettre à jour' : 'Créer la démarche' }} }
+        </button>
+      </div>
+
+    </div>
+  }
+
+</div>

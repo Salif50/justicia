@@ -1,0 +1,186 @@
+<div class="admin-page">
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Contenu du site</p>
+      <h1 class="app-title">Configuration du site</h1>
+      <p class="app-sub">Textes, chiffres clés et coordonnées affichés sur le site public.</p>
+    </div>
+  </header>
+
+  @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+  @if (success()) { <div class="alert alert-success">{{ success() }}</div> }
+
+  @if (isLoading()) {
+    <div class="loading"><div class="spinner"></div><p>Chargement...</p></div>
+  } @else {
+
+    <!-- ── Statistiques ── -->
+    @if (forms['stats']) {
+      <div class="config-section">
+        <div class="section-header">
+          <h2>Statistiques affichées</h2>
+          <button class="btn-primary btn-sm" (click)="save('stats')" [disabled]="saving() === 'stats'">
+            {{ saving() === 'stats' ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Documents juridiques</label>
+            <input type="text" [(ngModel)]="forms['stats'].documents" placeholder="1000+" />
+          </div>
+          <div class="form-group">
+            <label>Utilisateurs actifs</label>
+            <input type="text" [(ngModel)]="forms['stats'].users" placeholder="500+" />
+          </div>
+          <div class="form-group">
+            <label>Avocats partenaires</label>
+            <input type="text" [(ngModel)]="forms['stats'].lawyers" placeholder="50+" />
+          </div>
+          <div class="form-group">
+            <label>Support</label>
+            <input type="text" [(ngModel)]="forms['stats'].support" placeholder="24/7" />
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Contact ── -->
+    @if (forms['contact']) {
+      <div class="config-section">
+        <div class="section-header">
+          <h2>Informations de contact</h2>
+          <button class="btn-primary btn-sm" (click)="save('contact')" [disabled]="saving() === 'contact'">
+            {{ saving() === 'contact' ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Emails
+              <button type="button" class="btn-add-item" (click)="addItem(forms['contact'].emails)">+ Ajouter</button>
+            </label>
+            @for (email of forms['contact'].emails; track trackByIndex($index)) {
+              <div class="array-item">
+                <input type="email" [(ngModel)]="forms['contact'].emails[$index]" placeholder="contact@justicia.gn" />
+                <button class="btn-remove" (click)="removeItem(forms['contact'].emails, $index)">✕</button>
+              </div>
+            }
+          </div>
+          <div class="form-group full-width">
+            <label>Téléphones
+              <button type="button" class="btn-add-item" (click)="addItem(forms['contact'].phones)">+ Ajouter</button>
+            </label>
+            @for (phone of forms['contact'].phones; track trackByIndex($index)) {
+              <div class="array-item">
+                <input type="text" [(ngModel)]="forms['contact'].phones[$index]" placeholder="+224 624 123 456" />
+                <button class="btn-remove" (click)="removeItem(forms['contact'].phones, $index)">✕</button>
+              </div>
+            }
+          </div>
+          <div class="form-group">
+            <label>Horaires d'ouverture</label>
+            <input type="text" [(ngModel)]="forms['contact'].hours" placeholder="Lun-Ven, 9h-18h" />
+          </div>
+          <div class="form-group">
+            <label>Adresse</label>
+            <input type="text" [(ngModel)]="forms['contact'].address" placeholder="Conakry, Guinée" />
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Hero ── -->
+    @if (forms['hero']) {
+      <div class="config-section">
+        <div class="section-header">
+          <h2>Page d'accueil — Section principale</h2>
+          <button class="btn-primary btn-sm" (click)="save('hero')" [disabled]="saving() === 'hero'">
+            {{ saving() === 'hero' ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Titre principal</label>
+            <input type="text" [(ngModel)]="forms['hero'].title" />
+          </div>
+          <div class="form-group full-width">
+            <label>Sous-titre</label>
+            <textarea [(ngModel)]="forms['hero'].subtitle" rows="3"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Badges / Tags
+              <button type="button" class="btn-add-item" (click)="addItem(forms['hero'].badges)">+ Ajouter</button>
+            </label>
+            <div class="badges-row">
+              @for (badge of forms['hero'].badges; track trackByIndex($index)) {
+                <div class="array-item">
+                  <input type="text" [(ngModel)]="forms['hero'].badges[$index]" placeholder="IA Juridique" />
+                  <button class="btn-remove" (click)="removeItem(forms['hero'].badges, $index)">✕</button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── CTA ── -->
+    @if (forms['cta']) {
+      <div class="config-section">
+        <div class="section-header">
+          <h2>Section Appel à l'action (CTA)</h2>
+          <button class="btn-primary btn-sm" (click)="save('cta')" [disabled]="saving() === 'cta'">
+            {{ saving() === 'cta' ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Titre</label>
+            <input type="text" [(ngModel)]="forms['cta'].title" />
+          </div>
+          <div class="form-group full-width">
+            <label>Sous-titre</label>
+            <input type="text" [(ngModel)]="forms['cta'].subtitle" />
+          </div>
+          <div class="form-group full-width">
+            <label>Éléments de confiance
+              <button type="button" class="btn-add-item" (click)="addItem(forms['cta'].trust)">+ Ajouter</button>
+            </label>
+            @for (item of forms['cta'].trust; track trackByIndex($index)) {
+              <div class="array-item">
+                <input type="text" [(ngModel)]="forms['cta'].trust[$index]" placeholder="Sans engagement" />
+                <button class="btn-remove" (click)="removeItem(forms['cta'].trust, $index)">✕</button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Site ── -->
+    @if (forms['site']) {
+      <div class="config-section">
+        <div class="section-header">
+          <h2>Informations générales</h2>
+          <button class="btn-primary btn-sm" (click)="save('site')" [disabled]="saving() === 'site'">
+            {{ saving() === 'site' ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom du site</label>
+            <input type="text" [(ngModel)]="forms['site'].name" />
+          </div>
+          <div class="form-group">
+            <label>Mention copyright</label>
+            <input type="text" [(ngModel)]="forms['site'].copyright" />
+          </div>
+          <div class="form-group full-width">
+            <label>Description (meta)</label>
+            <textarea [(ngModel)]="forms['site'].description" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+</div>

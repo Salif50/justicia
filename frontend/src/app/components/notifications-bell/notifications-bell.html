@@ -1,0 +1,100 @@
+<div class="nb-wrapper">
+
+  <!-- Bouton cloche ──────────────────────────────────────── -->
+  <button class="nb-bell" (click)="toggle()" [class.active]="isOpen" title="Notifications">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+    @if (count > 0) {
+      <span class="nb-badge">{{ count > 99 ? '99+' : count }}</span>
+    }
+  </button>
+
+  <!-- Dropdown ───────────────────────────────────────────── -->
+  @if (isOpen) {
+  <div class="nb-panel">
+
+    <!-- En-tête ──────────────────────────────────────────── -->
+    <div class="nb-header">
+      <span class="nb-title">
+        Notifications
+        @if (count > 0) { <span class="nb-unread-chip">{{ count }} non lue{{ count > 1 ? 's' : '' }}</span> }
+      </span>
+      <div class="nb-header-actions">
+        @if (count > 0) {
+          <button class="nb-action-btn" (click)="markAll()" title="Tout marquer comme lu">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Tout lire
+          </button>
+        }
+        <button class="nb-action-btn nb-action-btn--close" (click)="svc.close()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Liste ────────────────────────────────────────────── -->
+    <div class="nb-list">
+      @if (list.length === 0) {
+        <div class="nb-empty">
+          <span class="nb-empty-icon">🔔</span>
+          <p>Aucune notification</p>
+          <p class="nb-empty-sub">Vous serez alerté pour les audiences, délais et partages</p>
+        </div>
+      }
+
+      @for (notif of list; track notif.id) {
+        <div class="nb-item" [class.unread]="!notif.is_read" (click)="markRead(notif)">
+
+          <!-- Icône type ─────────────────────────────────── -->
+          <div class="nb-item-icon" [style.background]="typeMeta(notif.type).color + '18'">
+            <span>{{ typeMeta(notif.type).icon }}</span>
+          </div>
+
+          <!-- Texte ──────────────────────────────────────── -->
+          <div class="nb-item-body">
+            <div class="nb-item-title">{{ notif.title }}</div>
+            <div class="nb-item-msg">{{ notif.message }}</div>
+            <div class="nb-item-time">{{ formatDate(notif.created_at) }}</div>
+          </div>
+
+          <!-- Actions ────────────────────────────────────── -->
+          <div class="nb-item-actions">
+            @if (notif.link) {
+              <a class="nb-go" [routerLink]="notif.link" (click)="svc.close()" title="Voir">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </a>
+            }
+            <button class="nb-del" (click)="$event.stopPropagation(); remove(notif.id)" title="Supprimer">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Indicateur non-lu ──────────────────────────── -->
+          @if (!notif.is_read) {
+            <div class="nb-dot"></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Footer ───────────────────────────────────────────── -->
+    @if (list.length > 0) {
+      <div class="nb-footer">
+        <button class="nb-clear-btn" (click)="clearRead()">Effacer les lues</button>
+      </div>
+    }
+
+  </div>
+  }
+
+</div>

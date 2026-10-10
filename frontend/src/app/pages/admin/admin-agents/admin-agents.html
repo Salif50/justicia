@@ -1,0 +1,221 @@
+<div class="admin-agents-page">
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Intelligence artificielle</p>
+      <h1 class="app-title">Agents IA</h1>
+      <p class="app-sub">Prompts système des agents intégrés et des agents créés par les utilisateurs.</p>
+    </div>
+  </header>
+
+  <!-- Onglets -->
+  <div class="app-seg ag-seg">
+    <button [class.active]="activeTab() === 'builtin'" (click)="switchTab('builtin')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h4M6 12h8"/></svg>
+      Agents intégrés
+      <span class="app-tag">{{ builtinAgents().length }}</span>
+    </button>
+    <button [class.active]="activeTab() === 'custom'" (click)="switchTab('custom')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/></svg>
+      Agents personnalisés (utilisateurs)
+      @if (customAgents().length) {
+        <span class="app-tag">{{ customAgents().length }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- ── Agents intégrés ──────────────────────────────────────────────────── -->
+  @if (activeTab() === 'builtin') {
+    <div class="split-layout">
+
+      <!-- Liste -->
+      <div class="agent-list-panel">
+        @if (isLoadingBuiltin()) {
+          <div class="loading-state">Chargement...</div>
+        } @else {
+          @for (agent of builtinAgents(); track agent.agent_id) {
+            <div
+              class="agent-list-item"
+              [class.selected]="editingBuiltin()?.agent_id === agent.agent_id"
+              (click)="selectBuiltin(agent)"
+            >
+              <div class="agent-list-icon" [innerHTML]="getIconSvg(agent.icon)"></div>
+              <div class="agent-list-info">
+                <span class="agent-list-name">{{ agent.name }}</span>
+                <span class="agent-list-category">{{ agent.category }}</span>
+              </div>
+              @if (agent.is_db_override) {
+                <span class="override-badge">Modifié</span>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Éditeur -->
+      <div class="agent-edit-panel">
+        @if (!editingBuiltin()) {
+          <div class="edit-empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" opacity="0.3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <p>Sélectionnez un agent pour modifier son prompt</p>
+          </div>
+        } @else {
+          <div class="edit-header">
+            <div class="edit-agent-title">
+              <span [innerHTML]="getIconSvg(editingBuiltin()!.icon)"></span>
+              <div>
+                <h2>{{ editingBuiltin()!.name }}</h2>
+                <p>{{ editingBuiltin()!.description }}</p>
+              </div>
+            </div>
+            @if (editingBuiltin()!.is_db_override) {
+              <span class="override-badge">Prompt personnalisé actif</span>
+            } @else {
+              <span class="default-badge">Prompt par défaut</span>
+            }
+          </div>
+
+          <div class="edit-form">
+            <label class="edit-label">
+              Prompt système
+              <span class="char-hint">{{ editBuiltinPrompt().length }} caractères</span>
+            </label>
+            <p class="edit-hint">
+              Ce prompt définit les règles, le périmètre et le comportement de l'agent.
+              Il sera utilisé à la place du prompt par défaut pour <strong>tous les utilisateurs</strong>.
+            </p>
+            <textarea
+              class="prompt-editor"
+              [value]="editBuiltinPrompt()"
+              (input)="editBuiltinPrompt.set($any($event.target).value)"
+              rows="20"
+              placeholder="Saisissez le prompt système de l'agent..."
+            ></textarea>
+          </div>
+
+          @if (builtinSaveMsg()) {
+            <div class="save-success">{{ builtinSaveMsg() }}</div>
+          }
+          @if (builtinSaveError()) {
+            <div class="save-error">{{ builtinSaveError() }}</div>
+          }
+
+          <div class="edit-actions">
+            @if (editingBuiltin()!.is_db_override) {
+              <button class="btn-reset" (click)="resetBuiltinPrompt()" title="Revenir au prompt par défaut">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Réinitialiser au défaut
+              </button>
+            }
+            <button class="btn-save" (click)="saveBuiltinPrompt()" [disabled]="isSavingBuiltin()">
+              @if (isSavingBuiltin()) {
+                <span class="spinner"></span> Sauvegarde...
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                Enregistrer
+              }
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+  <!-- ── Agents personnalisés ──────────────────────────────────────────────── -->
+  @if (activeTab() === 'custom') {
+    <div class="split-layout">
+
+      <!-- Liste -->
+      <div class="agent-list-panel">
+        @if (isLoadingCustom()) {
+          <div class="loading-state">Chargement...</div>
+        } @else if (!customAgents().length) {
+          <div class="loading-state">Aucun agent personnalisé trouvé.</div>
+        } @else {
+          @for (agent of customAgents(); track agent.id) {
+            <div
+              class="agent-list-item"
+              [class.selected]="editingCustom()?.id === agent.id"
+              (click)="selectCustom(agent)"
+            >
+              <div class="agent-list-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/></svg>
+              </div>
+              <div class="agent-list-info">
+                <span class="agent-list-name">{{ agent.name }}</span>
+                <span class="agent-list-category">{{ agent.user_name }} · {{ agent.doc_count }} doc(s)</span>
+              </div>
+              @if (agent.system_prompt) {
+                <span class="override-badge">Prompt défini</span>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Éditeur -->
+      <div class="agent-edit-panel">
+        @if (!editingCustom()) {
+          <div class="edit-empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" opacity="0.3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <p>Sélectionnez un agent pour modifier son prompt</p>
+          </div>
+        } @else {
+          <div class="edit-header">
+            <div class="edit-agent-title">
+              <div class="agent-list-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/></svg>
+              </div>
+              <div>
+                <h2>{{ editingCustom()!.name }}</h2>
+                <p>Propriétaire : {{ editingCustom()!.user_name }} ({{ editingCustom()!.user_email }})</p>
+              </div>
+            </div>
+            <div class="domain-chips">
+              @for (d of editingCustom()!.domains.slice(0, 3); track d) {
+                <span class="domain-chip">{{ d }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="edit-form">
+            <label class="edit-label">
+              Instructions de l'agent
+              <span class="char-hint">{{ editCustomPrompt().length }} caractères</span>
+            </label>
+            <p class="edit-hint">
+              Modifiez les instructions de cet agent personnalisé. Attention : ceci remplace ce que l'utilisateur a défini.
+            </p>
+            <textarea
+              class="prompt-editor"
+              [value]="editCustomPrompt()"
+              (input)="editCustomPrompt.set($any($event.target).value)"
+              rows="15"
+              placeholder="Instructions de l'agent..."
+            ></textarea>
+          </div>
+
+          @if (customSaveMsg()) {
+            <div class="save-success">{{ customSaveMsg() }}</div>
+          }
+          @if (customSaveError()) {
+            <div class="save-error">{{ customSaveError() }}</div>
+          }
+
+          <div class="edit-actions">
+            <button class="btn-save" (click)="saveCustomPrompt()" [disabled]="isSavingCustom()">
+              @if (isSavingCustom()) {
+                <span class="spinner"></span> Sauvegarde...
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                Enregistrer
+              }
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

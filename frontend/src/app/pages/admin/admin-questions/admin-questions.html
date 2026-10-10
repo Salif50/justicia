@@ -1,0 +1,133 @@
+<div class="app-page">
+
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Utilisateurs</p>
+      <h1 class="app-title">Questions posées</h1>
+      <p class="app-sub">Toutes les questions envoyées à l'assistant, avec la réponse donnée. Les questions posées en mode éphémère ne sont jamais enregistrées.</p>
+    </div>
+  </header>
+
+  <div class="qs-stats">
+    <div><span>Aujourd'hui</span><strong>{{ stats().today }}</strong></div>
+    <div><span>7 derniers jours</span><strong>{{ stats().week }}</strong></div>
+    <div><span>Utilisateurs actifs aujourd'hui</span><strong>{{ stats().users_today }}</strong></div>
+    <div><span>Résultats</span><strong>{{ total() }}</strong></div>
+  </div>
+
+  <div class="qs-filters">
+    <label class="qs-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" [ngModel]="q()" (ngModelChange)="onSearch($event)" placeholder="Rechercher dans les questions…" aria-label="Rechercher dans les questions" />
+    </label>
+    <div class="app-seg">
+      <button [class.active]="period() === 'all'" (click)="setFilter('period', 'all')">Tout</button>
+      <button [class.active]="period() === 'today'" (click)="setFilter('period', 'today')">Aujourd'hui</button>
+      <button [class.active]="period() === '7d'" (click)="setFilter('period', '7d')">7 jours</button>
+      <button [class.active]="period() === '30d'" (click)="setFilter('period', '30d')">30 jours</button>
+    </div>
+    <select class="app-input qs-select" [ngModel]="agent()" (ngModelChange)="setFilter('agent', $event)" aria-label="Agent">
+      <option value="">Tous les agents</option>
+      @for (a of agents; track a.id) { <option [value]="a.id">{{ a.label }}</option> }
+    </select>
+  </div>
+
+  @if (userId()) {
+    <div class="qs-chip">
+      Questions de <strong>{{ userName() || 'cet utilisateur' }}</strong>
+      <a [routerLink]="['/admin/users']" [queryParams]="{ user: userId() }">Ouvrir la fiche</a>
+      <button (click)="clearUser()" aria-label="Retirer le filtre">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  }
+
+  @if (error()) { <div class="app-error">{{ error() }}</div> }
+
+  <div class="app-panel qs-list">
+    @if (loading() && !items().length) {
+      <div class="app-loading"><span class="app-spinner"></span>Chargement…</div>
+    } @else if (!items().length) {
+      <div class="app-empty"><h3>Aucune question</h3><p>Aucune question ne correspond à ces critères.</p></div>
+    } @else {
+      @for (it of items(); track it.id) {
+        <article class="qs-item" [class.is-open]="expanded() === it.id">
+          <button type="button" class="qs-row" (click)="toggle(it.id)" [attr.aria-expanded]="expanded() === it.id">
+            <span class="qs-main">
+              <span class="qs-question">{{ it.question }}</span>
+              <span class="qs-meta">
+                <span>{{ date(it.created_at) }}</span>
+                <span>{{ agentLabel(it.agent_id) }}</span>
+                @if (it.answer) { <span>{{ it.sources_count }} source{{ it.sources_count > 1 ? 's' : '' }}</span> }
+                @else { <span class="qs-noanswer">Sans réponse</span> }
+              </span>
+            </span>
+            <span class="qs-user">
+              <strong>{{ it.user_name }}</strong>
+              <small>{{ it.user_email }}</small>
+              @if (!it.user_active) { <small class="qs-blocked">Suspendu</small> }
+            </span>
+            <svg class="qs-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+
+          @if (expanded() === it.id) {
+            <div class="qs-detail">
+              <p class="qs-label">Réponse de l'assistant</p>
+              @if (it.answer) {
+                <div class="qs-answer" [innerHTML]="render(it.answer)"></div>
+              } @else {
+                <p class="qs-muted">Aucune réponse enregistrée pour cette question.</p>
+              }
+              <div class="qs-actions">
+                <button class="app-btn app-btn--quiet app-btn--sm" (click)="openConversation(it.conversation_id)">Voir la conversation</button>
+                @if (userId() !== it.user_id) {
+                  <button class="app-btn app-btn--quiet app-btn--sm" (click)="filterUser(it)">Questions de cet utilisateur</button>
+                }
+                <a class="app-btn app-btn--quiet app-btn--sm" [routerLink]="['/admin/users']" [queryParams]="{ user: it.user_id }">Fiche utilisateur</a>
+              </div>
+            </div>
+          }
+        </article>
+      }
+    }
+  </div>
+
+  @if (total() > 0) {
+    <div class="qs-pager">
+      <span>{{ pageLabel() }}</span>
+      <button class="app-btn app-btn--quiet app-btn--sm" (click)="prevPage()" [disabled]="page() === 0">Précédent</button>
+      <button class="app-btn app-btn--quiet app-btn--sm" (click)="nextPage()" [disabled]="!hasNext()">Suivant</button>
+    </div>
+  }
+</div>
+
+<!-- Conversation complète -->
+@if (conv() || convLoading()) {
+  <div class="app-overlay" (click)="closeConversation()">
+    <div class="app-modal app-modal--wide qs-conv" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      @if (convLoading()) {
+        <div class="app-loading"><span class="app-spinner"></span>Chargement de la conversation…</div>
+      }
+      @if (conv(); as c) {
+        <div class="app-modal-head">
+          <div>
+            <h3>{{ c.title }}</h3>
+            <p>{{ c.user_name }} · {{ c.user_email }} · {{ agentLabel(c.agent_id) }}</p>
+          </div>
+          <button class="app-modal-close" (click)="closeConversation()" aria-label="Fermer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="app-modal-body qs-thread">
+          @for (m of c.messages; track m.id) {
+            <div class="qs-msg" [class.is-user]="m.sender === 'user'">
+              <span class="qs-msg-who">{{ m.sender === 'user' ? c.user_name : 'JusticIA' }} · {{ date(m.created_at) }}</span>
+              @if (m.sender === 'user') { <p>{{ m.content }}</p> }
+              @else { <div class="qs-answer" [innerHTML]="render(m.content)"></div> }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

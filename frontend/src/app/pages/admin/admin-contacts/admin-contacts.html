@@ -1,0 +1,164 @@
+<div class="contacts-page">
+
+  <!-- Header -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Utilisateurs</p>
+      <h1 class="app-title">Messages reçus</h1>
+      <p class="app-sub">Messages envoyés depuis le formulaire de contact du site.@if (unreadCount > 0) { <span class="app-tag app-tag--accent">{{ unreadCount }} non lu{{ unreadCount > 1 ? 's' : '' }}</span> }</p>
+    </div>
+    <div class="app-head-actions">
+
+      <button class="app-btn app-btn--quiet" [class.active]="showUnreadOnly()" (click)="toggleFilter()">
+        @if (showUnreadOnly()) {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M7 12h10M10 18h4"/>
+          </svg>
+          Tous les messages
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="2"/><path d="M20 12c-2.5 3.5-5 5-8 5s-5.5-1.5-8-5c2.5-3.5 5-5 8-5s5.5 1.5 8 5z"/>
+          </svg>
+          Non lus seulement
+        }
+      </button>
+      <button class="app-btn app-btn--quiet" (click)="loadContacts()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Actualiser
+      </button>
+    
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="alert alert-error">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+  @if (success()) {
+    <div class="alert alert-success">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      {{ success() }}
+    </div>
+  }
+
+  <div class="contacts-layout">
+
+    <!-- ── Liste des messages ─────────────────────────────────────── -->
+    <div class="contacts-list">
+      @if (isLoading()) {
+        <div class="list-loading">
+          <div class="spinner"></div>
+          <span>Chargement...</span>
+        </div>
+      } @else {
+        @for (contact of contacts(); track contact.id) {
+          <div class="contact-item"
+               [class.unread]="!contact.is_read"
+               [class.selected]="selectedContact()?.id === contact.id"
+               (click)="openContact(contact)">
+            <div class="contact-avatar">
+              {{ contact.name.charAt(0).toUpperCase() }}
+            </div>
+            <div class="contact-preview">
+              <div class="ci-top">
+                <span class="ci-name">{{ contact.name }}</span>
+                <span class="ci-date">{{ formatDate(contact.created_at) }}</span>
+              </div>
+              <div class="ci-subject">{{ contact.subject }}</div>
+              <div class="ci-excerpt">{{ contact.message | slice:0:75 }}{{ contact.message.length > 75 ? '…' : '' }}</div>
+            </div>
+            @if (!contact.is_read) {
+              <div class="ci-unread-dot"></div>
+            }
+          </div>
+        }
+        @if (contacts().length === 0) {
+          <div class="list-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <p>Aucun message</p>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ── Détail du message ──────────────────────────────────────── -->
+    <div class="contact-detail" [class.has-content]="selectedContact()">
+      @if (selectedContact(); as c) {
+
+        <div class="detail-header">
+          <div class="detail-avatar">
+            {{ c.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="detail-from">
+            <h2 class="detail-name">{{ c.name }}</h2>
+            <a [href]="'mailto:' + c.email" class="detail-email">{{ c.email }}</a>
+          </div>
+          <div class="detail-header-actions">
+            @if (!c.is_read) {
+              <span class="unread-label">
+                <span class="dot-pulse"></span> Non lu
+              </span>
+            }
+            <button class="btn-icon-close" (click)="closeContact()" title="Fermer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-subject">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <span>{{ c.subject }}</span>
+          <time class="detail-time">{{ formatDate(c.created_at) }}</time>
+        </div>
+
+        <div class="detail-message">{{ c.message }}</div>
+
+        <div class="detail-actions">
+          <a class="btn-reply" [href]="'mailto:' + c.email + '?subject=Re: ' + c.subject">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+            </svg>
+            Répondre par email
+          </a>
+          <button class="btn-delete" (click)="deleteContact(c)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
+              <path d="M9 6V4h6v2"/>
+            </svg>
+            Supprimer
+          </button>
+        </div>
+
+      } @else {
+        <div class="detail-empty">
+          <div class="empty-icon">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <p>Sélectionnez un message pour le lire</p>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

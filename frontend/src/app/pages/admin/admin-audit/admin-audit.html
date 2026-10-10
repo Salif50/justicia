@@ -1,0 +1,45 @@
+<div class="app-page">
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Modération</p>
+      <h1 class="app-title">Journal des actions</h1>
+      <p class="app-sub">Chaque décision prise sur un compte est tracée : qui l'a prise, quand, et ce qui a changé.</p>
+    </div>
+  </header>
+
+  @if (error()) { <div class="app-error">{{ error() }}</div> }
+
+  <div class="app-panel au">
+    <div class="au-row au-row--head">
+      <span>Date</span><span>Action</span><span>Compte concerné</span><span>Administrateur</span>
+    </div>
+    @if (loading()) {
+      <div class="app-loading"><span class="app-spinner"></span>Chargement…</div>
+    } @else if (!entries().length) {
+      <div class="app-empty"><h3>Journal vide</h3><p>Les actions de modération apparaîtront ici.</p></div>
+    } @else {
+      @for (a of entries(); track a.id) {
+        <div class="au-row">
+          <span class="au-date">{{ date(a.created_at) }}</span>
+          <span class="au-action">
+            <strong [class.is-sensitive]="isSensitive(a.action)">{{ label(a.action) }}</strong>
+            @if (detail(a)) { <small>{{ detail(a) }}</small> }
+          </span>
+          <span class="au-target">
+            @if (a.target_user_id && a.action !== 'delete_user') {
+              <a [routerLink]="['/admin/users']" [queryParams]="{ user: a.target_user_id }">{{ a.target_email }}</a>
+            } @else { {{ a.target_email || '—' }} }
+          </span>
+          <span class="au-admin">{{ a.admin_email }}</span>
+        </div>
+      }
+    }
+  </div>
+
+  @if (page() > 0 || hasMore()) {
+    <div class="au-pager">
+      <button class="app-btn app-btn--quiet app-btn--sm" (click)="prev()" [disabled]="page() === 0">Plus récents</button>
+      <button class="app-btn app-btn--quiet app-btn--sm" (click)="next()" [disabled]="!hasMore()">Plus anciens</button>
+    </div>
+  }
+</div>

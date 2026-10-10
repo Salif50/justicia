@@ -1,0 +1,247 @@
+<div class="as-page">
+
+  <!-- ── En-tête ───────────────────────────────────────────────────────────── -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Système</p>
+      <h1 class="app-title">Paramètres système</h1>
+      <p class="app-sub">Maintenance, annonce globale et surveillance de l'activité.</p>
+    </div>
+    <div class="app-head-actions">
+      @if (saveStatus() === 'saved') {
+      <div class="as-save-toast as-save-toast--ok">Enregistré</div>
+    }
+    @if (saveStatus() === 'error') {
+      <div class="as-save-toast as-save-toast--err">Erreur</div>
+    }
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="as-loading"><div class="as-spinner"></div> Chargement…</div>
+  } @else {
+
+    <div class="as-grid">
+
+      <!-- ─── COLONNE GAUCHE ─────────────────────────────────────────────── -->
+      <div class="as-col">
+
+        <!-- Mode maintenance -->
+        <div class="as-card" [class.as-card--danger]="maintenance.enabled">
+          <div class="as-card-header">
+            <div class="as-card-icon as-card-icon--red">🔧</div>
+            <div class="as-card-title">
+              <strong>Mode maintenance</strong>
+              <span>Bloquer l'accès à tous les utilisateurs</span>
+            </div>
+            <div class="as-toggle-wrap">
+              <button class="as-toggle" [class.on]="maintenance.enabled" (click)="maintenance.enabled = !maintenance.enabled">
+                <span class="as-toggle-knob"></span>
+              </button>
+              <span class="as-toggle-label">{{ maintenance.enabled ? 'ACTIVÉ' : 'Désactivé' }}</span>
+            </div>
+          </div>
+
+          @if (maintenance.enabled) {
+            <div class="as-warn-badge">⚠️ La plateforme sera inaccessible pour tous les utilisateurs</div>
+          }
+
+          <div class="as-field">
+            <label>Message affiché aux utilisateurs</label>
+            <textarea [(ngModel)]="maintenance.message" rows="2" class="as-textarea"
+              placeholder="Message de maintenance…"></textarea>
+          </div>
+
+          <button class="as-save-btn" [class.as-save-btn--danger]="maintenance.enabled"
+            (click)="saveMaintenance()" [disabled]="saveStatus() === 'saving'">
+            {{ maintenance.enabled ? '⚠️ Activer la maintenance' : 'Enregistrer' }}
+          </button>
+        </div>
+
+        <!-- Annonce globale -->
+        <div class="as-card" [class.as-card--glow]="announcement.enabled">
+          <div class="as-card-header">
+            <div class="as-card-icon as-card-icon--blue">📣</div>
+            <div class="as-card-title">
+              <strong>Annonce globale</strong>
+              <span>Bandeau visible par tous les utilisateurs connectés</span>
+            </div>
+            <div class="as-toggle-wrap">
+              <button class="as-toggle" [class.on]="announcement.enabled" (click)="announcement.enabled = !announcement.enabled">
+                <span class="as-toggle-knob"></span>
+              </button>
+              <span class="as-toggle-label">{{ announcement.enabled ? 'Actif' : 'Inactif' }}</span>
+            </div>
+          </div>
+
+          <div class="as-field">
+            <label>Type</label>
+            <div class="as-type-btns">
+              @for (t of ANNOUNCEMENT_TYPES; track t.id) {
+                <button class="as-type-btn" [class.active]="announcement.type === t.id"
+                  [style.--type-color]="t.color"
+                  (click)="announcement.type = t.id">
+                  {{ t.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="as-field">
+            <label>Message</label>
+            <input [(ngModel)]="announcement.message" class="as-input" placeholder="Texte de l'annonce…" />
+          </div>
+
+          @if (announcement.enabled && announcement.message) {
+            <div class="as-preview-banner" [style.border-color]="announcementColor()" [style.background]="'color-mix(in srgb, ' + announcementColor() + ' 10%, transparent)'">
+              <span [style.color]="announcementColor()">📣</span>
+              {{ announcement.message }}
+            </div>
+          }
+
+          <button class="as-save-btn" (click)="saveAnnouncement()" [disabled]="saveStatus() === 'saving'">
+            Enregistrer l'annonce
+          </button>
+        </div>
+
+        <!-- Quotas globaux -->
+        <div class="as-card">
+          <div class="as-card-header">
+            <div class="as-card-title">
+              <strong>Quotas de questions</strong>
+              <span>Où se règlent les limites journalières</span>
+            </div>
+          </div>
+          <p class="as-quota-note">La limite d'un utilisateur vient de son plan, sauf si un administrateur lui a fixé un quota personnalisé depuis sa fiche.</p>
+          <div class="as-quota-links">
+            <a class="app-btn app-btn--quiet app-btn--sm" routerLink="/admin/pricing">Limites par plan</a>
+            <a class="app-btn app-btn--quiet app-btn--sm" routerLink="/admin/users">Quota d'un utilisateur</a>
+          </div>
+        </div>
+
+        <!-- Export données -->
+        <div class="as-card">
+          <div class="as-card-header">
+            <div class="as-card-icon as-card-icon--green">📥</div>
+            <div class="as-card-title">
+              <strong>Export des données</strong>
+              <span>Télécharger des rapports CSV</span>
+            </div>
+          </div>
+          <div class="as-export-btns">
+            <button class="as-export-btn" (click)="exportUsers()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exporter utilisateurs (CSV)
+            </button>
+            <button class="as-export-btn" (click)="exportConversations()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exporter conversations (CSV)
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── COLONNE DROITE : Activité ─────────────────────────────────── -->
+      <div class="as-col">
+
+        <!-- Top utilisateurs -->
+        <div class="as-card">
+          <div class="as-card-header">
+            <div class="as-card-icon as-card-icon--cyan">🏆</div>
+            <div class="as-card-title">
+              <strong>Utilisateurs les plus actifs</strong>
+              <span>{{ activityDays }} derniers jours</span>
+            </div>
+            <select [(ngModel)]="activityDays" (change)="loadActivity()" class="as-select-sm">
+              <option [value]="7">7 jours</option>
+              <option [value]="30">30 jours</option>
+              <option [value]="90">90 jours</option>
+            </select>
+          </div>
+
+          @if (topUsers().length === 0) {
+            <div class="as-mini-empty">Aucune activité récente</div>
+          } @else {
+            <div class="as-top-list">
+              @for (u of topUsers(); track u.user_id; let i = $index) {
+                <div class="as-top-item">
+                  <span class="as-rank">{{ i + 1 }}</span>
+                  <div class="as-mini-avatar">{{ u.name[0] }}</div>
+                  <div class="as-mini-info">
+                    <span class="as-mini-name">{{ u.name }}</span>
+                    <span class="as-mini-email">{{ u.email }}</span>
+                  </div>
+                  <span class="as-questions-badge">{{ u.questions }} <small>questions</small></span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Alertes quota -->
+        <div class="as-card">
+          <div class="as-card-header">
+            <div class="as-card-icon as-card-icon--orange">⚡</div>
+            <div class="as-card-title">
+              <strong>Alertes quota</strong>
+              <span>Utilisateurs ayant dépassé 3 questions/jour</span>
+            </div>
+          </div>
+
+          @if (quotaAlerts().length === 0) {
+            <div class="as-mini-empty">Aucune alerte</div>
+          } @else {
+            <div class="as-top-list">
+              @for (a of quotaAlerts(); track a.user_id) {
+                <div class="as-top-item">
+                  <div class="as-mini-avatar as-mini-avatar--warn">{{ a.name[0] }}</div>
+                  <div class="as-mini-info">
+                    <span class="as-mini-name">{{ a.name }}</span>
+                    <span class="as-mini-email">{{ a.email }}</span>
+                  </div>
+                  <span class="as-questions-badge as-questions-badge--warn">{{ a.questions_used }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Connexions récentes -->
+        <div class="as-card">
+          <div class="as-card-header">
+            <div class="as-card-icon as-card-icon--green">🟢</div>
+            <div class="as-card-title">
+              <strong>Connexions récentes</strong>
+              <span>Derniers utilisateurs connectés</span>
+            </div>
+          </div>
+
+          @if (recentLogins().length === 0) {
+            <div class="as-mini-empty">Aucune connexion récente</div>
+          } @else {
+            <div class="as-top-list">
+              @for (l of recentLogins().slice(0, 10); track l.id) {
+                <div class="as-top-item">
+                  <div class="as-mini-avatar" [class.as-mini-avatar--blocked]="!l.is_active">{{ l.name[0] }}</div>
+                  <div class="as-mini-info">
+                    <div style="display:flex;gap:.4rem;align-items:center">
+                      <span class="as-mini-name">{{ l.name }}</span>
+                      @if (l.role === 'admin') { <span class="as-role-badge">Admin</span> }
+                    </div>
+                    <span class="as-mini-email">{{ formatDate(l.last_login) }}</span>
+                  </div>
+                  @if (!l.is_active) {
+                    <span class="as-blocked-badge">Bloqué</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

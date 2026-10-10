@@ -1,0 +1,180 @@
+@if (isOpen) {
+<div class="gs-backdrop" (click)="svc.close()"></div>
+
+<div class="gs-modal" role="dialog" aria-label="Recherche globale">
+
+  <!-- Champ de recherche ────────────────────────────────── -->
+  <div class="gs-input-row">
+    <svg class="gs-icon-search" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+
+    <input
+      #searchInput
+      class="gs-input"
+      type="text"
+      placeholder="Rechercher dans conversations, procès, documents…"
+      [value]="query"
+      (input)="onInput($any($event.target).value)"
+      autocomplete="off"
+      spellcheck="false"
+    />
+
+    @if (loading) {
+      <div class="gs-spinner"></div>
+    } @else if (query) {
+      <button class="gs-clear" (click)="svc.search(''); svc.query.set('')" title="Effacer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    }
+
+    <kbd class="gs-kbd">Échap</kbd>
+  </div>
+
+  <!-- Corps des résultats ───────────────────────────────── -->
+  <div class="gs-body">
+
+    <!-- État vide (avant toute recherche) -->
+    @if (!query) {
+      <div class="gs-empty">
+        <div class="gs-empty-icon">🔍</div>
+        <p>Tapez pour rechercher dans tous vos contenus</p>
+        <div class="gs-shortcuts">
+          <span><kbd>↑</kbd><kbd>↓</kbd> Naviguer</span>
+          <span><kbd>Entrée</kbd> Ouvrir</span>
+          <span><kbd>Échap</kbd> Fermer</span>
+        </div>
+      </div>
+    }
+
+    <!-- Aucun résultat -->
+    @if (query && !loading && !hasResults) {
+      <div class="gs-empty">
+        <div class="gs-empty-icon">😕</div>
+        <p>Aucun résultat pour <strong>« {{ query }} »</strong></p>
+        <p class="gs-sub">Essayez d'autres mots clés</p>
+      </div>
+    }
+
+    <!-- Conversations ──────────────────────────────────── -->
+    @if (results.conversations.length > 0) {
+      <div class="gs-group">
+        <div class="gs-group-label">
+          <span>💬</span> Conversations
+          <span class="gs-count">{{ results.conversations.length }}</span>
+        </div>
+        @for (item of results.conversations; track item.id) {
+          <button class="gs-result-item" (click)="navigate(item.link)">
+            <div class="gsr-icon gsr-icon--conv">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div class="gsr-text">
+              <span class="gsr-title">{{ item.title }}</span>
+              <span class="gsr-meta">{{ item.updated_at | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <svg class="gsr-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Procès ─────────────────────────────────────────── -->
+    @if (results.cases.length > 0) {
+      <div class="gs-group">
+        <div class="gs-group-label">
+          <span>⚖️</span> Procès
+          <span class="gs-count">{{ results.cases.length }}</span>
+        </div>
+        @for (item of results.cases; track item.id) {
+          <button class="gs-result-item" (click)="navigate(item.link)">
+            <div class="gsr-icon gsr-icon--case">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8M8 11h6"/>
+              </svg>
+            </div>
+            <div class="gsr-text">
+              <span class="gsr-title">{{ item.name }}</span>
+              <span class="gsr-meta">{{ item.description }}</span>
+            </div>
+            <svg class="gsr-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Documents ──────────────────────────────────────── -->
+    @if (results.documents.length > 0) {
+      <div class="gs-group">
+        <div class="gs-group-label">
+          <span>📄</span> Documents
+          <span class="gs-count">{{ results.documents.length }}</span>
+        </div>
+        @for (item of results.documents; track item.id) {
+          <button class="gs-result-item" (click)="navigate(item.link)">
+            <div class="gsr-icon gsr-icon--doc">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="gsr-text">
+              <span class="gsr-title">{{ item.name }}</span>
+              <span class="gsr-meta">{{ item.doc_type }}{{ item.author ? ' · ' + item.author : '' }}</span>
+            </div>
+            <svg class="gsr-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Notes ──────────────────────────────────────────── -->
+    @if (results.notes.length > 0) {
+      <div class="gs-group">
+        <div class="gs-group-label">
+          <span>📝</span> Notes & Déclarations
+          <span class="gs-count">{{ results.notes.length }}</span>
+        </div>
+        @for (item of results.notes; track item.id) {
+          <button class="gs-result-item" (click)="navigate(item.link)">
+            <div class="gsr-icon gsr-icon--note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </div>
+            <div class="gsr-text">
+              <span class="gsr-title">{{ item.author }} · {{ item.note_type }}</span>
+              <span class="gsr-meta">{{ item.excerpt }}</span>
+            </div>
+            <svg class="gsr-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        }
+      </div>
+    }
+
+  </div>
+
+  <!-- Footer ────────────────────────────────────────────── -->
+  <div class="gs-footer">
+    <span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      JusticIA Search
+    </span>
+    <span>Raccourci : <kbd>Ctrl</kbd>+<kbd>K</kbd></span>
+  </div>
+
+</div>
+}

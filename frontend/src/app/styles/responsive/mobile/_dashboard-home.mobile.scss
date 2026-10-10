@@ -1,0 +1,159 @@
+// Styles responsive mobile pour la page Dashboard Home
+@media (max-width: 768px) {
+  .dashboard-home {
+    padding: 1rem;
+  }
+
+  .dashboard-header-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .welcome-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    align-items: center;
+
+    .welcome-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .greeting {
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .greeting-text {
+          text-align: center;
+        }
+
+        h1 {
+          font-size: 2rem;
+          text-align: center;
+        }
+      }
+
+      .date-time {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+        width: 100%;
+
+        .time {
+          font-size: 1.5rem;
+          text-align: center;
+        }
+
+        .date {
+          text-align: center;
+        }
+      }
+    }
+
+    .welcome-icon {
+      display: none; // Cacher l'icône sur mobile
+    }
+
+    .start-conversation-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 300px;
+
+      svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2.5;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .usage-guide {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .guide-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    align-items: center;
+  }
+
+  .guide-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto;
+  }
+
+  .guide-title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .guide-content {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .guide-section {
+    padding: 1.25rem;
+
+    .card-header {
+      margin-bottom: 0.75rem;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .section-subtitle {
+      font-size: 1.1rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+  }
+
+  .guide-notice {
+    padding: 1.25rem;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+
+    svg {
+      margin: 0 auto;
+    }
+  }
+}

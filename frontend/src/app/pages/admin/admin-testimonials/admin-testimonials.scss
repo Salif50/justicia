@@ -1,0 +1,50 @@
+@import '../admin-shared';
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.testimonial-card {
+  background: var(--card-bg-solid);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--divider);
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: none; }
+
+  &.inactive { opacity: 0.6; border-style: dashed; }
+
+  .card-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+    .stars { color: var(--accent); font-size: 1rem; }
+    .card-actions { display: flex; gap: 0.5rem; }
+  }
+
+  .testimonial-text {
+    color: var(--text-secondary); font-style: italic; line-height: 1.6;
+    margin-bottom: 1rem; font-size: 0.9rem;
+  }
+
+  .testimonial-author {
+    display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 0.75rem;
+    strong { color: var(--heading-color); font-size: 0.95rem; }
+    span { color: var(--text-muted); font-size: 0.8rem; }
+  }
+
+  .card-meta {
+    display: flex; gap: 0.5rem; align-items: center;
+    .order-badge { font-size: 0.75rem; color: var(--text-muted); }
+  }
+}
+
+/* Alignement commun (même gabarit que le reste de l'administration) */
+.admin-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+  min-height: 0;
+  background: none;
+}

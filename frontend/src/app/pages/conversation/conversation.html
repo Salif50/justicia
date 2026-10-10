@@ -1,0 +1,178 @@
+<div class="conversation-container">
+
+  <!-- ── En-tête de la consultation ─────────────────────────── -->
+  <div class="conversation-header">
+    <div class="ch-left">
+      <span class="ch-mark" aria-hidden="true">J</span>
+      <div class="ch-titles">
+        <h2>{{ aiName() }}</h2>
+        <span class="ch-saved">Consultation enregistrée automatiquement</span>
+      </div>
+    </div>
+
+    <div class="ch-right">
+      @if (usage()) {
+        <div class="quota-indicator" [class.limit-reached]="isLimitReached()" [class.warning]="!isLimitReached() && getQuotaPercent() >= 80">
+          @if (usage()!.is_unlimited) {
+            <span>Questions illimitées</span>
+          } @else if (isLimitReached()) {
+            <span>Limite du jour atteinte</span>
+            <a routerLink="/dashboard/subscription" class="quota-upgrade-link">Augmenter</a>
+          } @else {
+            <span><strong>{{ usage()!.remaining }}</strong> / {{ usage()!.daily_limit }} questions restantes</span>
+          }
+        </div>
+      }
+      <a routerLink="/dashboard/history" class="history-btn">
+        Historique
+        @if (historyCount() > 0) {
+          <span class="history-badge">{{ historyCount() }}</span>
+        }
+      </a>
+    </div>
+  </div>
+
+  @if (isLimitReached() && messages().length > 0) {
+    <div class="limit-banner">
+      <span>Limite journalière atteinte pour le plan <strong>{{ usage()!.plan_name }}</strong>.</span>
+      <a routerLink="/dashboard/subscription" class="banner-upgrade-btn">Passer au plan supérieur</a>
+    </div>
+  }
+
+  <!-- ── Fil de la consultation ─────────────────────────────── -->
+  <div class="messages-container" #messagesContainer>
+    @if (messages().length === 0) {
+      <div class="empty-state">
+        <p class="empty-eyebrow">Nouvelle consultation</p>
+        <h2>Quelle est votre question juridique&nbsp;?</h2>
+        <p class="empty-lead">
+          Décrivez votre situation en français courant. JusticIA vous répond en citant
+          d'abord les textes de loi guinéens applicables, puis en les analysant.
+        </p>
+
+        @if (isLimitReached()) {
+          <div class="empty-limit-card">
+            <h3>Limite journalière atteinte</h3>
+            <p>Vous avez utilisé toutes vos questions disponibles aujourd'hui sur le plan <strong>{{ usage()!.plan_name }}</strong>.</p>
+            <a routerLink="/dashboard/subscription" class="btn-upgrade-empty">Voir les plans disponibles</a>
+          </div>
+        } @else {
+          <div class="quick-questions">
+            <p class="quick-label">Exemples de questions</p>
+            <div class="question-chips">
+              @for (q of suggestedQuestions; track q.text) {
+                <button class="question-chip" (click)="sendSuggestedQuestion(q.text)">
+                  <span class="qc-domain">{{ q.domain }}</span>
+                  <span class="qc-text">{{ q.text }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="messages-list">
+        @for (message of messages(); track message.id) {
+          <div class="message" [class.user-message]="message.sender === 'user'" [class.bot-message]="message.sender === 'bot'">
+            @if (message.sender === 'bot') {
+              <div class="bot-head">
+                <span class="bot-mark" aria-hidden="true">J</span>
+                <span class="bot-name">{{ aiName() }}</span>
+              </div>
+            }
+            <div class="message-content" [class.bot-formatted]="message.sender === 'bot'">
+              @if (message.sender === 'bot') {
+                <div class="markdown-body" [innerHTML]="message.content | markdown"></div>
+              } @else {
+                <p>{{ message.content }}</p>
+              }
+            </div>
+
+            @if (message.sources && message.sources.length > 0) {
+              <div class="message-sources">
+                <span class="sources-label">Sources</span>
+                @for (src of groupSources(message.sources); track src.nom_doc) {
+                  <span class="source-chip" [title]="src.refs ? 'Art. ' + src.refs : ''">
+                    {{ src.nom_doc }}
+                    @if (src.count > 1) { <span class="source-count">{{ src.count }}</span> }
+                  </span>
+                }
+              </div>
+            }
+
+            <div class="message-footer">
+              <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+              <button class="copy-btn" (click)="copyMessage(message)" [title]="copiedMessageId() === message.id ? 'Copié' : 'Copier'">
+                @if (copiedMessageId() === message.id) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Copié</span>
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <span>Copier</span>
+                }
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (isLoading()) {
+          <div class="message bot-message">
+            <div class="bot-head">
+              <span class="bot-mark" aria-hidden="true">J</span>
+              <span class="bot-name">{{ aiName() }}</span>
+            </div>
+            <div class="typing">
+              <span class="typing-indicator"><span></span><span></span><span></span></span>
+              <span class="typing-text">Recherche dans les textes de loi…</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-bar">{{ errorMessage() }}</div>
+  }
+
+  <!-- ── Saisie ─────────────────────────────────────────────── -->
+  <div class="input-container">
+    <form (ngSubmit)="sendMessage()" class="input-form">
+      <input
+        type="text"
+        [value]="inputMessage()"
+        (input)="inputMessage.set($any($event.target).value)"
+        [placeholder]="isLimitReached() ? 'Limite atteinte — passez à un plan supérieur' : 'Posez votre question juridique…'"
+        class="message-input"
+        [disabled]="isLoading() || isLimitReached()"
+        aria-label="Votre question juridique"
+      />
+      <button type="submit" class="send-btn" [disabled]="!inputMessage().trim() || isLoading() || isLimitReached()" aria-label="Envoyer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+    <p class="input-footer">JusticIA est un outil d'information juridique et ne remplace pas un avocat. Vérifiez les points importants auprès d'un professionnel.</p>
+  </div>
+</div>
+
+<!-- Modal limite atteinte -->
+@if (showLimitModal()) {
+  <div class="limit-modal-overlay" (click)="showLimitModal.set(false)">
+    <div class="limit-modal" (click)="$event.stopPropagation()">
+      <div class="limit-modal-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3>Limite journalière atteinte</h3>
+      <p>{{ limitModalMessage() }}</p>
+      <div class="limit-modal-plans">
+        <div class="upgrade-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg> Plan Basic — 10 questions/jour</div>
+        <div class="upgrade-feature highlighted"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg> Plan Pro — Questions illimitées</div>
+        <div class="upgrade-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg> Plan Entreprise — Multi-utilisateurs</div>
+      </div>
+      <div class="limit-modal-actions">
+        <button class="btn-modal-dismiss" (click)="showLimitModal.set(false)">Plus tard</button>
+        <button class="btn-modal-upgrade" (click)="goToAbonnement()">Voir les plans →</button>
+      </div>
+    </div>
+  </div>
+}

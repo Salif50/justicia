@@ -1,0 +1,31 @@
+/* Shared dashboard brand overrides — orange JusticIA palette */
+
+@mixin dashboard-accent-surface {
+  background: rgba(255, 138, 0, 0.08);
+  border-color: rgba(255, 138, 0, 0.2);
+  color: var(--brand-orange);
+}
+
+.page-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 138, 0, 0.12);
+  color: var(--brand-orange);
+  flex-shrink: 0;
+}
+
+.inline-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 138, 0, 0.1);
+  color: var(--brand-orange);
+  flex-shrink: 0;
+}

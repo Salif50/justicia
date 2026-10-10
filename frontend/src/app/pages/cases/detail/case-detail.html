@@ -1,0 +1,548 @@
+<div class="detail-page">
+
+  @if (isLoading()) {
+    <div class="loading-full">
+      <div class="spinner"></div>
+      <p>Chargement du dossier...</p>
+    </div>
+  }
+
+  @if (!isLoading() && !case_()) {
+    <div class="not-found">
+      <h3>Dossier introuvable</h3>
+      <button (click)="goBack()">← Retour aux procès</button>
+    </div>
+  }
+
+  @if (!isLoading() && case_()) {
+
+    <!-- Barre supérieure ──────────────────────────────────────── -->
+    <div class="top-bar">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg>
+        Mes procès
+      </button>
+      <div class="case-info">
+        <h2>{{ case_()!.name }}</h2>
+        @if (case_()!.description) {
+          <p class="case-desc">{{ case_()!.description }}</p>
+        }
+      </div>
+      <div class="case-stats">
+        <span class="stat">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          {{ case_()!.document_count }} document{{ case_()!.document_count !== 1 ? 's' : '' }}
+        </span>
+        <button class="btn-add-doc" (click)="openUploadModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter un document
+        </button>
+      </div>
+    </div>
+
+    <!-- Onglets ──────────────────────────────────────────────── -->
+    <div class="tabs-bar">
+      <!-- Panneau gauche : Documents / Notes -->
+      <div class="tabs-left">
+        <button [class.active]="activeTab() === 'documents'" (click)="activeTab.set('documents')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Pièces <span class="tab-count">{{ case_()!.document_count }}</span>
+        </button>
+        <button [class.active]="activeTab() === 'notes'" (click)="activeTab.set('notes')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Déclarations <span class="tab-count">{{ notes().length }}</span>
+        </button>
+      </div>
+      <!-- Bouton mobile : aller au chat -->
+      <button class="tab-chat-mobile" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H3a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+        Analyse IA
+      </button>
+    </div>
+
+    <!-- Vue principale split ─────────────────────────────────── -->
+    <div class="split-view">
+
+      <!-- ── Panneau gauche : bascule Docs / Notes ────────────── -->
+      <!-- Sur desktop : toujours visible, onglets gèrent le contenu -->
+      <!-- Sur mobile  : masqué si onglet "chat" actif             -->
+      <aside class="panel-left" [class.mobile-hidden]="activeTab() === 'chat'">
+
+      <!-- ── Docs ──────────────────────────────────────────────── -->
+      <div class="panel-docs" [class.hidden]="activeTab() === 'notes'">
+        <div class="panel-header">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Pièces du dossier
+          </h3>
+          <button class="btn-add-doc-sm" (click)="openUploadModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter
+          </button>
+        </div>
+
+        @if (case_()!.documents.length === 0) {
+          <div class="docs-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Aucun document</p>
+            <span>Ajoutez les pièces de votre dossier pour les analyser avec l'IA</span>
+          </div>
+        } @else {
+          <div class="docs-list">
+            @for (doc of case_()!.documents; track doc.id) {
+              <div class="doc-item">
+                <div class="doc-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="doc-body">
+                  <div class="doc-name">{{ doc.name }}</div>
+                  <div class="doc-tags">
+                    <span class="doc-type-badge" [style.background]="getDocTypeColor(doc.doc_type) + '18'" [style.color]="getDocTypeColor(doc.doc_type)">
+                      {{ doc.doc_type }}
+                    </span>
+                    @if (doc.has_text) {
+                      <span class="doc-indexed">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                        Indexé
+                      </span>
+                    }
+                  </div>
+                  <div class="doc-meta">
+                    @if (doc.author) { <span>{{ doc.author }}</span> }
+                    @if (doc.doc_date) { <span>{{ doc.doc_date }}</span> }
+                    <span>{{ formatSize(doc.file_size) }}</span>
+                    @if (doc.page_count > 0) { <span>{{ doc.page_count }} p.</span> }
+                  </div>
+                </div>
+                <div class="doc-actions">
+                  <button class="doc-view" (click)="openViewer(doc)" title="Voir le document">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Voir
+                  </button>
+                  <button class="doc-delete" (click)="deleteDoc(doc.id)" [disabled]="deletingDocId() === doc.id" title="Supprimer">
+                    @if (deletingDocId() === doc.id) {
+                      <span class="micro-spinner"></span>
+                    } @else {
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div><!-- /panel-docs -->
+
+      <!-- ── Notes ─────────────────────────────────────────────── -->
+      <div class="panel-notes" [class.hidden]="activeTab() !== 'notes'">
+        <div class="panel-header">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Carnet de déclarations
+          </h3>
+          <button class="btn-add-note" (click)="openNoteForm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter
+          </button>
+        </div>
+
+        @if (notes().length === 0) {
+          <div class="notes-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <p>Aucune déclaration</p>
+            <span>Enregistrez les déclarations des parties au fur et à mesure de l'audience</span>
+            <button class="btn-add-note-empty" (click)="openNoteForm()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Première déclaration
+            </button>
+          </div>
+        } @else {
+          <div class="notes-timeline">
+            @for (note of notes(); track note.id) {
+              <div class="note-entry">
+                <div class="note-timeline-dot" [style.background]="noteTypeColor(note.note_type)"></div>
+                <div class="note-card">
+                  <div class="note-card-header">
+                    <div class="note-author-info">
+                      <span class="note-type-chip" [style.background]="noteTypeColor(note.note_type) + '18'" [style.color]="noteTypeColor(note.note_type)">
+                        {{ note.note_type }}
+                      </span>
+                      <strong class="note-author">{{ note.author }}</strong>
+                    </div>
+                    <div class="note-meta-right">
+                      <span class="note-datetime">{{ formatDeclaredAt(note.declared_at) }}</span>
+                      <div class="note-actions">
+                        <button class="note-btn-edit" (click)="openNoteForm(note)" title="Modifier">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button class="note-btn-delete" (click)="deleteNote(note.id)" [disabled]="deletingNoteId() === note.id" title="Supprimer">
+                          @if (deletingNoteId() === note.id) {
+                            <span class="micro-spinner"></span>
+                          } @else {
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="note-content">{{ note.content }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div><!-- /panel-notes -->
+
+      </aside><!-- /panel-left -->
+
+      <!-- ── Panneau droit : Chat IA (toujours visible sur desktop) -->
+      <section class="panel-chat" [class.mobile-hidden]="activeTab() !== 'chat'">
+        <div class="panel-header chat-header">
+          <div class="chat-title">
+            <div class="ai-avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H3a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><path d="M5 14v7h14v-7"/><path d="M9 18h6"/></svg>
+            </div>
+            <div>
+              <h3>Analyse IA</h3>
+              <span class="ai-subtitle">Posez vos questions sur les documents du dossier</span>
+            </div>
+          </div>
+          @if (case_()!.document_count === 0 && notes().length === 0) {
+            <span class="no-docs-warning">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Ajoutez des documents ou des notes pour commencer
+            </span>
+          }
+        </div>
+
+        <!-- Messages ───────────────────────────────────────────── -->
+        <div class="messages-area">
+
+          @if (isLoadingMsgs()) {
+            <div class="msgs-loading"><div class="spinner sm"></div></div>
+          }
+
+          @if (!isLoadingMsgs() && messages().length === 0) {
+            <div class="chat-welcome">
+              <div class="welcome-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H3a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><path d="M5 14v7h14v-7"/></svg>
+              </div>
+              <h4>Bienvenue dans l'analyse IA</h4>
+              <p>Posez vos questions sur les documents du dossier. L'IA analysera les pièces et vous fournira des réponses basées sur leur contenu.</p>
+              <div class="suggestions">
+                <button class="suggestion-chip" (click)="chatMessage.set('Résume les points principaux de ce dossier.')">Résumé du dossier</button>
+                <button class="suggestion-chip" (click)="chatMessage.set('Quels sont les faits reprochés selon les documents ?')">Faits reprochés</button>
+                <button class="suggestion-chip" (click)="chatMessage.set('Quelles sont les parties impliquées dans ce procès ?')">Parties impliquées</button>
+                <button class="suggestion-chip" (click)="chatMessage.set('Y a-t-il des incohérences entre les documents ?')">Incohérences</button>
+              </div>
+            </div>
+          }
+
+          @for (msg of messages(); track msg.id) {
+            <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+              @if (msg.role === 'assistant') {
+                <div class="msg-avatar ai">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H3a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+                </div>
+              }
+              <div class="msg-bubble">
+                <div class="msg-content" [innerHTML]="parseContent(msg.content)"></div>
+                <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
+              </div>
+              @if (msg.role === 'user') {
+                <div class="msg-avatar user">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+              }
+            </div>
+          }
+
+          @if (isSending()) {
+            <div class="message assistant">
+              <div class="msg-avatar ai">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H3a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+              </div>
+              <div class="msg-bubble typing">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          }
+
+          <div #chatEnd></div>
+        </div>
+
+        @if (chatError()) {
+          <div class="chat-error">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            {{ chatError() }}
+          </div>
+        }
+
+        <!-- Saisie ─────────────────────────────────────────────── -->
+        <div class="chat-input-area">
+
+          <!-- Filtre source ────────────────────────────────────── -->
+          <div class="source-filter">
+            <span class="source-label">Analyser :</span>
+            <button class="source-pill"
+              [class.active]="chatSource() === 'all'"
+              (click)="chatSource.set('all')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+              Tout
+            </button>
+            <button class="source-pill"
+              [class.active]="chatSource() === 'documents'"
+              (click)="chatSource.set('documents')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Documents
+            </button>
+            <button class="source-pill"
+              [class.active]="chatSource() === 'notes'"
+              (click)="chatSource.set('notes')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Notes
+            </button>
+          </div>
+
+          <div class="input-row">
+            <textarea
+              [value]="chatMessage()"
+              (input)="chatMessage.set($any($event.target).value)"
+              (keydown)="onKeydown($event)"
+              placeholder="Posez votre question sur le dossier… (Entrée pour envoyer)"
+              rows="2"
+              [disabled]="isSending()"
+            ></textarea>
+            <button class="send-btn" (click)="sendMessage()"
+              [disabled]="!chatMessage().trim() || isSending()">
+              @if (isSending()) {
+                <span class="btn-spinner"></span>
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              }
+            </button>
+          </div>
+          <p class="input-hint">Maj+Entrée pour saut de ligne</p>
+        </div>
+      </section>
+
+    </div>
+  }
+</div>
+
+<!-- Modal plein écran — Note / Déclaration ───────────────────── -->
+@if (showNoteForm()) {
+  <div class="note-fullscreen">
+
+    <!-- En-tête ─────────────────────────────────────────────── -->
+    <div class="nfs-header">
+      <div class="nfs-title">
+        <div class="nfs-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div>
+          <h2>{{ editingNote() ? 'Modifier la déclaration' : 'Nouvelle déclaration' }}</h2>
+          <span class="nfs-subtitle">{{ case_()!.name }}</span>
+        </div>
+      </div>
+      <div class="nfs-header-actions">
+        <button class="btn-cancel" (click)="closeNoteForm()">Annuler</button>
+        <button class="nfs-save-btn" (click)="saveNote()"
+          [disabled]="isSavingNote() || !noteAuthor().trim() || !noteContent().trim()">
+          @if (isSavingNote()) {
+            <span class="btn-spinner"></span>
+            Enregistrement…
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            {{ editingNote() ? 'Modifier' : 'Enregistrer' }}
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Corps ───────────────────────────────────────────────── -->
+    <div class="nfs-body">
+
+      @if (noteError()) {
+        <div class="form-error-banner">{{ noteError() }}</div>
+      }
+
+      <!-- Métadonnées (ligne compacte) ────────────────────────── -->
+      <div class="nfs-meta-row">
+        <div class="nfs-field">
+          <label>Auteur / Déclarant <span class="req">*</span></label>
+          <input type="text"
+            [value]="noteAuthor()"
+            (input)="noteAuthor.set($any($event.target).value)"
+            placeholder="Ex : Accusé Camara, Témoin Bah, Juge Kouyaté…" />
+        </div>
+
+        <div class="nfs-field nfs-field--sm">
+          <label>Type</label>
+          <select [value]="noteType()" (change)="noteType.set($any($event.target).value)">
+            @for (t of noteTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="nfs-field nfs-field--sm">
+          <label>Date et heure</label>
+          <input type="datetime-local"
+            [value]="noteDatetime()"
+            (input)="noteDatetime.set($any($event.target).value)" />
+        </div>
+      </div>
+
+      <!-- Zone de saisie principale ────────────────────────────── -->
+      <div class="nfs-content-area">
+        <div class="nfs-content-label">
+          <label>Contenu de la déclaration <span class="req">*</span></label>
+          <span class="nfs-char-count">{{ noteContent().length }} caractères · {{ noteContent().split('\n').length }} ligne(s)</span>
+        </div>
+        <textarea
+          class="nfs-textarea"
+          [value]="noteContent()"
+          (input)="noteContent.set($any($event.target).value)"
+          placeholder="Saisissez ici la déclaration telle qu'elle est prononcée, paragraphe par paragraphe…
+
+Utilisez la touche Entrée pour passer à la ligne ou séparer les paragraphes."
+          spellcheck="true"
+          autofocus
+        ></textarea>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- Modal visualisation PDF ─────────────────────────────────── -->
+@if (viewerDoc()) {
+  <div class="modal-overlay pdf-overlay" (click)="closeViewer()">
+    <div class="pdf-modal" (click)="$event.stopPropagation()">
+      <div class="pdf-modal-header">
+        <div class="pdf-doc-info">
+          <div class="pdf-doc-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div>
+            <h4>{{ viewerDoc()!.name }}</h4>
+            <span class="pdf-doc-meta">
+              {{ viewerDoc()!.doc_type }}
+              @if (viewerDoc()!.author) { · {{ viewerDoc()!.author }} }
+              @if (viewerDoc()!.doc_date) { · {{ viewerDoc()!.doc_date }} }
+              @if (viewerDoc()!.page_count > 0) { · {{ viewerDoc()!.page_count }} pages }
+            </span>
+          </div>
+        </div>
+        <button class="pdf-close" (click)="closeViewer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="pdf-body">
+        @if (viewerLoading()) {
+          <div class="pdf-loading">
+            <div class="spinner"></div>
+            <p>Chargement du document...</p>
+          </div>
+        }
+        @if (!viewerLoading() && viewerUrl()) {
+          <iframe
+            [src]="viewerUrl()!"
+            class="pdf-iframe"
+            frameborder="0"
+            title="Visualisation PDF"
+          ></iframe>
+        }
+        @if (!viewerLoading() && !viewerUrl()) {
+          <div class="pdf-loading">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <p>Impossible de charger le document.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal upload document ────────────────────────────────────── -->
+@if (showUploadModal()) {
+  <div class="modal-overlay" (click)="closeUploadModal()">
+    <div class="upload-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Ajouter un document
+        </h3>
+        <button class="modal-close" (click)="closeUploadModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        @if (uploadError()) {
+          <div class="form-error-banner">{{ uploadError() }}</div>
+        }
+
+        <!-- Zone drop fichier -->
+        <div class="file-drop-zone" [class.has-file]="uploadFile()">
+          <input #fileInput type="file" accept=".pdf,application/pdf" (change)="onFileSelected($event)" hidden />
+          @if (!uploadFile()) {
+            <div class="drop-content" (click)="fileInput.click()">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p><strong>Cliquez pour choisir</strong> un fichier PDF</p>
+              <span>Taille maximale : 20 Mo</span>
+            </div>
+          } @else {
+            <div class="file-selected">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div>
+                <strong>{{ uploadFile()!.name }}</strong>
+                <span>{{ formatSize(uploadFile()!.size) }}</span>
+              </div>
+              <button class="change-file" (click)="fileInput.click()">Changer</button>
+            </div>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom du document <span class="required">*</span></label>
+            <input type="text" [value]="uploadName()" (input)="uploadName.set($any($event.target).value)" placeholder="Ex: PV d'audition Diallo" />
+          </div>
+          <div class="form-group">
+            <label>Type de document</label>
+            <select [value]="uploadDocType()" (change)="uploadDocType.set($any($event.target).value)">
+              @for (t of docTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Auteur / Signataire</label>
+            <input type="text" [value]="uploadAuthor()" (input)="uploadAuthor.set($any($event.target).value)" placeholder="Ex: Juge Kouyaté" />
+          </div>
+          <div class="form-group">
+            <label>Date du document</label>
+            <input type="text" [value]="uploadDate()" (input)="uploadDate.set($any($event.target).value)" placeholder="Ex: 15 janvier 2024" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeUploadModal()">Annuler</button>
+        <button class="btn-confirm" (click)="uploadDocument()" [disabled]="uploadProgress() || !uploadFile()">
+          @if (uploadProgress()) {
+            <span class="btn-spinner"></span> Téléversement...
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Ajouter au dossier
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

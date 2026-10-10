@@ -1,0 +1,740 @@
+<div class="gen-page">
+
+  <!-- ═══════════════ EN-TÊTE ═══════════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Assistant IA</p>
+      <h1 class="app-title">Génération de documents</h1>
+      <p class="app-sub">Rédigez ou auditez un contrat conforme au droit guinéen.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+      <button [class.active]="activeTab() === 'new'" (click)="switchTab('new')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Rédiger
+      </button>
+      <button [class.active]="activeTab() === 'analyze'" (click)="switchTab('analyze')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Audit
+      </button>
+      <button [class.active]="activeTab() === 'archives'" (click)="switchTab('archives')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/></svg>
+        Mes documents
+        @if (archives().length > 0) {
+          <span class="app-tag">{{ archives().length }}</span>
+        }
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ TAB : RÉDIGER ═══════════════ -->
+  @if (activeTab() === 'new') {
+
+    <!-- ─── Step 1 : Sélection du type ─── -->
+    @if (newStage() === 'select-type') {
+      <div class="gen-section">
+        <div class="gen-section-top">
+          <div class="gen-section-title-row">
+            <h2>Choisissez le type de document</h2>
+            <span class="gen-count-chip">{{ templates().length }} types</span>
+          </div>
+          <div class="gen-search-wrap">
+            <svg class="gen-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              class="gen-search"
+              type="text"
+              placeholder="Rechercher un contrat…"
+              [value]="searchQuery()"
+              (input)="searchQuery.set($any($event.target).value)"
+            />
+            @if (searchQuery()) {
+              <button class="gen-search-clear" (click)="searchQuery.set('')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (filteredCategories().length === 0) {
+          <div class="gen-empty-search">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <p>Aucun résultat pour <strong>"{{ searchQuery() }}"</strong></p>
+          </div>
+        }
+
+        @for (cat of filteredCategories(); track cat.name) {
+          <div class="gen-category">
+            <div class="gen-cat-header">
+              <div class="gen-cat-indicator"></div>
+              <span class="gen-cat-label">{{ cat.name }}</span>
+              <span class="gen-cat-count">{{ cat.items.length }}</span>
+            </div>
+            <div class="gen-type-grid">
+              @for (tpl of cat.items; track tpl.id) {
+                <button class="gen-type-card" (click)="selectType(tpl.id)">
+                  <div class="gen-type-card-accent"></div>
+                  <div class="gen-type-emoji"><ui-icon [name]="iconEmoji(tpl.icon)" [size]="24" /></div>
+                  <div class="gen-type-info">
+                    <div class="gen-type-name">{{ tpl.label }}</div>
+                    <div class="gen-type-desc">{{ tpl.description }}</div>
+                  </div>
+                  <div class="gen-type-footer">
+                    <span class="gen-type-domain-badge">{{ tpl.domain }}</span>
+                    <svg class="gen-type-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="gen-footer-bar">
+          <span>{{ templates().length }} types de contrats</span>
+          <span class="sep">·</span>
+          <span>Conformes au droit guinéen</span>
+          <span class="sep">·</span>
+          <span>RAG juridique + IA</span>
+        </div>
+      </div>
+    }
+
+    <!-- ─── Step 2 : Formulaire ─── -->
+    @if (newStage() === 'fill-form') {
+      <div class="gen-section gen-form-section">
+
+        <div class="gen-step-header">
+          <button class="gen-back-btn" (click)="backToTypeSelect()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Retour
+          </button>
+          <div class="gen-step-title-block">
+            <span class="gen-step-emoji"><ui-icon [name]="iconEmoji(currentTemplate()?.icon ?? '')" [size]="28" /></span>
+            <div>
+              <h2>{{ currentTemplate()?.label }}</h2>
+              <span class="gen-domain-chip">{{ currentTemplate()?.domain }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="gen-progress-bar-wrap">
+          <div class="gen-progress-label">
+            <span>Champs obligatoires</span>
+            <span class="gen-progress-frac">{{ requiredFilled() }}<span class="sep"> / </span>{{ requiredTotal() }}</span>
+          </div>
+          <div class="gen-progress-track">
+            <div class="gen-progress-fill"
+              [style.width.%]="requiredTotal() > 0 ? (requiredFilled() / requiredTotal()) * 100 : 0">
+            </div>
+          </div>
+        </div>
+
+        @if (currentTemplate(); as tpl) {
+          <div class="gen-form">
+            <div class="gen-form-grid">
+              @for (field of tpl.fields; track field.key) {
+                <div class="gen-field"
+                  [class.full-width]="field.type === 'textarea' || field.key.includes('adresse') || field.key.includes('description') || field.key.includes('objet') || field.key.includes('detail') || field.key.includes('associes') || field.key.includes('fondateurs') || field.key.includes('bureau')">
+                  <label class="gen-label">
+                    {{ field.label }}
+                    @if (field.required) { <span class="gen-required">*</span> }
+                    @else { <span class="gen-optional">facultatif</span> }
+                  </label>
+
+                  @if (field.type === 'textarea') {
+                    <textarea class="gen-input gen-textarea"
+                      [placeholder]="'Ex : ' + field.label"
+                      [value]="formData()[field.key] || ''"
+                      (input)="updateField(field.key, $any($event.target).value)"
+                      rows="3"></textarea>
+                  } @else if (field.type === 'select' && field.options) {
+                    <select class="gen-input"
+                      [value]="formData()[field.key] || ''"
+                      (change)="updateField(field.key, $any($event.target).value)">
+                      <option value="">— Choisir —</option>
+                      @for (opt of field.options; track opt) { <option [value]="opt">{{ opt }}</option> }
+                    </select>
+                  } @else if (field.type === 'date') {
+                    <input class="gen-input" type="date"
+                      [value]="formData()[field.key] || ''"
+                      (input)="updateField(field.key, $any($event.target).value)" />
+                  } @else if (field.type === 'number') {
+                    <input class="gen-input" type="number" placeholder="Ex : 1 000 000"
+                      [value]="formData()[field.key] || ''"
+                      (input)="updateField(field.key, $any($event.target).value)" />
+                  } @else {
+                    <input class="gen-input" type="text" [placeholder]="'Ex : ' + field.label"
+                      [value]="formData()[field.key] || ''"
+                      (input)="updateField(field.key, $any($event.target).value)" />
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Directives supplémentaires -->
+            <div class="gen-directives-card">
+              <div class="gen-directives-header">
+                <div class="gen-directives-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3>Directives spécifiques <span class="gen-optional">— facultatif</span></h3>
+                  <p>Instructions particulières ou clauses spéciales à intégrer dans votre contrat</p>
+                </div>
+              </div>
+              <textarea
+                class="gen-input gen-textarea gen-directives-ta"
+                placeholder="Ex : Ajouter une clause de médiation obligatoire avant tout recours · Mentionner l'application exclusive du droit guinéen · Inclure une pénalité de retard de 0,5 %/jour…"
+                [value]="userDirectives()"
+                (input)="userDirectives.set($any($event.target).value)"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div class="gen-form-actions">
+              <button class="gen-btn-generate" [disabled]="!formValid()" (click)="generateContract()">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                Générer le contrat
+              </button>
+              @if (!formValid()) {
+                <span class="gen-hint">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {{ requiredTotal() - requiredFilled() }} champ(s) obligatoire(s) restant(s)
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ─── Step 3 : Génération en cours ─── -->
+    @if (newStage() === 'generating') {
+      <div class="gen-ai-screen">
+        <div class="gen-ai-core">
+          <div class="gen-ai-ring gen-ai-ring--3"></div>
+          <div class="gen-ai-ring gen-ai-ring--2"></div>
+          <div class="gen-ai-ring gen-ai-ring--1"></div>
+          <div class="gen-ai-nucleus">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="gen-ai-text">
+          <h2>Rédaction en cours…</h2>
+          <p>Notre IA juridique analyse les lois guinéennes et rédige votre contrat</p>
+        </div>
+
+        <div class="gen-ai-steps">
+          @for (msg of thinkingMessages; track $index) {
+            <div class="gen-ai-step"
+              [class.done]="$index < thinkingStep()"
+              [class.active]="$index === thinkingStep()"
+              [class.pending]="$index > thinkingStep()">
+              <div class="gen-ai-step-icon">
+                @if ($index < thinkingStep()) {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                } @else if ($index === thinkingStep()) {
+                  <div class="gen-step-spinner"></div>
+                } @else {
+                  <div class="gen-step-dot"></div>
+                }
+              </div>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="gen-ai-bars">
+          <div class="gen-ai-bar gen-ai-bar--1"></div>
+          <div class="gen-ai-bar gen-ai-bar--2"></div>
+          <div class="gen-ai-bar gen-ai-bar--3"></div>
+          <div class="gen-ai-bar gen-ai-bar--4"></div>
+          <div class="gen-ai-bar gen-ai-bar--5"></div>
+          <div class="gen-ai-bar gen-ai-bar--6"></div>
+          <div class="gen-ai-bar gen-ai-bar--7"></div>
+        </div>
+      </div>
+    }
+
+    <!-- ─── Step 4 : Résultat ─── -->
+    @if (newStage() === 'done') {
+      @if (generateResult(); as res) {
+        <div class="gen-result">
+
+          <div class="gen-result-bar">
+            <div class="gen-result-info">
+              <div class="gen-result-file-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div class="gen-result-meta">
+                <strong>{{ res.title }}</strong>
+                <span>{{ wordCount() }} mots · {{ formatDate(res.created_at) }}</span>
+              </div>
+            </div>
+
+            <div class="gen-result-actions">
+              <div class="gen-view-toggle">
+                <button class="gen-view-btn" [class.active]="viewMode() === 'preview'" (click)="viewMode.set('preview')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  Aperçu
+                </button>
+                <button class="gen-view-btn" [class.active]="viewMode() === 'edit'" (click)="viewMode.set('edit')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Modifier
+                </button>
+              </div>
+              <div class="gen-result-divider"></div>
+              <button class="gen-action-btn" (click)="copyContract()">
+                @if (copyDone()) {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Copié !
+                } @else {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copier
+                }
+              </button>
+              <button class="gen-action-btn" (click)="downloadTxt()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                TXT
+              </button>
+              <button class="gen-action-btn gen-action-btn--pdf" (click)="printAsPdf()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                PDF
+              </button>
+              <button class="gen-action-btn gen-action-btn--new" (click)="resetNew()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                Nouveau
+              </button>
+            </div>
+          </div>
+
+          <div class="gen-result-body">
+            <div class="gen-contract-panel">
+              @if (viewMode() === 'preview') {
+                <div class="gen-contract-preview contract-print-view">
+                  <div class="contract-letterhead">
+                    <div class="contract-country">RÉPUBLIQUE DE GUINÉE</div>
+                    <div class="contract-subtitle">Document officiel — JusticIA · {{ formatDate(res.created_at) }}</div>
+                  </div>
+                  <pre class="gen-contract-pre">{{ editableContent() }}</pre>
+                </div>
+              } @else {
+                <div class="gen-editor-wrap">
+                  <div class="gen-editor-toolbar">
+                    <span class="gen-editor-hint">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/></svg>
+                      Mode édition — modifications appliquées en temps réel
+                    </span>
+                    <span class="gen-editor-count">{{ wordCount() }} mots</span>
+                  </div>
+                  <textarea #contractEditor class="gen-editor"
+                    [value]="editableContent()"
+                    (input)="editableContent.set($any($event.target).value)"
+                    spellcheck="false"></textarea>
+                </div>
+              }
+            </div>
+
+            @if (res.sources.length > 0) {
+              <div class="gen-sources-panel">
+                <div class="gen-sources-title">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  Sources légales
+                  <span class="gen-sources-count">{{ res.sources.length }}</span>
+                </div>
+                <div class="gen-sources-list">
+                  @for (src of res.sources; track $index) {
+                    <div class="gen-source-item">
+                      <span class="gen-source-art">Art. {{ src.numero }}</span>
+                      <div class="gen-source-body">
+                        <span class="gen-source-doc">{{ src.nom_doc }}</span>
+                        @if (src.texte) { <span class="gen-source-excerpt">{{ src.texte | slice:0:110 }}…</span> }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ─── Erreur ─── -->
+    @if (newStage() === 'error') {
+      <div class="gen-error-state">
+        <div class="gen-error-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <h3>Erreur de génération</h3>
+        <p>{{ newError() }}</p>
+        <div class="gen-error-actions">
+          <button class="gen-btn-generate" (click)="newStage.set('fill-form')">Réessayer</button>
+          <button class="gen-action-btn" (click)="resetNew()">Recommencer</button>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- ═══════════════ TAB : AUDIT ═══════════════ -->
+  @if (activeTab() === 'analyze') {
+    <div class="gen-section">
+
+      @if (anaStage() === 'idle' || anaStage() === 'error') {
+        <div class="ana-upload-layout">
+          <div class="ana-upload-left">
+            <h2 class="gen-section-h2">Auditez un contrat existant</h2>
+            <p class="ana-intro">Uploadez votre PDF : notre IA vérifie la conformité au droit guinéen, identifie les clauses problématiques et calcule un score de conformité.</p>
+
+            <div class="gen-field gen-field--full">
+              <label class="gen-label">Type de contrat <span class="gen-optional">— détection automatique si vide</span></label>
+              <select class="gen-input" [value]="analyzeType()" (change)="analyzeType.set($any($event.target).value)">
+                <option value="auto">Détection automatique</option>
+                @for (tpl of templates(); track tpl.id) { <option [value]="tpl.id">{{ tpl.label }}</option> }
+              </select>
+            </div>
+
+            <div class="gen-dropzone" [class.drag-over]="anaDragOver()" [class.has-file]="analyzeFile() !== null" (click)="openAnalyzeFilePicker()">
+              <input #analyzeFileInput type="file" accept=".pdf,application/pdf" style="display:none" (change)="onAnalyzeFileSelected($event)" />
+              @if (!analyzeFile()) {
+                <div class="gen-dz-inner">
+                  <div class="gen-dz-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </div>
+                  <p class="gen-dz-title">Glissez votre contrat PDF ici</p>
+                  <p class="gen-dz-sub">ou <span class="gen-dz-link">cliquez pour choisir</span> · Max 25 Mo</p>
+                </div>
+              } @else {
+                <div class="gen-dz-file-info">
+                  <div class="gen-dz-file-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div class="gen-dz-file-meta">
+                    <span class="gen-dz-filename">{{ analyzeFile()!.name }}</span>
+                    <span class="gen-dz-size">{{ fileSizeLabel(analyzeFile()!.size) }}</span>
+                  </div>
+                  <button class="gen-dz-remove" (click)="removeFile(); $event.stopPropagation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (anaError()) {
+              <div class="gen-error-banner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ anaError() }}
+              </div>
+            }
+
+            <button class="gen-btn-generate" [disabled]="!analyzeFile()" (click)="analyzeContract()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Lancer l'audit juridique
+            </button>
+          </div>
+
+          <div class="ana-features">
+            <div class="ana-features-title">Ce que l'audit vérifie</div>
+            <div class="ana-feature-list">
+              @for (feat of auditFeatures; track feat.title) {
+                <div class="ana-feature-item">
+                  <span class="ana-feat-icon"><ui-icon [name]="feat.icon" [size]="18" /></span>
+                  <div><strong>{{ feat.title }}</strong><span>{{ feat.desc }}</span></div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (anaStage() === 'analyzing') {
+        <div class="gen-ai-screen">
+          <div class="gen-ai-core">
+            <div class="gen-ai-ring gen-ai-ring--3"></div>
+            <div class="gen-ai-ring gen-ai-ring--2"></div>
+            <div class="gen-ai-ring gen-ai-ring--1"></div>
+            <div class="gen-ai-nucleus">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+          </div>
+          <div class="gen-ai-text">
+            <h2>Audit en cours…</h2>
+            <p>Extraction du texte · Vérification de conformité · Calcul du score</p>
+          </div>
+          <div class="gen-ai-steps">
+            @for (step of ['Extraction du texte PDF','Recherche des articles applicables','Analyse des clauses','Détection des problèmes','Calcul du score de conformité']; track $index) {
+              <div class="gen-ai-step active">
+                <div class="gen-ai-step-icon"><div class="gen-step-spinner"></div></div>
+                <span>{{ step }}</span>
+              </div>
+            }
+          </div>
+          <div class="gen-ai-bars">
+            @for (b of [1,2,3,4,5,6,7]; track b) { <div class="gen-ai-bar" [class]="'gen-ai-bar--' + b"></div> }
+          </div>
+        </div>
+      }
+
+      @if (anaStage() === 'done') {
+        @if (analysisResult(); as res) {
+          <div class="ana-result">
+            <div class="ana-result-header">
+              <div class="ana-result-title-row">
+                <h2>{{ res.title }}</h2>
+                @if (res.detected_type) { <span class="gen-domain-chip">{{ res.detected_type }}</span> }
+              </div>
+              <button class="gen-action-btn" (click)="resetAnalyze()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/></svg>
+                Auditer un autre
+              </button>
+            </div>
+
+            <div class="ana-result-body">
+              <div class="ana-left-panel">
+                <div class="ana-score-card">
+                  <div class="ana-score-gauge">
+                    <svg width="96" height="96" viewBox="0 0 96 96">
+                      <circle cx="48" cy="48" r="38" fill="none" stroke="var(--divider)" stroke-width="8"/>
+                      <circle cx="48" cy="48" r="38" fill="none"
+                        [attr.stroke]="conformityColor()" stroke-width="8" stroke-linecap="round"
+                        [attr.stroke-dasharray]="conformityDash()" stroke-dashoffset="0"
+                        transform="rotate(-90 48 48)" style="transition: stroke-dasharray 1s ease"/>
+                    </svg>
+                    <div class="ana-score-value" [style.color]="conformityColor()">{{ res.conformity_score }}<span>%</span></div>
+                  </div>
+                  <div class="ana-score-meta">
+                    <div class="ana-score-label">Score de conformité</div>
+                    <div class="gen-risk-badge" [class]="getRiskClass(res.risk_level)">Risque {{ res.risk_level }}</div>
+                  </div>
+                </div>
+
+                @if (res.verdict) {
+                  <div class="ana-verdict">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <p>{{ res.verdict }}</p>
+                  </div>
+                }
+                @if ((res.strong_points?.length ?? 0) > 0) {
+                  <div class="ana-mini-card ana-positives">
+                    <h4><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Points forts ({{ res.strong_points.length }})</h4>
+                    <ul>@for (pt of res.strong_points; track $index) { <li>{{ pt }}</li> }</ul>
+                  </div>
+                }
+                @if ((res.missing_clauses?.length ?? 0) > 0) {
+                  <div class="ana-mini-card ana-missing">
+                    <h4><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Clauses manquantes ({{ res.missing_clauses.length }})</h4>
+                    <ul>@for (cl of res.missing_clauses; track $index) { <li>{{ cl }}</li> }</ul>
+                  </div>
+                }
+                @if ((res.sources?.length ?? 0) > 0) {
+                  <div class="ana-mini-card">
+                    <h4><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Sources légales ({{ res.sources.length }})</h4>
+                    @for (src of res.sources | slice:0:5; track $index) {
+                      <div class="gen-source-item"><span class="gen-source-art">Art. {{ src.numero }}</span><span class="gen-source-doc">{{ src.nom_doc }}</span></div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="ana-right-panel">
+                @if (res.issues.length === 0 && res.suggestions.length === 0) {
+                  <div class="ana-no-issues">
+                    <div class="ana-no-issues-icon"><ui-icon name="check-circle" [size]="32" /></div>
+                    <h3>Aucun problème critique détecté</h3>
+                    <p>Ce contrat semble conforme aux exigences du droit guinéen.</p>
+                  </div>
+                }
+                @for (grp of [{severity:'critique',label:'Problèmes critiques',cls:'critical'},{severity:'majeur',label:'Problèmes majeurs',cls:'major'},{severity:'mineur',label:'Points à améliorer',cls:'minor'}]; track grp.severity) {
+                  @if (issuesBySeverity(grp.severity).length > 0) {
+                    <div class="ana-issue-group">
+                      <div class="ana-issue-group-header" [class]="grp.cls">{{ grp.label }} ({{ issuesBySeverity(grp.severity).length }})</div>
+                      @for (issue of issuesBySeverity(grp.severity); track $index) {
+                        <div class="ana-issue-card" [class]="'severity-' + grp.severity">
+                          <div class="ana-issue-top">
+                            <span class="ana-issue-severity" [class]="'sev-' + grp.severity">{{ getSeverityLabel(grp.severity) }}</span>
+                            @if (issue.article_viole || issue.article) { <span class="ana-issue-ref">{{ issue.article_viole || issue.article }}</span> }
+                          </div>
+                          <div class="ana-issue-clause">{{ issue.clause }}</div>
+                          @if (issue.description) { <div class="ana-issue-desc">{{ issue.description }}</div> }
+                          @if (issue.suggestion) {
+                            <div class="ana-issue-suggestion">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                              {{ issue.suggestion }}
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+                @if ((res.suggestions?.length ?? 0) > 0) {
+                  <div class="ana-recommendations">
+                    <h4>Recommandations générales</h4>
+                    <ul>@for (s of res.suggestions; track $index) { <li>{{ s }}</li> }</ul>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- ═══════════════ TAB : MES DOCUMENTS ═══════════════ -->
+  @if (activeTab() === 'archives') {
+    <div class="gen-section">
+      <div class="gen-archives-topbar">
+        <div class="gen-archives-topbar-left">
+          <h2>Mes documents</h2>
+          @if (filteredArchives().length > 0) { <span class="gen-tab-badge" style="position:static;transform:none">{{ filteredArchives().length }}</span> }
+        </div>
+        <div class="gen-archives-filters">
+          <div class="gen-search-wrap">
+            <svg class="gen-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="gen-search" style="width:150px" placeholder="Rechercher…" [value]="archiveSearch()" (input)="archiveSearch.set($any($event.target).value)" />
+          </div>
+          <div class="gen-filter-tabs">
+            @for (f of [{v:'all',l:'Tous'},{v:'generated',l:'Générés'},{v:'analyzed',l:'Audités'}]; track f.v) {
+              <button class="gen-filter-btn" [class.active]="archiveFilter() === f.v" (click)="archiveFilter.set($any(f.v))">{{ f.l }}</button>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (archivesLoading()) {
+        <div class="gen-loading-hint"><div class="gen-mini-spinner"></div> Chargement…</div>
+      } @else if (filteredArchives().length === 0) {
+        <div class="gen-empty">
+          <div class="gen-empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          </div>
+          <h3>{{ archiveSearch() || archiveFilter() !== 'all' ? 'Aucun résultat' : 'Aucun document pour l\'instant' }}</h3>
+          <p>Générez ou auditez un contrat pour le retrouver ici</p>
+          <button class="gen-btn-generate" style="margin-top:.75rem" (click)="switchTab('new')">Rédiger un contrat</button>
+        </div>
+      } @else {
+        <div class="gen-archives-grid">
+          @for (doc of filteredArchives(); track doc.id) {
+            <div class="gen-archive-card" [class.analyzed]="doc.mode === 'analyzed'" (click)="openArchive(doc.id)">
+              <div class="gen-archive-card-bar"></div>
+              <div class="gen-archive-body">
+                <div class="gen-archive-mode-badge" [class.analyzed]="doc.mode === 'analyzed'">
+                  {{ doc.mode === 'analyzed' ? 'Audité' : 'Généré' }}
+                </div>
+                <div class="gen-archive-icon" [class.analyzed]="doc.mode === 'analyzed'">
+                  @if (doc.mode === 'analyzed') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  }
+                </div>
+                <div class="gen-archive-title">{{ doc.title }}</div>
+                <div class="gen-archive-type">{{ contractTypeLabel(doc.contract_type) }}</div>
+                <div class="gen-archive-date">{{ formatDate(doc.created_at) }}</div>
+              </div>
+              <div class="gen-archive-footer">
+                <button class="gen-arch-btn" (click)="openArchive(doc.id); $event.stopPropagation()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  Voir
+                </button>
+                <button class="gen-arch-btn gen-arch-btn--del" (click)="deleteArchive(doc.id, $event)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══════════════ MODALE DÉTAIL ═══════════════ -->
+  @if (showModal()) {
+    <div class="gen-modal-overlay" (click)="closeModal()">
+      <div class="gen-modal" (click)="$event.stopPropagation()">
+        <div class="gen-modal-header">
+          <div class="gen-modal-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            {{ archiveDetail()?.title || 'Document' }}
+          </div>
+          <button class="gen-modal-close" (click)="closeModal()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="gen-modal-body">
+          @if (modalLoading()) {
+            <div class="gen-loading-hint"><div class="gen-mini-spinner"></div> Chargement…</div>
+          } @else if (archiveDetail(); as detail) {
+            @if (detail.mode === 'generated') {
+              <div class="gen-modal-contract">
+                <div class="contract-letterhead">
+                  <div class="contract-country">RÉPUBLIQUE DE GUINÉE</div>
+                  <div class="contract-subtitle">Document officiel — JusticIA</div>
+                </div>
+                <pre class="gen-modal-pre">{{ detail.content }}</pre>
+              </div>
+            } @else {
+              @if (parseAnalysis(detail.analysis); as analysis) {
+                <div class="ana-modal-content">
+                  <div class="ana-modal-score-row">
+                    <span>Score :</span>
+                    <strong [style.color]="analysis.conformity_score >= 75 ? '#22c55e' : analysis.conformity_score >= 50 ? '#f59e0b' : '#ef4444'">{{ analysis.conformity_score ?? '—' }}%</strong>
+                    <div class="gen-risk-badge" [class]="getRiskClass(analysis.risk_level)">{{ analysis.risk_level }}</div>
+                  </div>
+                  @if (analysis.verdict) { <p class="ana-modal-verdict">{{ analysis.verdict }}</p> }
+                  @if ((analysis.issues?.length ?? 0) > 0) {
+                    <h3>Problèmes ({{ analysis.issues.length }})</h3>
+                    @for (issue of analysis.issues; track $index) {
+                      <div class="ana-issue-card" [class]="'severity-' + issue.severity">
+                        <div class="ana-issue-top">
+                          <span class="ana-issue-severity" [class]="'sev-' + issue.severity">{{ getSeverityLabel(issue.severity) }}</span>
+                          @if (issue.article_viole || issue.article) { <span class="ana-issue-ref">{{ issue.article_viole || issue.article }}</span> }
+                        </div>
+                        <div class="ana-issue-clause">{{ issue.clause }}</div>
+                        @if (issue.description) { <div class="ana-issue-desc">{{ issue.description }}</div> }
+                        @if (issue.suggestion) {
+                          <div class="ana-issue-suggestion">
+                            <ui-icon name="lightbulb" [size]="12" />
+                            {{ issue.suggestion }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  }
+                  @if ((analysis.missing_clauses?.length ?? 0) > 0) {
+                    <h3>Clauses manquantes</h3>
+                    <ul class="ana-modal-list">@for (cl of analysis.missing_clauses; track $index) { <li>{{ cl }}</li> }</ul>
+                  }
+                  @if ((analysis.suggestions?.length ?? 0) > 0) {
+                    <h3>Recommandations</h3>
+                    <ul class="ana-modal-list">@for (s of analysis.suggestions; track $index) { <li>{{ s }}</li> }</ul>
+                  }
+                </div>
+              }
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- Zone impression PDF -->
+<div class="contract-print-only">
+  @if (generateResult(); as res) {
+    <div class="contract-letterhead">
+      <div class="contract-country">RÉPUBLIQUE DE GUINÉE</div>
+      <div class="contract-subtitle">Document officiel — JusticIA · {{ formatDate(res.created_at) }}</div>
+    </div>
+    <div style="white-space:pre-wrap; font-family:'Times New Roman',serif; font-size:12pt; line-height:1.9; color:#000;">{{ editableContent() }}</div>
+  }
+</div>

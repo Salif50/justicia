@@ -1,0 +1,238 @@
+// ── Mode block ────────────────────────────────────────────────────────────────
+.upgrade-wall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(135deg, rgba(13,39,64,0.04), rgba(13,39,64,0.08));
+  border: 2px dashed rgba(13,39,64,0.18);
+  border-radius: 16px;
+}
+
+.uw-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #0d2740, #1a4a6e);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.uw-content {
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0d2740;
+    margin: 0 0 0.4rem;
+  }
+  p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.55;
+    max-width: 340px;
+    strong { color: #0d2740; }
+    em { font-style: normal; color: #94a3b8; }
+  }
+}
+
+.uw-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.5rem;
+  background: linear-gradient(135deg, #0d2740, #1a4a6e);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(13,39,64,0.3); }
+}
+
+// ── Mode modal ────────────────────────────────────────────────────────────────
+.uw-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.uw-modal {
+  position: relative;
+  background: white;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 600px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.25);
+  animation: slideUp 0.3s ease;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0d2740;
+    margin: 1rem 0 0.25rem;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.uw-modal-close {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none;
+  color: #94a3b8;
+  cursor: pointer; border-radius: 50%;
+  transition: all 0.15s;
+  &:hover { background: rgba(13,39,64,0.07); color: #0d2740; }
+}
+
+.uw-modal-icon {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, #0d2740, #1a4a6e);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  margin: 0 auto;
+}
+
+.uw-modal-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(13,39,64,0.07);
+  border-radius: 20px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0d2740;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.uw-modal-desc {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.6;
+  max-width: 460px;
+  margin: 0 auto 1.5rem;
+  strong { color: #0d2740; }
+}
+
+// Mini-plans dans le modal
+.uw-modal-plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.uw-plan-card {
+  position: relative;
+  border: 2px solid rgba(13,39,64,0.1);
+  border-radius: 14px;
+  padding: 1rem;
+
+  &.featured {
+    border-color: #0d2740;
+    background: rgba(13,39,64,0.03);
+  }
+}
+
+.upc-badge {
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  background: #0d2740;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.upc-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0d2740;
+  margin-bottom: 0.2rem;
+}
+
+.upc-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0d2740;
+  margin-bottom: 0.75rem;
+  span { font-size: 0.75rem; font-weight: 500; color: #64748b; }
+}
+
+.uw-plan-card ul {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.35rem;
+
+  li {
+    font-size: 0.78rem;
+    color: #475569;
+    display: flex; align-items: center; gap: 0.4rem;
+
+    &::before {
+      content: '✓';
+      color: #059669;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.uw-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.uw-btn-primary {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.75rem 1.75rem;
+  background: linear-gradient(135deg, #0d2740, #1a4a6e);
+  color: white; border: none; border-radius: 12px;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s;
+  &:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,39,64,0.3); }
+}
+
+.uw-btn-secondary {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: 2px solid rgba(13,39,64,0.15);
+  border-radius: 12px;
+  color: #64748b; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+  &:hover { border-color: rgba(13,39,64,0.3); color: #0d2740; }
+}

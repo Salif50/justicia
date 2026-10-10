@@ -1,0 +1,607 @@
+<div class="rd-page">
+
+  <!-- ═══════════════════════════════════════════════
+       EN-TÊTE
+  ═══════════════════════════════════════════════ -->
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Assistant IA</p>
+      <h1 class="app-title">Résumé de document</h1>
+      <p class="app-sub">Déposez un PDF juridique et obtenez un résumé structuré : parties, obligations, échéances, risques.</p>
+    </div>
+    <div class="app-head-actions">
+      <div class="app-seg">
+      <button [class.active]="mainTab() === 'analyser'" (click)="switchTab('analyser')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Analyser
+      </button>
+      <button [class.active]="mainTab() === 'archives'" (click)="switchTab('archives')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+        </svg>
+        Archives
+        @if (archives().length > 0) {
+          <span class="app-tag">{{ archives().length }}</span>
+        }
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════
+       ONGLET ANALYSER
+  ═══════════════════════════════════════════════ -->
+  @if (mainTab() === 'analyser') {
+
+    <!-- ── IDLE / ERROR : Zone de dépôt ──────────── -->
+    @if (stage() === 'idle' || stage() === 'error') {
+      <div class="rd-dropzone" [class.drag-over]="dragOver()" (click)="openFilePicker()">
+        <div class="rdz-inner">
+          <div class="rdz-icon">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+          </div>
+          <p class="rdz-title">Glissez votre PDF ici</p>
+          <p class="rdz-sub">ou <span class="rdz-link">parcourir</span> vos fichiers</p>
+          <span class="rdz-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            PDF uniquement · Max 25 Mo
+          </span>
+          <div class="rdz-supported">
+            <span>Contrats</span>
+            <span>Jugements</span>
+            <span>Procès-verbaux</span>
+            <span>Lois & Décrets</span>
+            <span>Actes notariés</span>
+          </div>
+        </div>
+        <input #fileInput type="file" accept=".pdf,application/pdf" class="rdz-file-input" (change)="onFileSelected($event)" />
+      </div>
+
+      @if (stage() === 'error') {
+        <div class="rd-error-banner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ errorMsg() }}
+          <button class="rd-error-retry" (click)="reset()">Réessayer</button>
+        </div>
+      }
+    }
+
+    <!-- ── EXTRACTING : Animation d'extraction ──── -->
+    @if (stage() === 'extracting') {
+      <div class="rd-loading-card">
+        <div class="rls-anim">
+          <div class="rls-doc-wrap">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="8" y1="13" x2="16" y2="13"/>
+              <line x1="8" y1="17" x2="14" y2="17"/>
+            </svg>
+            <div class="rls-scan-bar"></div>
+          </div>
+        </div>
+        <div class="rls-text">
+          <h2>Extraction du texte…</h2>
+          <p>Lecture de <strong>{{ selectedFile()?.name }}</strong></p>
+        </div>
+        <div class="rls-progress-wrap">
+          <div class="rls-progress-track">
+            <div class="rls-progress-fill" [style.width.%]="extractionProgress()"></div>
+          </div>
+          <span class="rls-pct">{{ extractionProgress() | number:'1.0-0' }}%</span>
+        </div>
+        <div class="rls-steps">
+          <div class="rls-step done">
+            <div class="rls-step-dot"></div><span>Réception du fichier</span>
+          </div>
+          <div class="rls-step" [class.active]="extractionProgress() > 20">
+            <div class="rls-step-dot"></div><span>Lecture des pages PDF</span>
+          </div>
+          <div class="rls-step" [class.active]="extractionProgress() > 60">
+            <div class="rls-step-dot"></div><span>Extraction du contenu</span>
+          </div>
+          <div class="rls-step" [class.active]="extractionProgress() >= 100">
+            <div class="rls-step-dot"></div><span>Vérification juridique</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── REJECTED : Document non pertinent ─────── -->
+    @if (stage() === 'rejected') {
+      <div class="rd-rejected-card">
+        <div class="rjr-icon-wrap">
+          <div class="rjr-ring rjr-ring--1"></div>
+          <div class="rjr-ring rjr-ring--2"></div>
+          <div class="rjr-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M4.93 4.93l14.14 14.14"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="rjr-body">
+          <h2>Document hors périmètre</h2>
+          <p class="rjr-reason">{{ relevanceReason() || 'Ce document ne semble pas être un document juridique.' }}</p>
+
+          <div class="rjr-examples">
+            <p>JusticIA est optimisé pour analyser :</p>
+            <div class="rjr-tags">
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Contrats et conventions</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Jugements et arrêts</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Procès-verbaux (PV)</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Lois, codes et décrets</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Actes notariés</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Assignations et citations</span>
+            </div>
+          </div>
+
+          <div class="rjr-actions">
+            <button class="rjr-btn-change" (click)="reset()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+              </svg>
+              Changer de document
+            </button>
+            <button class="rjr-btn-force" (click)="forceAndAnalyze()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              Analyser quand même
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── EXTRACTED / GENERATING / DONE ─────────── -->
+    @if (stage() === 'extracted' || stage() === 'generating' || stage() === 'done') {
+      <div class="rd-content">
+
+        <!-- Bannière fichier ──────────────────────── -->
+        <div class="rd-file-bar">
+          <div class="rd-file-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="rd-file-info">
+            <strong>{{ uploadResult()?.filename }}</strong>
+            <span>{{ uploadResult()?.page_count }} page(s) · {{ uploadResult()?.word_count | number }} mots · {{ formatBytes(selectedFile()?.size ?? 0) }}</span>
+          </div>
+          <div class="rd-file-actions">
+            <button class="rdf-btn rdf-btn--preview" (click)="openPreview()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              Aperçu
+            </button>
+            <button class="rdf-btn rdf-btn--change" (click)="reset()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+              </svg>
+              Changer
+            </button>
+          </div>
+        </div>
+
+        <!-- Options niveau ──────────────────────── -->
+        @if (stage() === 'extracted') {
+          <div class="rd-options">
+            <h3>Choisissez le niveau d'analyse</h3>
+            <div class="rd-level-grid">
+              @for (lvl of levels; track lvl.value) {
+                <button class="rd-level-card" [class.selected]="detailLevel() === lvl.value"
+                        (click)="detailLevel.set(lvl.value)">
+                  <div class="rdlc-dot"></div>
+                  <strong>{{ lvl.label }}</strong>
+                  <span>{{ lvl.desc }}</span>
+                </button>
+              }
+            </div>
+            <button class="rd-generate-btn" (click)="generateSummary()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              Générer le résumé IA
+            </button>
+          </div>
+        }
+
+        <!-- ═══════════════════════════════════════
+             ANIMATION IA EN COURS
+        ═══════════════════════════════════════ -->
+        @if (stage() === 'generating') {
+          <div class="rd-ai-screen">
+
+            <!-- Noyau IA animé -->
+            <div class="ai-core">
+              <div class="ai-ring ai-ring--3"></div>
+              <div class="ai-ring ai-ring--2"></div>
+              <div class="ai-ring ai-ring--1"></div>
+              <div class="ai-nucleus">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="2"/>
+                  <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="ai-text-block">
+              <h2>JusticIA analyse votre document</h2>
+              <p>Le modèle IA lit, structure et synthétise le contenu juridique</p>
+            </div>
+
+            <!-- Étapes de pensée -->
+            <div class="ai-steps">
+              @for (msg of thinkingMessages; track $index) {
+                <div class="ai-step"
+                     [class.done]="$index < thinkingStep()"
+                     [class.active]="$index === thinkingStep()"
+                     [class.pending]="$index > thinkingStep()">
+                  <div class="ai-step-icon">
+                    @if ($index < thinkingStep()) {
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    } @else if ($index === thinkingStep()) {
+                      <div class="ai-step-spinner"></div>
+                    } @else {
+                      <div class="ai-step-dot"></div>
+                    }
+                  </div>
+                  <span>{{ msg }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Barres d'activité IA -->
+            <div class="ai-bars">
+              <div class="ai-bar ai-bar--1"></div>
+              <div class="ai-bar ai-bar--2"></div>
+              <div class="ai-bar ai-bar--3"></div>
+              <div class="ai-bar ai-bar--4"></div>
+              <div class="ai-bar ai-bar--5"></div>
+            </div>
+          </div>
+        }
+
+        <!-- ═══════════════════════════════════════
+             RÉSUMÉ FINAL
+        ═══════════════════════════════════════ -->
+        @if (stage() === 'done' && summary()) {
+          <ng-container *ngTemplateOutlet="summaryView; context: { $implicit: summary()!, showArchiveBtn: true }"></ng-container>
+        }
+
+      </div>
+    }
+
+  }
+
+  <!-- ═══════════════════════════════════════════════
+       ONGLET ARCHIVES
+  ═══════════════════════════════════════════════ -->
+  @if (mainTab() === 'archives') {
+    <div class="rd-archives">
+
+      <div class="rda-topbar">
+        <div class="rda-topbar-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+          </svg>
+          <h2>Analyses archivées</h2>
+          @if (archives().length > 0) { <span class="rda-count">{{ archives().length }}</span> }
+        </div>
+        <div class="rda-topbar-right">
+          <button class="rda-refresh" (click)="loadArchives()" title="Actualiser">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+            </svg>
+          </button>
+          <button class="rda-analyze-btn" (click)="switchTab('analyser')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nouveau
+          </button>
+        </div>
+      </div>
+
+      @if (archivesLoading()) {
+        <div class="rda-loading">
+          <div class="rd-spinner"></div>
+          <span>Chargement des archives…</span>
+        </div>
+      } @else if (archives().length === 0) {
+        <div class="rda-empty">
+          <div class="rda-empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+              <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+              <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>
+          </div>
+          <h3>Aucune archive</h3>
+          <p>Après avoir analysé un document, cliquez sur <strong>Archiver</strong> pour le conserver ici et y accéder à tout moment.</p>
+          <button class="rda-empty-btn" (click)="switchTab('analyser')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Analyser un premier document
+          </button>
+        </div>
+      } @else {
+        <div class="rda-grid">
+          @for (arch of archives(); track arch.id) {
+            <div class="rda-card" (click)="openArchive(arch.id)">
+              <div class="rda-card-accent"></div>
+              <div class="rda-card-body">
+                <div class="rda-card-top">
+                  <div class="rda-card-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <line x1="8" y1="13" x2="16" y2="13"/>
+                      <line x1="8" y1="17" x2="12" y2="17"/>
+                    </svg>
+                  </div>
+                  <span class="rda-level-chip">
+                    {{ LEVEL_LABELS[arch.detail_level] ?? arch.detail_level }}
+                  </span>
+                </div>
+                <div class="rda-card-title">{{ arch.summary_title || arch.filename }}</div>
+                <div class="rda-card-filename">{{ arch.filename }}</div>
+                <div class="rda-card-meta">
+                  <span>{{ arch.page_count }} p.</span>
+                  <span>·</span>
+                  <span>{{ arch.word_count | number }} mots</span>
+                  <span>·</span>
+                  <span class="rda-date">{{ formatDate(arch.created_at) }}</span>
+                </div>
+              </div>
+              <div class="rda-card-actions" (click)="$event.stopPropagation()">
+                <button class="rda-btn-view" (click)="openArchive(arch.id)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  Voir
+                </button>
+                <button class="rda-btn-del" (click)="deleteArchive(arch.id)" title="Supprimer">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL APERÇU PDF
+  ═══════════════════════════════════════════════ -->
+  @if (showPreview()) {
+    <div class="rd-overlay" (click)="closePreview()">
+      <div class="rd-modal-fullscreen" (click)="$event.stopPropagation()">
+        <div class="rdm-header">
+          <div class="rdm-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            {{ uploadResult()?.filename }}
+          </div>
+          <div class="rdm-meta">{{ uploadResult()?.page_count }} page(s) · {{ uploadResult()?.word_count | number }} mots</div>
+          <button class="rdm-close" (click)="closePreview()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="rdm-tabs">
+          <button class="rdm-tab" [class.active]="previewTab() === 'pdf'"  (click)="previewTab.set('pdf')">Document PDF</button>
+          <button class="rdm-tab" [class.active]="previewTab() === 'text'" (click)="previewTab.set('text')">Texte extrait</button>
+        </div>
+        <div class="rdm-body">
+          @if (previewTab() === 'pdf') {
+            <iframe [src]="filePreviewUrl()" class="rdm-iframe" title="Aperçu PDF"></iframe>
+          } @else {
+            <div class="rdm-text"><pre>{{ uploadResult()?.extracted_text }}</pre></div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL DÉTAIL ARCHIVE
+  ═══════════════════════════════════════════════ -->
+  @if (showArchiveModal()) {
+    <div class="rd-overlay" (click)="closeArchiveModal()">
+      <div class="rd-modal-fullscreen" (click)="$event.stopPropagation()">
+        <div class="rdm-header">
+          <div class="rdm-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+            </svg>
+            {{ archiveDetail()?.filename ?? 'Archive' }}
+          </div>
+          @if (archiveDetail()) {
+            <div class="rdm-meta">
+              {{ archiveDetail()!.page_count }} p. · {{ archiveDetail()!.word_count | number }} mots · {{ formatDate(archiveDetail()!.created_at) }}
+            </div>
+          }
+          <div class="rdm-actions">
+            @if (archiveDetail()) {
+              <button class="rdm-action-btn" (click)="copyResume(archiveDetail()!.summary)">
+                @if (copied()) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Copié
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  Copier
+                }
+              </button>
+              <button class="rdm-action-btn rdm-action-btn--del" (click)="deleteArchive(archiveDetail()!.id)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                </svg>
+                Supprimer
+              </button>
+            }
+            <button class="rdm-close" (click)="closeArchiveModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="rdm-body rdm-body--scroll">
+          @if (archiveDetailLoading()) {
+            <div class="rdm-loading">
+              <div class="rd-spinner"></div>
+              <span>Chargement de l'archive…</span>
+            </div>
+          } @else if (archiveDetail()) {
+            <ng-container *ngTemplateOutlet="summaryView; context: { $implicit: archiveDetail()!.summary, showArchiveBtn: false }"></ng-container>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TEMPLATE RÉSUMÉ (réutilisé analyse + archive modal)
+══════════════════════════════════════════════════════ -->
+<ng-template #summaryView let-s let-showArchiveBtn="showArchiveBtn">
+  <div class="rd-summary">
+
+    <!-- En-tête résumé ────────────────────────────── -->
+    <div class="rds-header">
+      <div class="rds-header-left">
+        <span class="rds-badge">Résumé IA</span>
+        <h2>{{ s.title }}</h2>
+      </div>
+      <div class="rds-actions">
+        @if (showArchiveBtn) {
+          @if (archivesSaved()) {
+            <span class="rds-archived-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Archivé
+            </span>
+          } @else {
+            <button class="rds-btn rds-btn--archive" (click)="saveToArchive()" [disabled]="archiveSaving()">
+              @if (archiveSaving()) {
+                <span class="btn-mini-spin"></span> Archivage…
+              } @else {
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
+                </svg>
+                Archiver
+              }
+            </button>
+          }
+        }
+        <button class="rds-btn" (click)="copyResume(s)">
+          @if (copied()) {
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Copié !
+          } @else {
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copier
+          }
+        </button>
+        @if (showArchiveBtn) {
+          <button class="rds-btn rds-btn--new" (click)="reset()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+            </svg>
+            Nouveau
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Résumé narratif ─────────────────────────── -->
+    @if (s.raw_summary) {
+      <div class="rds-narrative">
+        <div class="rds-narrative-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <p>{{ s.raw_summary }}</p>
+      </div>
+    }
+
+    <!-- Points clés ────────────────────────────── -->
+    @if (s.key_facts.length > 0) {
+      <div class="rds-keyfacts">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Points clés
+        </h3>
+        <ul>
+          @for (fact of s.key_facts; track $index) {
+            <li>
+              <span class="kf-num">{{ $index + 1 }}</span>
+              {{ fact }}
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Sections ────────────────────────────────── -->
+    <div class="rds-sections">
+      @for (section of s.sections; track section.title) {
+        <div class="rds-section">
+          <div class="rds-section-header">
+            <span class="rds-section-icon">{{ section.icon }}</span>
+            <h3>{{ section.title }}</h3>
+          </div>
+          <p>{{ section.content }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Régénérer ──────────────────────────────── -->
+    @if (showArchiveBtn) {
+      <div class="rds-regenerate">
+        <span>Changer le niveau :</span>
+        @for (lvl of levels; track lvl.value) {
+          <button class="rds-regen-pill"
+                  [class.active]="detailLevel() === lvl.value"
+                  (click)="detailLevel.set(lvl.value); generateSummary()">
+            {{ lvl.label }}
+          </button>
+        }
+      </div>
+    }
+
+  </div>
+</ng-template>

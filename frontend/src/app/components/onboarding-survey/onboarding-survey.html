@@ -1,0 +1,179 @@
+<div class="ob" role="dialog" aria-modal="true" aria-labelledby="ob-title">
+
+  <!-- Colonne gauche : contexte et progression -->
+  <aside class="ob-aside">
+    <div class="ob-brand">Justic<span>IA</span></div>
+
+    @if (step() !== 'done') {
+      <div class="ob-aside-body">
+        <p class="ob-eyebrow">Bienvenue{{ firstName() ? ', ' + firstName() : '' }}</p>
+        <h2 class="ob-aside-title">Quelques questions pour <em>adapter votre espace</em>.</h2>
+        <p class="ob-aside-text">
+          Moins d'une minute. Vos réponses servent uniquement à personnaliser JusticIA
+          et ne sont jamais partagées.
+        </p>
+      </div>
+
+      <ol class="ob-progress">
+        @for (s of steps; track s.key; let i = $index) {
+          <li [class.is-current]="i === stepIndex()" [class.is-done]="i < stepIndex()">
+            <span class="ob-progress-num">{{ i + 1 }}</span>
+            <span>{{ s.label }}</span>
+          </li>
+        }
+      </ol>
+    } @else {
+      <div class="ob-aside-body">
+        <p class="ob-eyebrow">Tout est prêt</p>
+        <h2 class="ob-aside-title">Votre espace juridique est <em>configuré</em>.</h2>
+      </div>
+    }
+  </aside>
+
+  <!-- Colonne droite : question -->
+  <main class="ob-main">
+    @if (step() !== 'done') {
+      <div class="ob-topbar">
+        <span class="ob-counter">Question {{ stepIndex() + 1 }} sur {{ steps.length }}</span>
+        <button type="button" class="ob-skip-all" (click)="skipAll()" [disabled]="saving()">
+          Passer le questionnaire
+        </button>
+      </div>
+      <div class="ob-bar"><span [style.width.%]="((stepIndex() + 1) / steps.length) * 100"></span></div>
+    }
+
+    <div class="ob-content">
+
+      @switch (step()) {
+
+        @case ('profile') {
+          <h1 id="ob-title" class="ob-title">{{ current()?.title }}</h1>
+          <p class="ob-sub">Les réponses de JusticIA s'adaptent à votre pratique.</p>
+          <div class="ob-grid">
+            @for (pt of profileTypes; track pt.key) {
+              <button type="button" class="ob-option" [class.selected]="profile()?.key === pt.key" (click)="profile.set(pt)">
+                <span class="ob-option-check" aria-hidden="true"></span>
+                <span class="ob-option-text">
+                  <strong>{{ pt.label }}</strong>
+                  <small>{{ pt.description }}</small>
+                </span>
+              </button>
+            }
+          </div>
+        }
+
+        @case ('domains') {
+          <h1 id="ob-title" class="ob-title">{{ current()?.title }}</h1>
+          <p class="ob-sub">Plusieurs choix possibles.</p>
+          <div class="ob-chips">
+            @for (d of domainChoices; track d.key) {
+              <button type="button" class="ob-chip" [class.selected]="isDomain(d.key)" (click)="toggleDomain(d.key)" [attr.aria-pressed]="isDomain(d.key)">
+                <svg class="ob-chip-tick" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ d.label }}
+              </button>
+            }
+          </div>
+        }
+
+        @case ('usage') {
+          <h1 id="ob-title" class="ob-title">{{ current()?.title }}</h1>
+          <p class="ob-sub">Choisissez l'usage le plus important pour vous.</p>
+          <div class="ob-list">
+            @for (u of usageChoices; track u.key) {
+              <button type="button" class="ob-option ob-option--row" [class.selected]="usage() === u.key" (click)="usage.set(u.key)">
+                <span class="ob-option-check" aria-hidden="true"></span>
+                <span class="ob-option-text">
+                  <strong>{{ u.label }}</strong>
+                  <small>{{ u.hint }}</small>
+                </span>
+              </button>
+            }
+          </div>
+        }
+
+        @case ('details') {
+          <h1 id="ob-title" class="ob-title">{{ current()?.title }}</h1>
+          <p class="ob-sub">Tous les champs sont facultatifs.</p>
+          <div class="ob-form">
+            <label class="ob-field">
+              <span>Nom complet</span>
+              <input type="text" [value]="name()" (input)="name.set($any($event.target).value)" autocomplete="name" placeholder="Prénom et nom" />
+            </label>
+            <label class="ob-field">
+              <span>Organisation</span>
+              <input type="text" [value]="organization()" (input)="organization.set($any($event.target).value)" placeholder="Cabinet, entreprise, institution" />
+            </label>
+            <label class="ob-field">
+              <span>Ville</span>
+              <input type="text" [value]="city()" (input)="city.set($any($event.target).value)" placeholder="Conakry" />
+            </label>
+            <label class="ob-field">
+              <span>Téléphone</span>
+              <input type="tel" [value]="phone()" (input)="phone.set($any($event.target).value)" autocomplete="tel" placeholder="+224 …" />
+            </label>
+            @if (profile()?.showBar) {
+              <label class="ob-field ob-field--wide">
+                <span>{{ profile()!.barLabel }}</span>
+                <input type="text" [value]="barNumber()" (input)="barNumber.set($any($event.target).value)" />
+              </label>
+            }
+          </div>
+        }
+
+        @case ('source') {
+          <h1 id="ob-title" class="ob-title">{{ current()?.title }}</h1>
+          <p class="ob-sub">Cela nous aide à mieux faire connaître JusticIA.</p>
+          <div class="ob-grid ob-grid--compact">
+            @for (s of sourceChoices; track s.key) {
+              <button type="button" class="ob-option" [class.selected]="source() === s.key" (click)="source.set(s.key)">
+                <span class="ob-option-check" aria-hidden="true"></span>
+                <span class="ob-option-text"><strong>{{ s.label }}</strong></span>
+              </button>
+            }
+          </div>
+        }
+
+        @case ('done') {
+          <div class="ob-done">
+            <span class="ob-done-mark" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <h1 id="ob-title" class="ob-title">Merci{{ firstName() ? ', ' + firstName() : '' }}.</h1>
+            <p class="ob-sub">
+              Posez votre première question en français courant : JusticIA vous répond en citant
+              les textes de loi guinéens applicables, mot pour mot.
+            </p>
+            <ul class="ob-done-list">
+              <li>Chaque réponse commence par les textes de loi applicables.</li>
+              <li>Si les textes ne couvrent pas un point, JusticIA vous le dit.</li>
+              <li>Vos consultations restent confidentielles.</li>
+            </ul>
+            <div class="ob-done-actions">
+              <button type="button" class="ob-btn ob-btn--primary" (click)="startChat()">
+                Poser ma première question
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+              <button type="button" class="ob-btn ob-btn--line" (click)="explore()">Découvrir mon espace</button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    @if (step() !== 'done') {
+      <footer class="ob-footer">
+        <button type="button" class="ob-btn ob-btn--text" (click)="back()" [disabled]="stepIndex() === 0 || saving()">
+          Retour
+        </button>
+        <div class="ob-footer-right">
+          <button type="button" class="ob-btn ob-btn--text" (click)="skipQuestion()" [disabled]="saving()">
+            Passer cette question
+          </button>
+          <button type="button" class="ob-btn ob-btn--primary" (click)="next()" [disabled]="!canContinue() || saving()">
+            {{ stepIndex() === steps.length - 1 ? (saving() ? 'Enregistrement…' : 'Terminer') : 'Continuer' }}
+          </button>
+        </div>
+      </footer>
+    }
+  </main>
+</div>
