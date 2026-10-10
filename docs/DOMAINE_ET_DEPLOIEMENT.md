@@ -71,14 +71,16 @@ dig +short justicia.mosagix.com        # doit afficher un nom vercel-dns…
      commande de build, le dossier de sortie, le routage Angular et les en-têtes
      de sécurité.
 2. **Variables d'environnement** (*Settings → Environment Variables*, environnement
-   *Production*). Elles sont facultatives, car ces valeurs sont déjà dans le code :
-   - `API_URL` = `https://justiciaapi.mosagix.com`
-   - `GOOGLE_CLIENT_ID` = l'identifiant OAuth Google (déjà présent par défaut)
+   *Production*). Elles sont **obligatoires** : aucune valeur n'est écrite en dur dans le
+   code, et le build échoue avec un message clair si l'une d'elles manque ou est invalide.
+   - `API_URL` = `https://justiciaapi.mosagix.com` (sans `/api`, ajouté automatiquement)
+   - `GOOGLE_CLIENT_ID` = l'identifiant du client OAuth « Web » (`…apps.googleusercontent.com`)
 3. **Domaine** : *Settings → Domains → Add* → `justicia.mosagix.com`.
    Vercel affiche la cible CNAME exacte : c'est elle qu'il faut mettre dans Hostinger
    (étape 2). Attendre que Vercel indique **Valid Configuration**. Le certificat HTTPS
    est automatique.
-4. **Redéployer** (*Deployments → … → Redeploy*) pour prendre en compte les variables.
+4. **Redéployer** (*Deployments → … → Redeploy*) après toute modification des variables :
+   elles sont intégrées au moment du build.
 
 ## 4. Déployer le backend : une commande
 

@@ -1,6 +1,7 @@
-// Généré par scripts/set-env.mjs — modifiable aussi à la main.
+// Généré au build par scripts/set-env.mjs depuis API_URL et GOOGLE_CLIENT_ID.
+// Ne pas y écrire de valeurs : les définir dans Vercel → Settings → Environment Variables.
 export const environment = {
   production: true,
-  apiUrl: 'https://justiciaapi.mosagix.com/api',
-  googleClientId: '187543661599-uddpi23b7mles0pbjo6fbtt9thgoqcrn.apps.googleusercontent.com',
+  apiUrl: "",
+  googleClientId: "",
 };
