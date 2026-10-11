@@ -16,12 +16,15 @@ export interface Testimonial {
 
 export interface PricingPlan {
   id: number;
+  plan_id?: string | null;
   name: string;
   price: string;
   currency: string;
   period: string;
   description: string;
   features: string[];
+  /** Questions par jour pour les abonnés du plan (-1 = illimité). */
+  daily_limit: number;
   is_popular: boolean;
   is_active: boolean;
   cta_text: string;

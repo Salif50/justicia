@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 
 
 # ── Testimonial ───────────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ class PricingPlanCreate(BaseModel):
     period: str = "mois"
     description: str
     features: list[str]
-    daily_limit: int = -1
+    daily_limit: int = Field(default=-1, ge=-1)   # -1 = illimité
     is_popular: bool = False
     is_active: bool = True
     cta_text: str = "Choisir ce plan"
@@ -93,7 +93,7 @@ class PricingPlanUpdate(BaseModel):
     period: Optional[str] = None
     description: Optional[str] = None
     features: Optional[list[str]] = None
-    daily_limit: Optional[int] = None
+    daily_limit: Optional[int] = Field(default=None, ge=-1)
     is_popular: Optional[bool] = None
     is_active: Optional[bool] = None
     cta_text: Optional[str] = None

@@ -61,7 +61,7 @@ async def resolve_quota(user: User, db, stats: UserStats | None = None) -> Quota
     else:
         free = (await db.execute(select(PricingPlan).where(PricingPlan.plan_id == "gratuit"))).scalar_one_or_none()
         plan_limit = free.daily_limit if free else FREE_DAILY_LIMIT
-        plan_name = "Gratuit"
+        plan_name = free.name if free else "Gratuit"
         plan_id = None
 
     override = getattr(user, "daily_limit_override", None)

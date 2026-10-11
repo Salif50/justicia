@@ -53,3 +53,34 @@
   min-height: 0;
   background: none;
 }
+
+/* Quota réellement appliqué */
+.quota-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .6rem .9rem;
+
+  input[type="number"] { width: 120px; }
+  input:disabled { opacity: .5; }
+}
+
+.quota-unit { font-size: .88rem; color: var(--text-secondary); }
+
+.field-hint {
+  margin: .45rem 0 0;
+  font-size: .8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+
+  code { font-size: .78rem; }
+}
+
+.plan-quota {
+  margin: .35rem 0 .5rem !important;
+  font-size: .82rem;
+  color: var(--text-secondary);
+
+  strong { color: var(--text-primary); }
+  span { color: var(--text-muted); }
+}

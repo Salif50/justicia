@@ -44,6 +44,22 @@
           <label>Description *</label>
           <input type="text" [(ngModel)]="form.description" placeholder="Pour les professionnels du droit" />
         </div>
+        <div class="form-group full-width quota-group">
+          <label for="quota">Quota journalier appliqué aux abonnés *</label>
+          <div class="quota-row">
+            <input id="quota" type="number" min="0" step="1" [(ngModel)]="quotaValue" [disabled]="quotaUnlimited" placeholder="ex. 50" />
+            <span class="quota-unit">questions par jour</span>
+            <label class="toggle-label">
+              <input type="checkbox" [(ngModel)]="quotaUnlimited" />
+              <span>Illimité</span>
+            </label>
+          </div>
+          <p class="field-hint">
+            C'est cette valeur qui limite réellement les abonnés. Une ligne « … questions par jour » dans
+            les fonctionnalités est mise à jour automatiquement. Le plan « {{ form.name || 'gratuit' }} »
+            d'identifiant <code>gratuit</code> s'applique aussi aux comptes sans abonnement.
+          </p>
+        </div>
         <div class="form-group full-width">
           <label>Fonctionnalités (une par ligne) *</label>
           <textarea [(ngModel)]="form.featuresText" rows="5" placeholder="Accès complet aux documents&#10;Recherche avancée&#10;Assistant IA illimité"></textarea>
@@ -91,6 +107,10 @@
           <div class="plan-header">
             <h3>{{ p.name }}</h3>
             <div class="plan-price">{{ formatPrice(p) }}</div>
+            <p class="plan-quota" [class.is-free]="p.plan_id === 'gratuit'">
+              Quota appliqué : <strong>{{ quotaLabel(p) }}</strong>
+              @if (p.plan_id === 'gratuit') { <span>· comptes sans abonnement</span> }
+            </p>
             <p>{{ p.description }}</p>
           </div>
           <ul class="plan-features">
