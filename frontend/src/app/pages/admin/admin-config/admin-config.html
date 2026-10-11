@@ -60,7 +60,7 @@
             </label>
             @for (email of forms['contact'].emails; track trackByIndex($index)) {
               <div class="array-item">
-                <input type="email" [(ngModel)]="forms['contact'].emails[$index]" placeholder="contact@justicia.gn" />
+                <input type="email" [(ngModel)]="forms['contact'].emails[$index]" placeholder="mosagix.contact@gmail.com" />
                 <button class="btn-remove" (click)="removeItem(forms['contact'].emails, $index)">✕</button>
               </div>
             }
@@ -71,7 +71,7 @@
             </label>
             @for (phone of forms['contact'].phones; track trackByIndex($index)) {
               <div class="array-item">
-                <input type="text" [(ngModel)]="forms['contact'].phones[$index]" placeholder="+224 624 123 456" />
+                <input type="text" [(ngModel)]="forms['contact'].phones[$index]" placeholder="+224 627 24 30 90" />
                 <button class="btn-remove" (click)="removeItem(forms['contact'].phones, $index)">✕</button>
               </div>
             }

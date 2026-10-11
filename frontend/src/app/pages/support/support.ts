@@ -52,11 +52,11 @@ export class Support implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getContactEmails(): string[] {
-    return this.siteConfig()?.contact?.emails ?? ['contact@justicia.gn', 'support@justicia.gn'];
+    return this.siteConfig()?.contact?.emails ?? ['mosagix.contact@gmail.com'];
   }
 
   getContactPhones(): string[] {
-    return this.siteConfig()?.contact?.phones ?? ['+224 624 123 456', '+224 655 789 012'];
+    return this.siteConfig()?.contact?.phones ?? ['+224 627 24 30 90'];
   }
 
   getContactHours(): string {

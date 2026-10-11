@@ -66,6 +66,14 @@ async def _run_migrations(conn) -> None:
         # Confirmation d'e-mail (oct. 2026) : les comptes créés avant l'activation
         # de la fonctionnalité sont considérés comme confirmés.
         "UPDATE users SET is_verified = TRUE WHERE is_verified = FALSE AND created_at < TIMESTAMPTZ '2026-10-11 00:00:00+00'",
+        # Coordonnées de contact (oct. 2026) : remplace les valeurs provisoires
+        # (domaine justicia.gn, numéros d'exemple) ; horaires et adresse conservés.
+        """UPDATE site_config SET value = jsonb_set(jsonb_set(value::jsonb,
+               '{emails}', '["mosagix.contact@gmail.com"]'), '{phones}', '["+224 627 24 30 90"]')::text
+           WHERE key = 'contact' AND (value LIKE '%justicia.gn%' OR value LIKE '%624 123 456%')""",
+        """UPDATE faq_items SET answer = replace(replace(answer,
+               'support@justicia.gn', 'mosagix.contact@gmail.com'), '+224 624 123 456', '+224 627 24 30 90')
+           WHERE answer LIKE '%support@justicia.gn%' OR answer LIKE '%+224 624 123 456%'""",
         # Factures : numéro séquentiel et suivi de l'envoi par e-mail
         "CREATE SEQUENCE IF NOT EXISTS invoice_number_seq START 1",
         "ALTER TABLE invoices ADD COLUMN IF NOT EXISTS number VARCHAR(32)",

@@ -179,7 +179,7 @@ async def _seed_faq(db: AsyncSession) -> None:
         ),
         FaqItem(category="support", order=6,
             question="Comment contacter le support technique ?",
-            answer="Vous pouvez nous contacter par email à support@justicia.gn, par téléphone au +224 624 123 456, ou utiliser le formulaire de contact disponible sur cette page.",
+            answer="Vous pouvez nous contacter par email à mosagix.contact@gmail.com, par téléphone au +224 627 24 30 90, ou utiliser le formulaire de contact disponible sur cette page.",
         ),
     ]
     db.add_all(items)
@@ -213,8 +213,8 @@ async def _seed_config(db: AsyncSession) -> None:
         "contact": {
             "label": "Informations de contact",
             "value": {
-                "emails":  ["contact@justicia.gn", "support@justicia.gn"],
-                "phones":  ["+224 624 123 456", "+224 655 789 012"],
+                "emails":  ["mosagix.contact@gmail.com"],
+                "phones":  ["+224 627 24 30 90"],
                 "hours":   "Lun-Ven, 9h-18h",
                 "address": "Conakry, République de Guinée",
             },
