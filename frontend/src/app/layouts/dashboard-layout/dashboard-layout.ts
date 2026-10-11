@@ -121,6 +121,8 @@ export class DashboardLayout implements OnInit, OnDestroy {
       .subscribe((event: any) => {
         this.currentRoute.set(this.sectionOf(event.urlAfterRedirects));
         this.closeSidebarOnMobile();
+        // Le contenu peut défiler dans son propre conteneur : nouvelle page = haut de page
+        if (typeof document !== 'undefined') document.querySelector('.dashboard-content')?.scrollTo(0, 0);
       });
 
     // Initialiser avec la route actuelle

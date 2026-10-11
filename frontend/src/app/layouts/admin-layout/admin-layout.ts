@@ -97,6 +97,7 @@ export class AdminLayout {
       .subscribe((e: any) => {
         this.currentRoute.set(section(e.urlAfterRedirects));
         if (typeof window !== 'undefined' && window.innerWidth <= 960) this.sidebarOpen.set(false);
+        if (typeof document !== 'undefined') document.querySelector('.adm-content')?.scrollTo(0, 0);
       });
     this.currentRoute.set(section(this.router.url));
   }
