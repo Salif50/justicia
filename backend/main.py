@@ -63,6 +63,14 @@ async def _run_migrations(conn) -> None:
             updated_at  TIMESTAMPTZ DEFAULT NOW(),
             updated_by  VARCHAR(150) DEFAULT 'system'
         )""",
+        # Confirmation d'e-mail (oct. 2026) : les comptes créés avant l'activation
+        # de la fonctionnalité sont considérés comme confirmés.
+        "UPDATE users SET is_verified = TRUE WHERE is_verified = FALSE AND created_at < TIMESTAMPTZ '2026-10-11 00:00:00+00'",
+        # Factures : numéro séquentiel et suivi de l'envoi par e-mail
+        "CREATE SEQUENCE IF NOT EXISTS invoice_number_seq START 1",
+        "ALTER TABLE invoices ADD COLUMN IF NOT EXISTS number VARCHAR(32)",
+        "ALTER TABLE invoices ADD COLUMN IF NOT EXISTS emailed_at TIMESTAMPTZ",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_invoices_number ON invoices (number) WHERE number IS NOT NULL",
     ]
     # case_notes est une nouvelle table — create_all s'en charge, pas besoin de ALTER
     for sql in migrations:

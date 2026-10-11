@@ -37,6 +37,19 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/signup/signup').then(m => m.Signup),
     canActivate: [guestGuard],
   },
+  // Liens reçus par e-mail : confirmation d'adresse, mot de passe oublié
+  {
+    path: 'verify-email',
+    loadComponent: () => import('./pages/account/verify-email').then(m => m.VerifyEmail),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./pages/account/forgot-password').then(m => m.ForgotPassword),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/account/reset-password').then(m => m.ResetPassword),
+  },
   // Le questionnaire d'accueil est désormais une fenêtre dans l'espace client
   { path: 'onboarding', redirectTo: 'dashboard', pathMatch: 'full' },
 

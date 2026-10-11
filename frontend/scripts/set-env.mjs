@@ -2,6 +2,7 @@
 // du build (Vercel → Settings → Environment Variables). Aucune valeur en dur dans le code.
 //   API_URL           ex. https://justiciaapi.mosagix.com   (« /api » est ajouté si absent)
 //   GOOGLE_CLIENT_ID  identifiant OAuth « Web » (…apps.googleusercontent.com)
+//   TURNSTILE_SITE_KEY  (facultatif) clé de site Cloudflare Turnstile — anti-robots
 // Sur Vercel (ou en CI), une variable manquante ou invalide fait échouer le build :
 // mieux vaut un déploiement refusé qu'un site en ligne qui n'atteint pas l'API.
 import { writeFileSync } from 'node:fs';
@@ -23,6 +24,8 @@ else if (!/^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(googleClientId)) 
   );
 }
 
+const turnstileSiteKey = (process.env.TURNSTILE_SITE_KEY ?? '').trim();
+
 if (errors.length) {
   const msg = errors.map((e) => `  - ${e}`).join('\n');
   if (strict) {
@@ -40,7 +43,8 @@ export const environment = {
   production: true,
   apiUrl: ${JSON.stringify(apiUrl)},
   googleClientId: ${JSON.stringify(googleClientId)},
+  turnstileSiteKey: ${JSON.stringify(turnstileSiteKey)},
 };
 `,
 );
-console.log(`environment.prod.ts → apiUrl=${apiUrl || '(vide)'} · googleClientId=${googleClientId ? 'défini' : '(vide)'}`);
+console.log(`environment.prod.ts → apiUrl=${apiUrl || '(vide)'} · googleClientId=${googleClientId ? 'défini' : '(vide)'} · turnstile=${turnstileSiteKey ? 'actif' : 'désactivé'}`);

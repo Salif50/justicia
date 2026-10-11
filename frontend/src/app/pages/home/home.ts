@@ -132,7 +132,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   partners     = signal<Partner[]>([]);
   siteConfig   = signal<SiteConfig | null>(null);
 
-  contactForm  = { name: '', email: '', subject: '', message: '' };
+  contactForm  = { name: '', email: '', subject: '', message: '', website: '' };
+  /** Durée de remplissage du formulaire (anti-robots). */
+  private readonly contactOpenedAt = Date.now();
   isSubmitting = signal(false);
 
   showToast    = signal(false);
@@ -304,10 +306,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
     this.isSubmitting.set(true);
 
-    this.http.post(`${environment.apiUrl}/contact`, this.contactForm).subscribe({
+    this.http.post(`${environment.apiUrl}/contact`, { ...this.contactForm, elapsed_ms: Date.now() - this.contactOpenedAt }).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.contactForm = { name: '', email: '', subject: '', message: '' };
+        this.contactForm = { name: '', email: '', subject: '', message: '', website: '' };
         this.triggerToast('Message envoyé. Nous vous répondons sous 24 heures ouvrées.', true);
       },
       error: (err) => {

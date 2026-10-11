@@ -15,6 +15,23 @@
     <!-- Formulaire — zone droite de l'image -->
     <main class="auth-form-panel">
       <div class="auth-card signup-card">
+        @if (pendingEmail()) {
+          <div class="verify-panel" role="status" aria-live="polite">
+            <span class="verify-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <h1>Vérifiez votre boîte mail</h1>
+            <p>Nous avons envoyé un lien de confirmation à <strong>{{ pendingEmail() }}</strong>. Cliquez dessus pour activer votre compte.</p>
+            <p class="verify-hint">Le lien est valable 48 heures. Rien reçu ? Regardez dans les courriers indésirables, ou demandez un nouveau lien.</p>
+            <button type="button" class="btn-secondary" (click)="resendLink()" [disabled]="resendCooldown() > 0 || resendState() === 'sending'">
+              @if (resendState() === 'sending') { Envoi… }
+              @else if (resendCooldown() > 0) { Renvoyer le lien ({{ resendCooldown() }} s) }
+              @else { Renvoyer le lien }
+            </button>
+            @if (resendState() === 'sent') { <p class="verify-sent">Nouveau lien envoyé.</p> }
+            <a routerLink="/login" [queryParams]="{ email: pendingEmail() }" class="btn-primary btn-submit verify-login">Aller à la connexion</a>
+          </div>
+        } @else {
         <div class="auth-header">
           <h1>Créer un compte</h1>
           <p>Rejoignez JusticIA et transformez votre pratique juridique</p>
@@ -34,7 +51,14 @@
 
         <div class="auth-divider"><span>ou</span></div>
 
-        <form (ngSubmit)="onSubmit()" class="auth-form">
+        <form (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+          <!-- Champ piège anti-robots : invisible et ignoré par les humains -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="website">Site web</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off"
+                   [value]="website()" (input)="website.set($any($event.target).value)" />
+          </div>
+
           @if (error()) {
             <div class="error-message">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -103,7 +127,13 @@
                 placeholder="••••••••"
                 required
                 autocomplete="new-password"
+                aria-describedby="pw-rules"
               />
+              <ul class="pw-rules" id="pw-rules" [class.is-active]="password().length > 0">
+                @for (r of rules(); track r.label) {
+                  <li [class.ok]="r.ok">{{ r.label }}</li>
+                }
+              </ul>
             </div>
 
             <div class="form-group">
@@ -143,6 +173,8 @@
             </label>
           </div>
 
+          <app-captcha (token)="captchaToken.set($event)" />
+
           <button type="submit" class="btn-primary btn-submit" [disabled]="isLoading()">
             @if (isLoading()) {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="spinner">
@@ -161,6 +193,7 @@
         <div class="auth-footer">
           <p>Déjà un compte ? <a routerLink="/login">Se connecter</a></p>
         </div>
+        }
       </div>
     </main>
 

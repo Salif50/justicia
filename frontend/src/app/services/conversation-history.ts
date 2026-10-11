@@ -57,6 +57,7 @@ export interface SubscriptionInfo {
 
 export interface InvoiceInfo {
   id: string;
+  number: string | null;
   date: string;
   plan_name: string;
   description: string | null;
@@ -137,6 +138,11 @@ export class ConversationHistoryService {
     return this.http.get<InvoiceInfo[]>(`${this.api}/subscription/invoices`).pipe(
       catchError(() => of([]))
     );
+  }
+
+  /** Facture PDF (fichier généré par le serveur, jamais stocké côté client). */
+  downloadInvoicePdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.api}/subscription/invoices/${encodeURIComponent(id)}/pdf`, { responseType: 'blob' });
   }
 
   getPaymentStatus(): Observable<MosagixStatus> {

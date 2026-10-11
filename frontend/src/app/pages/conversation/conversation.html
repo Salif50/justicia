@@ -12,19 +12,26 @@
 
     <div class="ch-right">
       @if (usage()) {
-        <div class="quota-indicator" [class.limit-reached]="isLimitReached()" [class.warning]="!isLimitReached() && getQuotaPercent() >= 80">
+        <div class="quota-indicator" role="status"
+             [class.limit-reached]="isLimitReached()" [class.warning]="!isLimitReached() && getQuotaPercent() >= 80"
+             [attr.aria-label]="quotaLabel()">
           @if (usage()!.is_unlimited) {
-            <span>Questions illimitées</span>
+            <span class="q-long">Questions illimitées</span>
+            <span class="q-short" aria-hidden="true">Illimité</span>
           } @else if (isLimitReached()) {
-            <span>Limite du jour atteinte</span>
+            <span class="q-long">Limite du jour atteinte</span>
+            <span class="q-short" aria-hidden="true">0/{{ usage()!.daily_limit }}</span>
             <a routerLink="/dashboard/subscription" class="quota-upgrade-link">Augmenter</a>
           } @else {
-            <span><strong>{{ usage()!.remaining }}</strong> / {{ usage()!.daily_limit }} questions restantes</span>
+            <span class="q-meter" aria-hidden="true"><span [style.width.%]="100 - getQuotaPercent()"></span></span>
+            <span class="q-long"><strong>{{ usage()!.remaining }}</strong> / {{ usage()!.daily_limit }} questions restantes</span>
+            <span class="q-short" aria-hidden="true"><strong>{{ usage()!.remaining }}</strong>/{{ usage()!.daily_limit }} questions</span>
           }
         </div>
       }
-      <a routerLink="/dashboard/history" class="history-btn">
-        Historique
+      <a routerLink="/dashboard/history" class="history-btn" aria-label="Historique des consultations">
+        <svg class="history-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/><polyline points="12 7 12 12 15 14"/></svg>
+        <span class="history-text">Historique</span>
         @if (historyCount() > 0) {
           <span class="history-badge">{{ historyCount() }}</span>
         }
@@ -151,7 +158,10 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
     </form>
-    <p class="input-footer">JusticIA est un outil d'information juridique et ne remplace pas un avocat. Vérifiez les points importants auprès d'un professionnel.</p>
+    <p class="input-footer">
+      <span class="if-long">JusticIA est un outil d'information juridique et ne remplace pas un avocat. Vérifiez les points importants auprès d'un professionnel.</span>
+      <span class="if-short">Information juridique : ne remplace pas l'avis d'un avocat.</span>
+    </p>
   </div>
 </div>
 

@@ -19,6 +19,7 @@ export class Subscription implements OnInit {
   currentSubscription = signal<SubscriptionInfo | null>(null);
   availablePlans      = signal<PlanInfo[]>([]);
   invoices            = signal<InvoiceInfo[]>([]);
+  downloadingId       = signal<string | null>(null);
   usage               = signal<UsageInfo | null>(null);
 
   isLoading      = signal(true);
@@ -41,6 +42,27 @@ export class Subscription implements OnInit {
     this.checkPaymentAvailability();
     this.svc.getUserProfile().subscribe(profile => {
       if (profile?.phone) this.payerNumber = this.normalizePhone(profile.phone);
+    });
+  }
+
+  downloadInvoice(invoice: InvoiceInfo) {
+    this.downloadingId.set(invoice.id);
+    this.svc.downloadInvoicePdf(invoice.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `facture-${invoice.number || invoice.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this.downloadingId.set(null);
+      },
+      error: () => {
+        this.downloadingId.set(null);
+        this.upgradeError.set('La facture n\'a pas pu être téléchargée. Réessayez.');
+      },
     });
   }
 

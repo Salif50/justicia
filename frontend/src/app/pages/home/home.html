@@ -375,6 +375,11 @@
       </div>
 
       <form class="lp-form" (ngSubmit)="submitContact()" novalidate>
+        <!-- Champ piège anti-robots : invisible et ignoré par les humains -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="lp-website">Site web</label>
+          <input type="text" id="lp-website" name="website" tabindex="-1" autocomplete="off" [(ngModel)]="contactForm.website" />
+        </div>
         <div class="lp-form-row">
           <label>
             <span>Nom complet <abbr title="obligatoire">*</abbr></span>

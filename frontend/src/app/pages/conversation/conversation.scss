@@ -8,8 +8,10 @@
   --chat-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: block;
   overflow: hidden;
-  /* Occupe toute la zone de contenu du shell (annule son padding) */
-  height: calc(100vh - 64px);
+  /* Occupe toute la zone de contenu du shell (annule son padding).
+     dvh = hauteur réellement visible sur mobile (barre d'adresse comprise). */
+  height: calc(100vh - var(--header-height, 64px));
+  height: calc(100dvh - var(--header-height, 64px));
   margin: -2rem -2.25rem -3rem;
   font-family: var(--chat-font);
 
@@ -629,13 +631,101 @@
   color: var(--on-primary);
 }
 
+/* Quota : jauge + libellé long (bureau) ou court (mobile) */
+.q-short, .if-short { display: none; }
+
+.q-meter {
+  position: relative;
+  width: 34px;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--divider);
+  overflow: hidden;
+
+  span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: currentColor;
+    transition: width .3s ease;
+  }
+}
+
+.history-icon { flex-shrink: 0; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .conversation-header { padding: .75rem 1rem; }
-  .ch-saved, .quota-indicator { display: none; }
-  .messages-container { padding: 1.5rem 1rem .5rem; }
-  .question-chips { grid-template-columns: 1fr; }
-  .input-container { padding: .5rem .75rem .9rem; }
+  .conversation-header { padding: .6rem .85rem; gap: .6rem; }
+  .ch-saved { display: none; }
+  .ch-titles h2 { font-size: .92rem; }
+  .ch-mark { width: 30px; height: 30px; border-radius: 8px; }
+  .ch-right { gap: .45rem; }
+
+  /* Quota toujours visible, en version courte */
+  .quota-indicator {
+    padding: .38rem .65rem;
+    font-size: .76rem;
+    gap: .4rem;
+    white-space: nowrap;
+  }
+  .q-long { display: none; }
+  .q-short { display: inline; }
+  .q-meter { width: 22px; }
+  .quota-upgrade-link { font-size: .76rem; }
+
+  /* Historique : icône seule (le libellé reste lu par les lecteurs d'écran) */
+  .history-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+  .history-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .history-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    line-height: 18px;
+    font-size: .66rem;
+    background: var(--primary-dark);
+    color: var(--on-primary);
+  }
+
+  .limit-banner { flex-wrap: wrap; gap: .35rem .75rem; padding: .6rem .85rem; font-size: .84rem; text-align: center; }
+
+  .messages-container { padding: 1.25rem .9rem .5rem; }
+  .empty-state { margin-top: 2vh; }
+  .empty-lead { margin-bottom: 1.5rem; font-size: .95rem; }
+  .question-chips { grid-template-columns: 1fr; gap: .55rem; }
+  .question-chip { padding: .8rem .9rem; }
+  .messages-list { gap: 1.5rem; }
   .user-message .message-content { max-width: 92%; }
-  .copy-btn { opacity: 1; }
+  .copy-btn { opacity: 1; min-height: 32px; }
+
+  .error-bar { width: calc(100% - 1.5rem); }
+
+  /* Saisie : au-dessus de la barre d'accueil de l'iPhone */
+  .input-container { padding: .45rem .65rem calc(.65rem + env(safe-area-inset-bottom)); }
+  .input-form { padding-left: .9rem; border-radius: 12px; }
+  .send-btn { width: 44px; height: 44px; }
+  .input-footer { margin-top: .4rem; font-size: .7rem; }
+  .if-long { display: none; }
+  .if-short { display: inline; }
+}
+
+@media (max-width: 360px) {
+  .ch-titles h2 { display: none; }
+}
+
+@media (pointer: coarse) {
+  .message-input { font-size: 16px; }
 }

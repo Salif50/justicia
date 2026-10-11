@@ -115,6 +115,15 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
     return Math.min(100, Math.round((u.questions_today / u.daily_limit) * 100));
   }
 
+  /** Libellé complet du quota pour les lecteurs d'écran (le visuel est abrégé sur mobile). */
+  quotaLabel(): string {
+    const u = this.usage();
+    if (!u) return '';
+    if (u.is_unlimited) return 'Questions illimitées';
+    if (this.isLimitReached()) return `Limite du jour atteinte (${u.daily_limit} questions)`;
+    return `${u.remaining} questions restantes sur ${u.daily_limit} aujourd'hui`;
+  }
+
   // ── Envoi d'un message ────────────────────────────────────────────────────
   sendMessage() {
     const content = this.inputMessage().trim();

@@ -98,6 +98,7 @@ class MosagixConfirmOut(BaseModel):
 
 class InvoiceOut(BaseModel):
     id: str
+    number: Optional[str] = None
     date: datetime
     plan_name: str
     description: Optional[str]

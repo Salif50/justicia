@@ -76,6 +76,16 @@ class InMemoryRateLimiter:
 auth_limiter    = InMemoryRateLimiter(max_requests=10,  window_seconds=60)   # 10 tentatives/min
 signup_limiter  = InMemoryRateLimiter(max_requests=5,   window_seconds=300)  # 5 inscriptions/5 min
 api_limiter     = InMemoryRateLimiter(max_requests=100, window_seconds=60)   # 100 req/min général
+# Formulaires publics sensibles aux robots
+sensitive_limiter = InMemoryRateLimiter(max_requests=5, window_seconds=600)  # 5 envois/10 min
+SENSITIVE_PATHS = {
+    "/api/auth/resend-verification": "Trop de demandes de lien. Réessayez dans quelques minutes.",
+    "/api/auth/verify-email":        "Trop de tentatives. Réessayez dans quelques minutes.",
+    "/api/auth/forgot-password":     "Trop de demandes. Réessayez dans quelques minutes.",
+    "/api/auth/reset-password":      "Trop de tentatives. Réessayez dans quelques minutes.",
+    "/api/contact":                  "Trop de messages envoyés. Réessayez dans quelques minutes.",
+    "/api/contact/send":             "Trop de messages envoyés. Réessayez dans quelques minutes.",
+}
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -104,6 +114,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                         "detail": "Trop d'inscriptions depuis cette adresse IP. Réessayez dans 5 minutes.",
                         "code": "RATE_LIMIT_SIGNUP",
                     },
+                )
+
+        elif path in SENSITIVE_PATHS and request.method == "POST":
+            if not sensitive_limiter.is_allowed(f"{path}:{client_ip}"):
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": SENSITIVE_PATHS[path], "code": "RATE_LIMIT_FORM"},
                 )
 
         # Rate limiting général sur toute l'API

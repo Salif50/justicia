@@ -794,3 +794,13 @@ select.app-input {
     user-select: none;
   }
 }
+
+/* Champ piège anti-robots des formulaires publics : hors écran, jamais vu ni
+   atteint au clavier par un humain (pas display:none, que certains robots repèrent). */
+.hp-field {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

@@ -39,6 +39,10 @@ class Invoice(Base):
     amount:          Mapped[float]     = mapped_column(Numeric(12, 2), nullable=False)
     status:          Mapped[str]       = mapped_column(String(20), default="paid")  # paid | pending
     created_at:      Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=now_utc)
+    # Numéro légal séquentiel (JST-AAAA-000001), attribué au paiement
+    number:          Mapped[str | None]      = mapped_column(String(32), nullable=True, unique=True)
+    # Date d'envoi de la facture par e-mail (évite les doublons)
+    emailed_at:      Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     subscription: Mapped["Subscription"] = relationship("Subscription", back_populates="invoices")
 

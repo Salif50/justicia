@@ -245,6 +245,7 @@
                 <div class="billing-details">
                   <h4>{{ invoice.plan_name }}</h4>
                   <p>{{ invoice.description }}</p>
+                  @if (invoice.number) { <p class="invoice-number">N° {{ invoice.number }}</p> }
                 </div>
               </div>
               <div class="billing-amount">
@@ -252,6 +253,14 @@
                 <span class="status" [class.paid]="invoice.status === 'paid'" [class.pending]="invoice.status === 'pending'">
                   {{ invoice.status === 'paid' ? 'Payé' : 'En attente' }}
                 </span>
+                @if (invoice.status === 'paid') {
+                  <button type="button" class="invoice-download" (click)="downloadInvoice(invoice)"
+                          [disabled]="downloadingId() === invoice.id"
+                          [attr.aria-label]="'Télécharger la facture ' + (invoice.number || '')">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    {{ downloadingId() === invoice.id ? 'Téléchargement…' : 'Facture PDF' }}
+                  </button>
+                }
               </div>
             </div>
           }

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from sqlalchemy import or_, select
 
 from app.config import settings
@@ -23,7 +23,7 @@ from app.schemas.subscription import (
     MosagixConfirmRequest,
     MosagixStatusOut,
 )
-from app.services import mosagix_pay
+from app.services import invoice as invoice_service, mosagix_pay
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
 webhook_router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
@@ -128,6 +128,7 @@ async def _fulfill(db, payment: MosagixPayment, remote: dict) -> bool:
     )
     db.add(invoice)
     await db.flush()
+    await invoice_service.assign_number(db, invoice)
 
     payment.status = "success"
     if not payment.payment_id and remote.get("paymentId"):
@@ -270,7 +271,8 @@ async def checkout(body: MosagixCheckoutRequest, current_user: CurrentUser, db: 
 
 
 @router.post("/confirm", response_model=MosagixConfirmOut)
-async def confirm_payment(body: MosagixConfirmRequest, current_user: CurrentUser, db: DB):
+async def confirm_payment(body: MosagixConfirmRequest, current_user: CurrentUser, db: DB,
+                          background: BackgroundTasks):
     payment = await _find_local_payment(db, body.payment_id, current_user.id)
     if not payment:
         raise HTTPException(status_code=404, detail="Paiement introuvable.")
@@ -297,11 +299,13 @@ async def confirm_payment(body: MosagixConfirmRequest, current_user: CurrentUser
         )
 
     await db.commit()
+    if payment.invoice_id:
+        background.add_task(invoice_service.send_invoice_email, payment.invoice_id)
     return MosagixConfirmOut(status="success", fulfilled=True, message="Paiement confirmé et abonnement activé.")
 
 
 @webhook_router.post("/mosagix")
-async def mosagix_webhook(request: Request, db: DB):
+async def mosagix_webhook(request: Request, db: DB, background: BackgroundTasks):
     raw_body = await request.body()
     signature = request.headers.get("X-Mosagix-Signature")
     if not mosagix_pay.verify_webhook(raw_body, signature):
@@ -348,6 +352,8 @@ async def mosagix_webhook(request: Request, db: DB):
                 payment.last_delivery_id,
             )
             raise HTTPException(status_code=409, detail="Confirmation Mosagix incohérente.")
+        if payment.invoice_id:
+            background.add_task(invoice_service.send_invoice_email, payment.invoice_id)
         return {"success": True, "fulfilled": True}
 
     terminal_statuses = {

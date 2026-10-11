@@ -297,22 +297,165 @@
   p { margin: 0; font-size: 0.92rem; color: var(--muted); }
 }
 
+/* ── Règles du mot de passe (vérifiées en direct) ── */
+.pw-rules {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.76rem;
+  color: var(--muted);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--line);
+      transition: background 0.2s;
+    }
+
+    &.ok { color: #2F6B3A; &::before { background: #2F7D3E; } }
+  }
+}
+
+/* ── Messages de succès / information ── */
+.notice-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: #EEF6EF;
+  border-left: 2px solid #2F7D3E;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #1F4F28;
+}
+
+.error-actions {
+  margin: -2px 0 12px;
+
+  button {
+    background: none;
+    border: none;
+    padding: 6px 0;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--accent-txt);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+
+    &:disabled { color: var(--muted); text-decoration: none; cursor: default; }
+  }
+}
+
+.btn-secondary {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 20px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:hover:not(:disabled) { border-color: var(--ink); }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+/* ── Écran « vérifiez votre boîte mail » / confirmation ── */
+.verify-panel {
+  text-align: center;
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 2rem;
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 18px 0 12px;
+  }
+
+  p {
+    margin: 0 0 14px;
+    font-size: 0.97rem;
+    line-height: 1.6;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .verify-hint { font-size: 0.86rem; color: var(--muted); margin-bottom: 22px; }
+  .verify-sent { margin: 10px 0 0; font-size: 0.86rem; color: #2F6B3A; }
+  .verify-login { margin-top: 14px; text-decoration: none; }
+}
+
+.verify-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--accent-txt);
+
+  svg { width: 28px; height: 28px; }
+
+  &.is-ok { color: #2F7D3E; }
+  &.is-error { color: #B4232F; }
+}
+
+.auth-back {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-txt);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+
 /* ── Responsive ── */
 @media (max-width: 960px) {
-  .auth-layout { grid-template-columns: 1fr; }
+  /* Tablette et mobile : pas de photo, le formulaire occupe l'écran */
+  .auth-layout { grid-template-columns: 1fr; min-height: 0; }
+  .auth-visual { display: none; }
+  .auth-page { min-height: calc(100dvh - 72px); }
 
-  .auth-visual {
-    min-height: 260px;
+  .auth-form-panel {
+    align-items: flex-start;
+    padding: 36px 24px calc(48px + env(safe-area-inset-bottom));
   }
 
-  .auth-caption {
-    left: 24px;
-    right: 24px;
-    bottom: 24px;
-
-    blockquote { font-size: 1.5rem; }
-  }
-
-  .auth-form-panel { padding: 44px 20px 64px; }
+  .auth-header { margin-bottom: 26px; }
   .auth-header h1 { font-size: 2rem; }
+}
+
+@media (max-width: 480px) {
+  .auth-form-panel { padding: 28px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .auth-header h1 { font-size: 1.85rem; }
+  .verify-panel h1 { font-size: 1.7rem; }
+
+  /* Options sur deux lignes si l'écran est étroit */
+  .form-options { flex-wrap: wrap; gap: 10px; }
+}
+
+/* iOS zoome sur les champs < 16 px : on reste à 16 px sur les écrans tactiles */
+@media (pointer: coarse) {
+  .form-group input { font-size: 16px; }
 }

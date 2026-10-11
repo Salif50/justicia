@@ -58,6 +58,30 @@ interface TokenResponse {
   user: UserInfo;
 }
 
+/** Inscription enregistrée, adresse e-mail à confirmer avant la connexion. */
+export interface SignupPending {
+  verification_required: true;
+  email: string;
+  message: string;
+}
+
+/** Signaux anti-robots joints aux formulaires publics. */
+export interface AntiBotFields {
+  website?: string;        // champ piège : doit rester vide
+  elapsed_ms?: number;     // durée de remplissage
+  captcha_token?: string;  // Cloudflare Turnstile (si activé)
+}
+
+export interface MessageResponse {
+  success: boolean;
+  message: string;
+  email?: string;
+}
+
+export function isSignupPending(resp: TokenResponse | SignupPending): resp is SignupPending {
+  return (resp as SignupPending).verification_required === true;
+}
+
 @Injectable({ providedIn: 'root' })
 export class Auth {
   private _user    = signal<UserInfo | null>(null);
@@ -104,10 +128,27 @@ export class Auth {
   }
 
   // ── Inscription ──────────────────────────────────────────────────────────
-  signUp(name: string, email: string, password: string): Observable<TokenResponse> {
+  signUp(name: string, email: string, password: string, antiBot: AntiBotFields = {}): Observable<TokenResponse | SignupPending> {
     return this.http
-      .post<TokenResponse>(`${environment.apiUrl}/auth/signup`, { name, email, password })
-      .pipe(tap(resp => this.storeSession(resp)));
+      .post<TokenResponse | SignupPending>(`${environment.apiUrl}/auth/signup`, { name, email, password, ...antiBot })
+      .pipe(tap(resp => { if (!isSignupPending(resp)) this.storeSession(resp); }));
+  }
+
+  // ── Confirmation d'adresse et mot de passe oublié ────────────────────────
+  verifyEmail(token: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${environment.apiUrl}/auth/verify-email`, { token });
+  }
+
+  resendVerification(email: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${environment.apiUrl}/auth/resend-verification`, { email });
+  }
+
+  forgotPassword(email: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${environment.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, password: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${environment.apiUrl}/auth/reset-password`, { token, password });
   }
 
   // ── Connexion / inscription Google OAuth ─────────────────────────────────

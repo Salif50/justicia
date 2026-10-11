@@ -88,10 +88,31 @@ class Settings(BaseSettings):
     SMTP_USER:        str = ""
     SMTP_PASSWORD:    str = ""
     EMAILS_FROM_NAME: str = "JusticIA"
+    # Adresse d'expédition si différente du compte SMTP (ex. no-reply@mosagix.com)
+    EMAILS_FROM:      str = ""
     # Désactivé par défaut : tant que False, les e-mails sont seulement journalisés.
     EMAILS_ENABLED:   bool = False
+    # Confirmation de l'adresse e-mail à l'inscription (formulaire classique).
+    # Ne s'applique que si les e-mails sont activés : sinon, impossible de confirmer.
+    EMAIL_VERIFICATION: bool = True
+
+    # ── Anti-robots ───────────────────────────────────────────────────────────
+    # Cloudflare Turnstile (facultatif) : actif dès que la clé secrète est définie.
+    # La clé de site correspondante va dans Vercel (TURNSTILE_SITE_KEY).
+    TURNSTILE_SECRET_KEY: str = ""
+
+    # ── Factures ──────────────────────────────────────────────────────────────
+    # Mentions du vendeur imprimées sur les factures (laisser vide = non affiché).
+    INVOICE_SELLER_NAME:    str = "JusticIA"
+    INVOICE_SELLER_ADDRESS: str = ""
+    INVOICE_SELLER_TAX_ID:  str = ""   # NIF / RCCM
+    INVOICE_SELLER_EMAIL:   str = ""
 
     model_config = {"env_file": Path(__file__).parent.parent / ".env", "extra": "ignore"}
+
+    @property
+    def email_verification_required(self) -> bool:
+        return self.EMAIL_VERIFICATION and self.EMAILS_ENABLED and bool(self.SMTP_USER)
 
     @property
     def is_production(self) -> bool:

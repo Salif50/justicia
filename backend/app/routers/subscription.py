@@ -144,6 +144,7 @@ async def get_invoices(current_user: CurrentUser, db: DB):
     return [
         InvoiceOut(
             id=str(i.id),
+            number=i.number,
             date=i.created_at,
             plan_name=i.plan_name,
             description=i.description,
@@ -152,3 +153,33 @@ async def get_invoices(current_user: CurrentUser, db: DB):
         )
         for i in result.scalars().all()
     ]
+
+
+# ── GET /invoices/{id}/pdf ────────────────────────────────────────────────────
+@router.get("/invoices/{invoice_id}/pdf")
+async def download_invoice(invoice_id: str, current_user: CurrentUser, db: DB):
+    """Facture PDF (uniquement celles de l'utilisateur connecté)."""
+    import uuid as _uuid
+
+    from fastapi import HTTPException
+    from fastapi.responses import Response
+
+    from app.services import invoice as invoice_service
+
+    try:
+        iid = _uuid.UUID(invoice_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Facture introuvable.")
+    loaded = await invoice_service.load_invoice(db, iid)
+    if not loaded or loaded[0].user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Facture introuvable.")
+    invoice, user, payment = loaded
+    if not invoice.number:
+        await invoice_service.assign_number(db, invoice)
+        await db.commit()
+    pdf = invoice_service.build_pdf(invoice, user, payment)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="facture-{invoice.number}.pdf"'},
+    )

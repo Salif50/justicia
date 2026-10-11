@@ -174,6 +174,68 @@ Vérifier : un abonnement payant ouvre la page Mosagix, et après paiement la pa
 « succès » active le plan. Le webhook confirme aussi le paiement si l'utilisateur ferme
 la page avant le retour.
 
+### E-mails : confirmation d'inscription, mot de passe oublié, factures
+
+Tant que `EMAILS_ENABLED=false`, rien n'est envoyé. Dans ce cas, l'inscription par
+formulaire ne demande **pas** de confirmation : sans e-mail, personne ne pourrait
+confirmer son adresse. Dès que les e-mails sont activés :
+
+- toute **inscription par formulaire** doit être confirmée par un lien (valable 48 h)
+  avant la première connexion. Les comptes Google sont déjà vérifiés par Google ;
+- **Mot de passe oublié** envoie un lien à usage unique, valable 1 h ;
+- chaque **paiement** envoie la facture PDF (numéro `JST-AAAA-000001`) par e-mail. Elle
+  reste aussi téléchargeable dans *Abonnement*.
+
+Les comptes créés avant le 11 octobre 2026 sont considérés comme confirmés. Un compte
+créé ensuite sans confirmation pourra demander un nouveau lien depuis la page de
+connexion.
+
+**1. Créer la boîte d'envoi** : hPanel → **E-mails** → `mosagix.com` → créer par
+exemple `no-reply@mosagix.com`. Comme le DNS du domaine est chez Hostinger, les
+enregistrements MX, SPF et DKIM sont ajoutés automatiquement. Vérifiez qu'ils
+apparaissent dans *DNS* : sans eux, les messages arrivent en indésirables.
+
+**2. Ajouter ces lignes** dans `/opt/justicia/deploy/.env` (sur le VPS, `nano .env`) :
+
+```
+EMAILS_ENABLED=true
+SMTP_HOST=smtp.hostinger.com
+SMTP_PORT=465
+SMTP_USER=no-reply@mosagix.com
+SMTP_PASSWORD=mot-de-passe-de-la-boite
+EMAILS_FROM_NAME=JusticIA
+```
+
+**3. Facultatif : mentions légales des factures** (vide = non imprimé, rien n'est inventé) :
+
+```
+INVOICE_SELLER_NAME=Nom légal de la société
+INVOICE_SELLER_ADDRESS=Adresse, Conakry
+INVOICE_SELLER_TAX_ID=NIF / RCCM
+INVOICE_SELLER_EMAIL=contact@mosagix.com
+```
+
+**4. Appliquer** : `./up.sh`. Testez ensuite en créant un compte avec une adresse
+personnelle.
+
+### Anti-robots : Cloudflare Turnstile (facultatif)
+
+Les formulaires d'inscription et de contact sont déjà protégés sans rien configurer :
+- un champ piège invisible ;
+- un délai minimal de remplissage ;
+- des limites par adresse IP et par compte (8 mots de passe erronés en 15 min bloquent
+  le compte pour 15 min).
+
+Pour ajouter la case anti-robot de Cloudflare, gratuite et sans puzzle d'images :
+
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Turnstile** → *Add widget*, domaine
+   `justicia.mosagix.com`, mode *Managed*.
+2. Dans **Vercel**, ajoutez `TURNSTILE_SITE_KEY` = la clé de site, puis redéployez.
+3. Sur le **VPS**, ajoutez `TURNSTILE_SECRET_KEY=` la clé secrète dans `.env`, puis `./up.sh`.
+
+Configurez les deux clés en même temps : avec la clé secrète seule, le serveur exige une
+vérification que le site n'affiche pas.
+
 ## 6. Vérifications
 
 ```bash
@@ -206,6 +268,13 @@ Dans le navigateur, sur https://justicia.mosagix.com :
 - Taille des envois limitée (60 Mo).
 - Limitation du nombre de requêtes par visiteur, sur sa vraie IP.
 - En-têtes anti-clickjacking, anti-sniffing et CSP.
+
+**Comptes**
+- Inscription par formulaire confirmée par e-mail (si les e-mails sont activés).
+- Jetons de session typés : un jeton de rafraîchissement ne peut pas servir d'accès, et
+  un lien reçu par e-mail ne peut jamais servir de session.
+- Formulaires publics protégés contre les robots (champ piège, délai, limites, Turnstile
+  en option). Les messages ne révèlent jamais si une adresse a déjà un compte.
 
 **Garde-fous de configuration** — l'API **refuse de démarrer** en production si :
 - `SECRET_KEY` est faible ou laissée par défaut ;

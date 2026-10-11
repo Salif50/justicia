@@ -15,7 +15,12 @@ export class Login {
   email     = signal('');
   password  = signal('');
   error     = signal('');
+  notice    = signal('');
   isLoading = signal(false);
+
+  /** Compte non confirmé : propose de renvoyer le lien. */
+  unverifiedEmail = signal('');
+  resendState     = signal<'idle' | 'sending' | 'sent'>('idle');
 
   private returnUrl = '/dashboard';
 
@@ -25,13 +30,20 @@ export class Login {
     private route: ActivatedRoute,
   ) {
     // Récupérer l'URL de retour si présente
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    const params = this.route.snapshot.queryParams;
+    this.returnUrl = params['returnUrl'] || '/dashboard';
+    if (params['email']) this.email.set(String(params['email']));
+    if (params['verified']) this.notice.set('Adresse e-mail confirmée. Vous pouvez maintenant vous connecter.');
+    if (params['reset']) this.notice.set('Mot de passe modifié. Connectez-vous avec votre nouveau mot de passe.');
     const notice = this.authService.consumeLoginNotice();
     if (notice) this.error.set(notice);
   }
 
   onSubmit() {
     this.error.set('');
+    this.notice.set('');
+    this.unverifiedEmail.set('');
+    this.resendState.set('idle');
     const email    = this.email().trim();
     const password = this.password();
 
@@ -52,9 +64,26 @@ export class Login {
         }
       },
       error: (err) => {
-        const msg = err.error?.detail || 'Email ou mot de passe incorrect.';
-        this.error.set(msg);
+        const detail = err.error?.detail;
+        if (detail?.code === 'EMAIL_NOT_VERIFIED') {
+          this.unverifiedEmail.set(detail.email || email);
+          this.error.set(detail.message);
+        } else {
+          this.error.set(typeof detail === 'string' ? detail : 'Email ou mot de passe incorrect.');
+        }
         this.isLoading.set(false);
+      },
+    });
+  }
+
+  resendVerification() {
+    if (!this.unverifiedEmail() || this.resendState() !== 'idle') return;
+    this.resendState.set('sending');
+    this.authService.resendVerification(this.unverifiedEmail()).subscribe({
+      next: () => this.resendState.set('sent'),
+      error: (err) => {
+        this.resendState.set('idle');
+        if (typeof err.error?.detail === 'string') this.error.set(err.error.detail);
       },
     });
   }

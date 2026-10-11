@@ -432,3 +432,32 @@
 .section-heading { text-align: left; align-items: flex-start; margin-left: 0; }
 .section-heading h2 { font-family: var(--serif); font-weight: 400; letter-spacing: 0; }
 .mosagix-status { margin-left: 0; }
+
+/* Facture : numéro et téléchargement */
+.invoice-number {
+  margin-top: .2rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: .76rem;
+  color: var(--text-muted);
+}
+
+.invoice-download {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 36px;
+  margin-top: .45rem;
+  padding: .4rem .8rem;
+  background: transparent;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color .18s;
+
+  &:hover:not(:disabled) { border-color: var(--border-glow); }
+  &:disabled { opacity: .6; cursor: progress; }
+}

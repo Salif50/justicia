@@ -1,17 +1,46 @@
 import uuid
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(max_length=128)
 
 
 class SignupRequest(BaseModel):
-    name: str
+    name: str = Field(min_length=2, max_length=100)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=128)
+    # Anti-robots : champ piège (doit rester vide), durée de remplissage, Turnstile
+    website: str | None = Field(default=None, max_length=200)
+    elapsed_ms: int | None = None
+    captcha_token: str | None = Field(default=None, max_length=4096)
+
+    @field_validator("name")
+    @classmethod
+    def _clean_name(cls, v: str) -> str:
+        v = " ".join(v.split())
+        if len(v) < 2:
+            raise ValueError("Le nom doit contenir au moins 2 caractères.")
+        if any(c in v for c in "<>{}/\\") or "http" in v.lower():
+            raise ValueError("Le nom contient des caractères non autorisés.")
+        return v
+
+
+class SignupPendingResponse(BaseModel):
+    """Inscription enregistrée : l'adresse doit être confirmée avant la connexion."""
+    verification_required: bool = True
+    email: str
+    message: str
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(max_length=2048)
 
 
 class GoogleAuthRequest(BaseModel):
@@ -47,3 +76,8 @@ class UserOut(BaseModel):
 
 
 TokenResponse.model_rebuild()
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(max_length=2048)
+    password: str = Field(min_length=8, max_length=128)
