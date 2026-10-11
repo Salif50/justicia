@@ -35,6 +35,8 @@ class Message(Base):
     content:         Mapped[str]        = mapped_column(Text, nullable=False)
     sender:          Mapped[str]        = mapped_column(String(10), nullable=False)  # user | bot
     sources:         Mapped[list | None]= mapped_column(JSON, nullable=True)         # Articles RAG sources
+    # Nature de l'échange : legal | greeting | thanks | farewell | about | offtopic
+    kind:            Mapped[str | None] = mapped_column(String(20), nullable=True)
     created_at:      Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=now_utc)
 
     conversation: Mapped["Conversation"] = relationship("Conversation", back_populates="messages")

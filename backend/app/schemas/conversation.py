@@ -71,3 +71,7 @@ class SendMessageResponse(BaseModel):
     conversation_id: Optional[str] = None
     created_at: datetime
     ephemeral: bool = False
+    # legal | greeting | thanks | farewell | about | offtopic
+    kind: str = "legal"
+    # La question a-t-elle été décomptée du quota journalier ?
+    counted: bool = True

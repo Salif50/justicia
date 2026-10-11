@@ -15,9 +15,14 @@ from app.models.subscription import Subscription
 from app.models.user import UserPreferences, UserStats
 from app.schemas.conversation import (ConversationOut, ConversationSummary,
                                        SendMessageRequest, SendMessageResponse)
+from app.services import assistant
+from app.services.assistant import Kind
 from app.services.quota import resolve_quota
 from app.services.rag_service import (AGENT_DOMAIN_MAP, AGENT_NAMES,
-                                       AGENT_DEFAULT_PROMPTS, ask_rag, format_sources)
+                                       AGENT_DEFAULT_PROMPTS, ask_rag, format_sources,
+                                       is_no_source_answer)
+
+DEFAULT_TITLE = "Nouvelle consultation"
 
 router = APIRouter(prefix="/conversation", tags=["Conversation"])
 
@@ -73,9 +78,14 @@ async def _check_daily_limit(current_user, db) -> None:
 async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: DB):
     """Envoie un message, vérifie le quota, appelle le RAG.
     Si mode éphémère actif : aucune sauvegarde en BDD.
-    """
 
-    # ── Vérification quota journalier ────────────────────────────────────────
+    Les messages non juridiques (salutation, remerciement, question sur JusticIA,
+    hors sujet) reçoivent une réponse d'accueil. Tout message compte dans le quota
+    (y compris les salutations), sauf en cas d'erreur technique.
+    """
+    kind = assistant.classify(body.message) or Kind.LEGAL
+
+    # ── Vérification quota journalier (tous les messages) ────────────────────
     await _check_daily_limit(current_user, db)
 
     # ── Vérifier le mode éphémère ────────────────────────────────────────────
@@ -131,6 +141,8 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
 
     # ── Charger l'historique récent de la conversation ───────────────────────
     conversation_history: list[dict] = []
+    history_kinds: list[str | None] = []      # nature des réponses du bot (pour la série d'accueil)
+    message_kinds: list[str | None] = []      # nature de chaque message de l'historique
     if body.conversation_id:
         try:
             conv_uuid = uuid.UUID(body.conversation_id)
@@ -150,34 +162,64 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
                 {"role": "user" if m.sender == "user" else "assistant", "content": m.content}
                 for m in recent_messages
             ]
+            history_kinds = [m.kind for m in recent_messages if m.sender == "bot"]
+            message_kinds = [m.kind for m in recent_messages]
         except (ValueError, Exception):
             conversation_history = []
 
-    # ── Appel RAG (avec historique de conversation) ───────────────────────────
-    try:
-        response_text, articles = await ask_rag(
-            body.message,
-            agent_id      = body.agent_id,
-            custom_domains= custom_domains,
-            history       = conversation_history,
-            system_prompt = agent_system_prompt,
-            request_id    = request_id,
+    streak = assistant.conversational_streak(history_kinds)
+    technical_error = False
+
+    if kind in Kind.CONVERSATIONAL:
+        # ── Accueil : salutation, remerciement, question sur JusticIA ───────────
+        response_text = await assistant.reply(
+            kind, body.message, streak, db, current_user.name, conversation_history,
         )
-        sources = format_sources(articles)
-    except Exception as e:
-        logger.error(
-            "rag_request_error request_id=%s error=%s",
-            request_id, type(e).__name__, exc_info=True,
-        )
-        response_text = "Une erreur est survenue lors de l'analyse. Veuillez réessayer."
-        sources       = []
+        sources = []
+    else:
+        # ── Appel RAG (avec historique : les échanges d'accueil n'y sont pas utiles) ─
+        rag_history = [h for h, k in zip(conversation_history, message_kinds or [None] * len(conversation_history))
+                       if k not in Kind.CONVERSATIONAL]
+        try:
+            response_text, articles = await ask_rag(
+                body.message,
+                agent_id      = body.agent_id,
+                custom_domains= custom_domains,
+                history       = rag_history,
+                system_prompt = agent_system_prompt,
+                request_id    = request_id,
+            )
+            sources = format_sources(articles)
+        except Exception as e:
+            logger.error(
+                "rag_request_error request_id=%s error=%s",
+                request_id, type(e).__name__, exc_info=True,
+            )
+            response_text = "Une erreur est survenue lors de l'analyse. Veuillez réessayer."
+            sources       = []
+            technical_error = True
+
+        if is_no_source_answer(response_text):
+            # Aucun texte trouvé : question de droit sans réponse, ou demande hors sujet ?
+            unanswered_kind = await assistant.classify_unanswered(body.message)
+            if unanswered_kind != Kind.LEGAL:
+                kind = unanswered_kind
+                response_text = await assistant.reply(
+                    kind, body.message, streak, db, current_user.name, conversation_history,
+                )
+                sources = []
+
+    # Tout message consomme le quota (anti-gaspillage), sauf une erreur technique de notre côté
+    counted = not technical_error
+    logger.info("chat_turn request_id=%s kind=%s streak=%s counted=%s", request_id, kind, streak, counted)
 
     if is_ephemeral:
         # ── Mode éphémère : incrémentation quota UNIQUEMENT, aucune sauvegarde ─
-        stats = await _get_or_create_stats(current_user.id, db)
-        stats.questions_count       += 1
-        stats.daily_questions_count += 1
-        await db.commit()
+        if counted:
+            stats = await _get_or_create_stats(current_user.id, db)
+            stats.questions_count       += 1
+            stats.daily_questions_count += 1
+            await db.commit()
 
         logger.info("rag_request_end request_id=%s sources=%s ephemeral=true", request_id, len(sources))
         return SendMessageResponse(
@@ -187,6 +229,8 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
             conversation_id=None,
             created_at=datetime.now(timezone.utc),
             ephemeral=True,
+            kind=kind,
+            counted=counted,
         )
 
     # ── Mode normal : sauvegarde en BDD ──────────────────────────────────────
@@ -202,9 +246,11 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
         )
         conv = result.scalar_one_or_none()
 
+    question_title = body.message[:60] + ("..." if len(body.message) > 60 else "")
     is_new_conv = False
     if not conv:
-        title = body.message[:60] + ("..." if len(body.message) > 60 else "")
+        # Une conversation ouverte par « bonjour » prend le titre de la 1re vraie question
+        title = question_title if kind == Kind.LEGAL else DEFAULT_TITLE
         conv  = Conversation(
             user_id=current_user.id,
             agent_id=body.agent_id,
@@ -216,8 +262,10 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
         is_new_conv = True
 
     # Sauvegarder les messages
-    user_msg = Message(conversation_id=conv.id, content=body.message, sender="user")
-    bot_msg  = Message(conversation_id=conv.id, content=response_text, sender="bot", sources=sources)
+    if kind == Kind.LEGAL and conv.title == DEFAULT_TITLE:
+        conv.title = question_title
+    user_msg = Message(conversation_id=conv.id, content=body.message, sender="user", kind=kind)
+    bot_msg  = Message(conversation_id=conv.id, content=response_text, sender="bot", sources=sources, kind=kind)
     db.add(user_msg)
     db.add(bot_msg)
 
@@ -225,8 +273,9 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
 
     # Mettre à jour les stats
     stats = await _get_or_create_stats(current_user.id, db)
-    stats.questions_count       += 1
-    stats.daily_questions_count += 1
+    if counted:
+        stats.questions_count       += 1
+        stats.daily_questions_count += 1
     if is_new_conv:
         stats.conversations_count += 1
 
@@ -241,6 +290,8 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
         conversation_id=str(conv.id),
         created_at=bot_msg.created_at,
         ephemeral=False,
+        kind=kind,
+        counted=counted,
     )
 
 

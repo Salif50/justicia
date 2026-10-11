@@ -147,6 +147,23 @@ Tu es EXCLUSIVEMENT spécialisé en droit foncier et immobilier guinéen : propr
 Sources prioritaires : Code foncier et domanial guinéen, lois sur l'urbanisme, réglementations sur les titres fonciers.""",
 }
 
+# Titre du refus « aucun texte applicable » du pipeline (model/04_pipeline/rag.py :
+# NO_SOURCE_TITLE) — les deux valeurs doivent rester identiques.
+NO_SOURCE_TITLE = "Aucun texte applicable trouvé"
+
+
+# Idem pour la réponse retenue par le contrôle des citations (UNVERIFIED_TITLE)
+UNVERIFIED_TITLE = "Réponse non confirmée par les textes"
+
+
+def is_no_source_answer(text: str) -> bool:
+    return text.lstrip().startswith(f"**{NO_SOURCE_TITLE}**")
+
+
+def is_unverified_answer(text: str) -> bool:
+    return text.lstrip().startswith(f"**{UNVERIFIED_TITLE}**")
+
+
 # Thread pool dédié aux appels RAG (bloquants)
 _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="rag")
 

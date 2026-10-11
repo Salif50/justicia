@@ -66,6 +66,8 @@ async def _run_migrations(conn) -> None:
         # Confirmation d'e-mail (oct. 2026) : les comptes créés avant l'activation
         # de la fonctionnalité sont considérés comme confirmés.
         "UPDATE users SET is_verified = TRUE WHERE is_verified = FALSE AND created_at < TIMESTAMPTZ '2026-10-11 00:00:00+00'",
+        # Accueil conversationnel : nature de chaque message (salutation, question de droit…)
+        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS kind VARCHAR(20)",
         # Coordonnées de contact (oct. 2026) : remplace les valeurs provisoires
         # (domaine justicia.gn, numéros d'exemple) ; horaires et adresse conservés.
         """UPDATE site_config SET value = jsonb_set(jsonb_set(value::jsonb,

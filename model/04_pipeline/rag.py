@@ -424,6 +424,11 @@ Dans un domaine juridique, une réponse fausse est plus dangereuse que l'absence
 
 # Footer ajouté programmatiquement après la réponse LLM (une seule fois)
 RESPONSE_FOOTER = "\n\n---\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*"
+# Titre du refus « aucun texte applicable » : repéré par le backend pour distinguer
+# une question de droit sans réponse d'une demande hors sujet.
+NO_SOURCE_TITLE = "Aucun texte applicable trouvé"
+# Titre de la réponse retenue par le contrôle des citations (référence non vérifiable)
+UNVERIFIED_TITLE = "Réponse non confirmée par les textes"
 _LOGGER = logging.getLogger("justicia.rag")
 _SOURCE_MARKER_RE = re.compile(r"(?:【|\[)S(\d+)(?:】|\])", re.IGNORECASE)
 
@@ -578,14 +583,15 @@ def _verification_refusal(
     documents = sorted({a.get("nom_doc", "") for a in articles if a.get("nom_doc")})
     consulted = ", ".join(documents[:4]) or "aucun document identifié"
     return (
-        "**JusticIA-GN — Réponse suspendue pour vérification**\n\n"
-        f"La réponse générée pour « {question[:160]} » n’a pas passé le contrôle de "
-        "traçabilité des sources. Elle n’est donc pas affichée afin d’éviter une "
-        "référence juridique non vérifiée.\n\n"
-        f"**Contrôle :** {reason}\n\n"
-        f"**Documents retrouvés :** {consulted}\n\n"
-        "Reformulez la question avec le nom du texte et le numéro d’article si vous "
-        "les connaissez, ou faites vérifier le point par un juriste."
+        f"**{UNVERIFIED_TITLE}**\n\n"
+        "J'ai retrouvé des textes proches de votre question, mais je n'ai pas pu rattacher chaque point "
+        "de ma réponse à un article précis. Par prudence, je ne l'affiche pas : en droit, une référence "
+        "inexacte peut induire en erreur.\n\n"
+        f"**Textes consultés :** {consulted}\n\n"
+        "**Pour que je puisse vous répondre :**\n"
+        "- Précisez votre situation et le point exact sur lequel vous vous interrogez.\n"
+        "- Si vous connaissez le texte ou le numéro d'article concerné, indiquez-le.\n"
+        "- Pour une décision importante, faites vérifier ce point par un avocat inscrit au Barreau de Guinée."
     )
 
 
@@ -1073,26 +1079,18 @@ class JusticIAPipeline:
             topics_trouves = list({a.get("domaine", "") for a in articles if a.get("domaine")})[:3]
             topics_str = ", ".join(topics_trouves) if topics_trouves else "aucun"
 
+            # Ton professionnel : on explique, on oriente, on n'invente rien.
             refus = (
-                "**JusticIA-GN — Réponse impossible avec la fiabilité requise**\n\n"
-                f"Pour votre question sur : *{question[:120]}{'...' if len(question) > 120 else ''}*\n\n"
-                f"Les textes de loi guinéens disponibles dans ma base ne permettent pas de répondre "
-                f"avec la certitude requise dans un contexte juridique.\n\n"
+                f"**{NO_SOURCE_TITLE}**\n\n"
+                "Je n'ai trouvé, dans les textes officiels guinéens que j'indexe, aucun article qui permette "
+                "de répondre à cette question de façon fiable. Plutôt que de risquer une réponse inexacte, "
+                "je préfère ne pas conclure.\n\n"
+                "**Pour que je puisse vous aider :**\n"
+                "- Décrivez la situation concrète : qui est concerné, ce qui s'est passé, ce que vous souhaitez obtenir.\n"
+                "- Précisez le domaine (travail, famille, foncier, pénal, commerce…) et, si possible, "
+                "employez les termes juridiques (« licenciement », « bail », « succession »…).\n"
+                "- Pour une situation urgente ou complexe, rapprochez-vous d'un avocat inscrit au Barreau de Guinée.\n"
             )
-
-            if quality_msg:
-                refus += f"**Raison :** {quality_msg}\n\n"
-
-            if topics_trouves:
-                refus += f"**Textes consultés :** {topics_str} (pertinence {max_score:.0%})\n\n"
-
-            refus += (
-                "**Recommandations :**\n"
-                "- Reformulez votre question avec des termes juridiques plus précis\n"
-                "- Consultez directement les codes de loi guinéens (disponibles sur le site du Ministère de la Justice)\n"
-                "- Pour une question urgente, contactez un avocat inscrit au Barreau de Guinée\n"
-            )
-
             return refus + RESPONSE_FOOTER, articles
 
         # 5. Construction du prompt avec évaluation de qualité et format adaptatif
