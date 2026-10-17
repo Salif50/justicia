@@ -1,8 +1,9 @@
-import { Component, signal, computed, HostListener } from '@angular/core';
+import { Component, signal, computed, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Auth } from '../../services/auth';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -11,8 +12,11 @@ import { Auth } from '../../services/auth';
   styleUrl: './header.scss',
 })
 export class Header {
+  readonly theme = inject(ThemeService);
   readonly isMenuOpen = signal(false);
   readonly isScrolled = signal(false);
+  /** Avancement de lecture (0 → 1) pour le fil orange sous la barre. */
+  readonly progress = signal(0);
   readonly isAuthenticated = computed(() => this.authService.isLoggedIn());
   /** Accueil : en-tête transparent et clair tant qu'on est sur le héros sombre. */
   private readonly onHome = signal(false);
@@ -24,7 +28,7 @@ export class Header {
     { path: '/pricing', label: 'Tarifs',  exact: false },
     { path: '/guide',   label: 'Guide',   exact: false },
     { path: '/support', label: 'Support', exact: false },
-    { path: '/terms',   label: 'PCU',     exact: false },
+    { path: '/terms',   label: 'Conditions', exact: false },
   ];
 
   constructor(private authService: Auth, router: Router) {
@@ -35,7 +39,12 @@ export class Header {
   }
 
   @HostListener('window:scroll')
-  onScroll() { this.isScrolled.set(window.scrollY > Math.min(window.innerHeight * 0.75, 560)); }
+  onScroll() {
+    const y = window.scrollY;
+    this.isScrolled.set(y > 24);
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    this.progress.set(max > 0 ? Math.min(1, y / max) : 0);
+  }
 
   @HostListener('document:keydown.escape')
   onEscape() { if (this.isMenuOpen()) this.closeMenu(); }

@@ -1,11 +1,19 @@
-<div class="cx">
+<div class="cx" (pointerdown)="onTouch()" (focusin)="onTouch()">
   <header class="cx-head">
     <span class="cx-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
     <div class="cx-id">
       <strong>JusticIA</strong>
-      <span><i class="cx-dot" aria-hidden="true"></i>Assistant juridique · droit guinéen</span>
+      <span><i class="cx-dot" aria-hidden="true"></i>En ligne · répond avec sources</span>
     </div>
-    <span class="cx-tag">Démo</span>
+    <div class="cx-meta">
+      @if (cited() > 0) {
+        <span class="cx-count" aria-live="polite">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          {{ cited() }} {{ cited() > 1 ? 'citations vérifiées' : 'citation vérifiée' }}
+        </span>
+      }
+      <span class="cx-tag">Démo</span>
+    </div>
   </header>
 
   <div class="cx-scroll" #scroller role="log" aria-live="polite" aria-label="Conversation de démonstration">
@@ -20,16 +28,16 @@
 
             @if (m.done && m.kind === 'answer' && m.article; as a) {
               <figure class="cx-cite">
-                <blockquote>{{ a.excerpt }}</blockquote>
-                <figcaption>
+                <figcaption class="cx-cite-head">
                   <span class="cx-ref">{{ a.ref }}</span>
-                  <span>{{ a.source }}</span>
+                  <span class="cx-src">{{ a.source }}</span>
                 </figcaption>
+                <blockquote><span class="cx-hl">{{ a.excerpt }}</span></blockquote>
+                <p class="cx-ok">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="cx-ok-path" d="M20 6 9 17l-5-5"/></svg>
+                  Citation exacte vérifiée dans le texte officiel
+                </p>
               </figure>
-              <p class="cx-ok">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                Citation exacte vérifiée
-              </p>
             }
 
             @if (m.done && m.kind === 'signin') {
@@ -46,25 +54,50 @@
     @if (thinking(); as t) {
       <div class="cx-row cx-row--bot">
         <span class="cx-avatar brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
-        <p class="cx-thinking"><span class="cx-dots" aria-hidden="true"><i></i><i></i><i></i></span>{{ t }}</p>
+        <ol class="cx-steps" [class.cx-steps--single]="t.steps.length === 1" aria-label="JusticIA réfléchit">
+          @for (s of t.steps; track $index; let i = $index) {
+            <li [class.is-done]="i < t.current" [class.is-now]="i === t.current">
+              <span class="cx-step-ico" aria-hidden="true">
+                @if (i < t.current) {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                } @else if (i === t.current) {
+                  <span class="cx-dots"><i></i><i></i><i></i></span>
+                }
+              </span>
+              {{ s }}
+            </li>
+          }
+        </ol>
       </div>
     }
   </div>
 
-  <ul class="cx-chips" aria-label="Questions à essayer">
-    @for (item of questions; track item.articleId) {
-      <li><button type="button" (click)="pick(item)" [disabled]="busy()">{{ item.q }}</button></li>
-    }
-  </ul>
+  <div class="cx-chips-wrap">
+    <ul class="cx-chips" aria-label="Questions à essayer">
+      @for (item of questions; track item.articleId) {
+        <li>
+          <button type="button" (click)="pick(item)" [disabled]="busy()" [class.is-asked]="isAsked(item.articleId)">
+            @if (isAsked(item.articleId)) {
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            }
+            {{ item.q }}
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
 
   <form class="cx-input" (ngSubmit)="sendTyped()">
     <label for="cx-field" class="cx-sr">Votre question juridique</label>
     <input #field id="cx-field" name="q" type="text" [(ngModel)]="draft" autocomplete="off" enterkeyhint="send"
-           placeholder="Ou écrivez la vôtre (connexion requise)…" />
+           placeholder="Ou écrivez la vôtre…" />
     <button type="submit" class="cx-send" [disabled]="busy() || !draft.trim()" aria-label="Envoyer la question">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </button>
   </form>
 
-  <p class="cx-note">Démonstration · réponses préparées à partir de 9 articles réels, cités mot pour mot.</p>
+  <p class="cx-note">
+    <span class="cx-note-main">Démo · 9 articles réels, cités mot pour mot</span>
+    <span class="cx-note-corpus">33 textes · 12 282 articles</span>
+  </p>
 </div>

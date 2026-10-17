@@ -1,10 +1,11 @@
-import { Component, ViewChild, computed, signal } from '@angular/core';
+import { Component, HostListener, OnDestroy, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Auth, isSignupPending } from '../../services/auth';
 import { Header } from '../../components/header/header';
 import { Captcha } from '../../components/captcha/captcha';
+import { Reveal } from '../../core/reveal.directive';
 import { environment } from '../../../environments/environment';
 
 /** Mêmes règles que le serveur (validate_password_strength). */
@@ -17,11 +18,11 @@ const PASSWORD_RULES: { label: string; test: (p: string) => boolean }[] = [
 
 @Component({
   selector: 'app-inscription',
-  imports: [CommonModule, FormsModule, RouterLink, Header, Captcha],
+  imports: [CommonModule, FormsModule, RouterLink, Header, Captcha, Reveal],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
 })
-export class Signup {
+export class Signup implements OnDestroy {
   name            = signal('');
   email           = signal('');
   password        = signal('');
@@ -147,9 +148,21 @@ export class Signup {
 
   openTermsModal() {
     this.showTermsModal.set(true);
+    document.body.style.overflow = 'hidden';
   }
 
   closeTermsModal() {
     this.showTermsModal.set(false);
+    document.body.style.overflow = '';
+  }
+
+  /** Échap ferme le modal CGU. */
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    if (this.showTermsModal()) this.closeTermsModal();
+  }
+
+  ngOnDestroy() {
+    document.body.style.overflow = '';
   }
 }

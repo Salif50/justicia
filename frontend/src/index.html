@@ -2,10 +2,29 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>justiCIA - Plateforme Juridique Intelligente</title>
+  <title>JusticIA — Assistant juridique · République de Guinée</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="justiCIA - Plateforme juridique intelligente pour la Guinée. Soutien juridique pour les particuliers et assistant pour les avocats.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="JusticIA retrouve l'article applicable dans les textes officiels de la République de Guinée, le cite mot pour mot et vous l'explique. Pour les citoyens, les avocats, les entreprises et les institutions.">
+  <meta name="theme-color" content="#FFFFFF">
+  <script>
+    /* Thème avant le premier rendu (évite le flash) : préférence stockée, sinon système */
+    (function () {
+      try {
+        var m = localStorage.getItem('theme');
+        var dark = m === 'dark' || ((m !== 'light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var t = dark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.style.colorScheme = t;
+      } catch (e) {}
+    })();
+  </script>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="JusticIA">
+  <meta property="og:title" content="JusticIA — Le droit guinéen, répondu avec sources">
+  <meta property="og:description" content="Posez votre question comme à un juriste. JusticIA cite l'article applicable et vous l'explique.">
+  <meta property="og:image" content="/justicia-hero.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="shortcut icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
@@ -13,13 +32,16 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     /* Sceau de démarrage : remplacé par l'application dès qu'elle démarre */
-    .boot{position:fixed;inset:0;display:grid;place-items:center;background:#F5F2EA}
+    .boot{position:fixed;inset:0;display:grid;place-items:center;background:#FFFFFF}
+    [data-theme="dark"] .boot{background:#0F0F0E}
+    [data-theme="dark"] .boot-track{stroke:rgba(244,244,240,.12)}
+    [data-theme="dark"] .boot-tile{background:#1C1C1B;box-shadow:inset 0 0 0 1px rgba(244,244,240,.08),0 18px 36px -18px rgba(0,0,0,.8)}
     .boot-seal{position:relative;width:132px;height:132px;display:grid;place-items:center}
     .boot-seal svg{position:absolute;inset:0;width:100%;height:100%}
     .boot-seal circle{fill:none}
     .boot-track{stroke:rgba(20,18,16,.08);stroke-width:1.5}
     .boot-arc{stroke:#E8650A;stroke-width:3;stroke-linecap:round;stroke-dasharray:60 280;transform-origin:center;animation:boot-spin 1.4s linear infinite}
-    .boot-tile{width:84px;height:84px;border-radius:22px;background:#FFFDF8;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(20,18,16,.07),0 18px 36px -18px rgba(20,18,16,.45)}
+    .boot-tile{width:84px;height:84px;border-radius:22px;background:#FFFFFF;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(20,18,16,.07),0 18px 36px -18px rgba(20,18,16,.45)}
     .boot-tile img{width:78%;height:auto;display:block}
     @keyframes boot-spin{to{transform:rotate(360deg)}}
     @media (prefers-reduced-motion:reduce){.boot-arc{animation:none;stroke-dasharray:90 250}}

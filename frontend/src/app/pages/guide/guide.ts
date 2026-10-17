@@ -4,10 +4,11 @@ import { RouterLink }                                   from '@angular/router';
 import { Header }                                       from '../../components/header/header';
 import { Footer }                                       from '../../components/footer/footer';
 import { GuideIcon }                                    from './guide-icon';
+import { Reveal }                                       from '../../core/reveal.directive';
 
 @Component({
   selector:    'app-guide',
-  imports:     [CommonModule, RouterLink, Header, Footer, GuideIcon],
+  imports:     [CommonModule, RouterLink, Header, Footer, GuideIcon, Reveal],
   templateUrl: './guide.html',
   styleUrl:    './guide.scss',
 })

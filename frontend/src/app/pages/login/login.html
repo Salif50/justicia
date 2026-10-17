@@ -3,18 +3,13 @@
 <section class="auth-page" id="contenu" tabindex="-1">
   <div class="auth-layout">
 
-    <!-- Image hero plein écran (contenu à gauche, espace formulaire à droite) -->
-    <div class="auth-visual">
-      <img src="/lojusticia.png?v=1" alt="" class="auth-hero-img" />
-      <div class="auth-caption">
-        <p class="pub-eyebrow">Espace membre</p>
-        <blockquote>Le droit guinéen, <em>à portée de main</em>, à chaque consultation.</blockquote>
-      </div>
-    </div>
 
-    <!-- Formulaire — zone droite de l'image -->
     <main class="auth-form-panel">
-      <div class="auth-card">
+      <div class="auth-card" reveal="scale">
+        <a routerLink="/" class="auth-brand" aria-label="JusticIA — accueil">
+          <span class="auth-brand-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
+          <span class="auth-brand-word">Justic<em>IA</em></span>
+        </a>
         <div class="auth-header">
           <h1>Connexion</h1>
           <p>Connectez-vous à votre compte JusticIA</p>
@@ -125,6 +120,9 @@
           <p>Pas encore de compte ? <a routerLink="/signup">Créer un compte</a></p>
         </div>
       </div>
+      <p class="auth-legal">
+        <a routerLink="/terms">Conditions d'utilisation</a><span aria-hidden="true">·</span><a routerLink="/terms" fragment="donnees">Données personnelles</a><span aria-hidden="true">·</span><a routerLink="/support">Aide</a>
+      </p>
     </main>
 
   </div>

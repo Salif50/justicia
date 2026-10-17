@@ -1,8 +1,9 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Auth } from '../../services/auth';
 import { ConversationHistoryService } from '../../services/conversation-history';
+import { ThemeService, ThemeMode } from '../../services/theme.service';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
@@ -26,7 +27,9 @@ export class Settings implements OnInit, OnDestroy {
   ephemeralMode       = signal(false);
 
   // ── Apparence ─────────────────────────────────────────────────────────────
-  theme       = signal<'light' | 'dark' | 'auto'>('light');
+  private readonly themeSvc = inject(ThemeService);
+  /** Préférence locale (clair / nuit / auto) : la source de vérité est le ThemeService. */
+  theme       = this.themeSvc.mode;
   language    = signal('fr');
   compactMode = signal(false);
 
@@ -81,7 +84,7 @@ export class Settings implements OnInit, OnDestroy {
           this.autoSaveChat.set(prefs.auto_save_chat ?? true);
           this.enableNotifications.set(prefs.enable_notifications ?? true);
           this.ephemeralMode.set(prefs.ephemeral_mode ?? false);
-          this.theme.set(prefs.theme ?? 'light');
+          // Le thème est une préférence d'appareil (ThemeService) : on ne l'écrase pas depuis le serveur.
           this.language.set(prefs.language ?? 'fr'); // Note: language est sur User, pas UserPreferences
           this.compactMode.set(prefs.compact_mode ?? false);
           this.twoFactorAuth.set(prefs.two_factor_auth ?? false);
@@ -96,6 +99,11 @@ export class Settings implements OnInit, OnDestroy {
       },
       error: () => this.isLoading.set(false),
     });
+  }
+
+  setTheme(mode: ThemeMode) {
+    this.themeSvc.setMode(mode);
+    this.onChange();
   }
 
   // ── Déclenchement de la sauvegarde après changement ──────────────────────

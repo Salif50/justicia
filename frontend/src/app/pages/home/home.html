@@ -13,44 +13,79 @@
 
 <main id="contenu" tabindex="-1">
 
-  <!-- ═════════════ HÉROS — la lampe sur le codex ═════════════ -->
+  <!-- ═════════════ HÉROS ═════════════ -->
   <section class="lp-hero" #hero aria-labelledby="lp-hero-title">
-    <div class="lp-codex" aria-hidden="true">
-      <p class="lp-codex-base">{{ codexTexture }}</p>
-      <p class="lp-codex-lit">{{ codexTexture }}</p>
+    <div class="lp-sky" aria-hidden="true">
+      <span class="lp-sky-grid"></span>
+      <span class="lp-sky-glow lp-sky-glow--a" parallax="0.06"></span>
+      <span class="lp-sky-glow lp-sky-glow--b" parallax="-0.04"></span>
     </div>
-    <div class="lp-hero-glow" aria-hidden="true"></div>
 
     <div class="pub-container lp-hero-inner">
       <div class="lp-hero-copy">
-        <p class="pub-eyebrow pub-eyebrow--light lp-rise" style="--d: 0ms">Assistant juridique · République de Guinée</p>
+        <p class="lp-kicker lp-rise" style="--d: 0ms">
+          <span class="lp-kicker-rule" aria-hidden="true"></span>
+          Assistant juridique · République de Guinée
+        </p>
 
         <h1 id="lp-hero-title" class="lp-hero-title" [attr.aria-label]="titleText">
-          @for (line of titleLines; track $index) {
-            <span class="lp-title-line" [class.is-em]="line.em" aria-hidden="true">
-              @for (word of line.words; track $index; let last = $last) {
-                <span class="lp-word">@for (ch of word; track $index) {<span class="lp-char" [style.animation-delay.ms]="ch.d">{{ ch.c }}</span>}</span>@if (!last) {<span class="lp-space">{{ ' ' }}</span>}
-              }
+          @for (line of titleLines; track $index; let i = $index) {
+            <span class="lp-line" aria-hidden="true">
+              <span class="lp-line-inner" [class.is-em]="line.em" [style.--d]="(120 + i * 110) + 'ms'">{{ line.text }}</span>
             </span>
           }
         </h1>
 
-        <p class="lp-hero-lead lp-rise" style="--d: 900ms">
+        <p class="lp-hero-lead lp-rise" style="--d: 560ms">
           Posez votre question comme à un juriste. JusticIA retrouve l'article applicable dans
           les textes officiels, le cite mot pour mot, puis vous l'explique.
         </p>
 
-        <div class="lp-hero-actions lp-rise" style="--d: 1100ms">
-          <a routerLink="/signup" class="pub-btn pub-btn--accent">
+        <div class="lp-hero-actions lp-rise" style="--d: 700ms">
+          <a routerLink="/signup" class="pub-btn pub-btn--dark">
             Créer mon compte gratuit
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
-          <a href="#comment" class="lp-hero-more">Voir comment ça marche ↓</a>
+          <a href="#comment" class="pub-btn pub-btn--line">Comment ça marche</a>
         </div>
+
+        <dl class="lp-hero-meta lp-rise" style="--d: 860ms" #ledgerRef aria-label="Chiffres clés">
+          @for (l of ledger; track l.label) {
+            <div>
+              <dd [attr.aria-label]="formatNumber(l.value)"><span aria-hidden="true">{{ formatNumber(l.shown()) }}</span></dd>
+              <dt>{{ l.label }}</dt>
+            </div>
+          }
+        </dl>
       </div>
 
-      <app-chat-sim class="lp-hero-chat lp-rise" style="--d: 700ms"></app-chat-sim>
+      <div class="lp-hero-stage lp-rise" style="--d: 380ms">
+        <span class="lp-stage-paper lp-stage-paper--2" aria-hidden="true"></span>
+        <span class="lp-stage-paper lp-stage-paper--1" aria-hidden="true"></span>
+        <div class="lp-stage-frame">
+          <app-chat-sim class="lp-hero-chat"></app-chat-sim>
+        </div>
+        <figure class="lp-stage-cite" aria-hidden="true">
+          <figcaption><span class="lp-stage-cite-dot"></span>Source vérifiée</figcaption>
+          <p>« …ne peut, en aucun cas, être supérieure à trois mois… »</p>
+          <span class="lp-stage-cite-ref">Art. 121.6 — Code du travail, 2014</span>
+        </figure>
+      </div>
     </div>
+
+    @if (partners().length > 0) {
+      <div class="pub-container lp-trust lp-rise" style="--d: 1100ms" aria-label="Ils nous font confiance">
+        <p>Ils nous font confiance</p>
+        <ul>
+          @for (p of partners(); track p.id) {
+            <li>
+              @if (p.logo_url) { <img [src]="p.logo_url" [alt]="p.name" height="28" loading="lazy" /> }
+              @else { <span>{{ p.name }}</span> }
+            </li>
+          }
+        </ul>
+      </div>
+    }
   </section>
 
   <!-- ═════════════ BANDEAU DES CODES ═════════════ -->
@@ -76,22 +111,10 @@
     </button>
   </section>
 
-  <!-- ═════════════ REGISTRE ═════════════ -->
-  <div class="pub-container">
-    <dl class="lp-ledger" #ledgerRef>
-      @for (l of ledger; track l.label; let last = $last) {
-        <div>
-          <dt>{{ l.label }}</dt>
-          <dd [class.is-accent]="last" [attr.aria-label]="formatNumber(l.value)"><span aria-hidden="true">{{ formatNumber(l.shown()) }}</span></dd>
-        </div>
-      }
-    </dl>
-  </div>
-
   <!-- ═════════════ MANIFESTE ═════════════ -->
   <section class="lp-manifesto-wrap" id="comment" aria-labelledby="lp-manifesto">
     <div class="pub-container">
-      <p class="pub-eyebrow">Le principe</p>
+      <p class="pub-eyebrow" reveal>Le principe</p>
       <h2 id="lp-manifesto" class="lp-manifesto" #manifesto [attr.aria-label]="manifestoText">
         @for (w of manifestoWords; track $index; let i = $index) {
           <span aria-hidden="true" [class.is-lit]="i < litWords()" [class.is-em]="w.em">{{ w.w }} </span>
@@ -104,15 +127,15 @@
   <app-scroll-story></app-scroll-story>
 
   <!-- ═════════════ MODULES (bento) ═════════════ -->
-  <section class="lp-modules" aria-labelledby="lp-modules-title">
+  <section class="lp-modules pub-sheet pub-sheet--cream" aria-labelledby="lp-modules-title">
     <div class="pub-container">
-      <div class="lp-section-head">
+      <div class="lp-section-head" reveal>
         <p class="pub-eyebrow">L'espace de travail</p>
         <h2 id="lp-modules-title" class="pub-title">Un cabinet complet, <em>dans un onglet</em>.</h2>
         <p class="pub-lead">Au-delà des questions, JusticIA organise le travail juridique de bout en bout.</p>
       </div>
 
-      <div class="lp-bento" #bento>
+      <div class="lp-bento" #bento reveal [revealStagger]="70">
         <article class="lp-tile lp-tile--chat">
           <div class="lp-viz lp-viz-chat" aria-hidden="true">
             <span class="b b-user">Quel préavis pour un cadre en CDI ?</span>
@@ -198,21 +221,22 @@
   </section>
 
   <!-- ═════════════ SOMMAIRE DU CORPUS ═════════════ -->
-  <section class="lp-corpus" aria-labelledby="lp-corpus-title">
+  <section class="lp-corpus pub-sheet pub-sheet--sand" aria-labelledby="lp-corpus-title">
+    <span class="lp-corpus-mark" aria-hidden="true" parallax="0.06">§</span>
     <div class="pub-container lp-corpus-grid">
-      <div class="lp-corpus-head">
-        <p class="pub-eyebrow pub-eyebrow--light">Le corpus</p>
-        <h2 id="lp-corpus-title" class="lp-corpus-title">Le droit positif guinéen, <em>indexé article par article</em>.</h2>
-        <p class="lp-corpus-lead">Codes, lois organiques et décrets en vigueur. Chaque texte est découpé, indexé et rattaché à sa source officielle.</p>
-        <a routerLink="/signup" class="pub-btn pub-btn--accent">
+      <div class="lp-corpus-head" reveal="left">
+        <p class="pub-eyebrow">Le corpus</p>
+        <h2 id="lp-corpus-title" class="pub-title">Le droit positif guinéen, <em>indexé article par article</em>.</h2>
+        <p class="pub-lead">Codes, lois organiques et décrets en vigueur. Chaque texte est découpé, indexé et rattaché à sa source officielle.</p>
+        <a routerLink="/signup" class="pub-btn pub-btn--dark">
           Explorer l'encyclopédie
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
       </div>
 
-      <div class="lp-toc">
+      <div class="lp-toc pub-card" reveal="right">
         <p class="lp-toc-head" aria-hidden="true"><span>Texte</span><span>Articles</span></p>
-        <ol>
+        <ol reveal [revealStagger]="45">
           @for (c of corpus; track c.titre; let i = $index) {
             <li>
               <span class="lp-toc-num">{{ (i + 1).toString().padStart(2, '0') }}</span>
@@ -228,9 +252,9 @@
   </section>
 
   <!-- ═════════════ POUR QUI ═════════════ -->
-  <section class="lp-audience" aria-labelledby="lp-audience-title">
+  <section class="lp-audience pub-sheet pub-sheet--cream" aria-labelledby="lp-audience-title">
     <div class="pub-container">
-      <div class="lp-section-head lp-section-head--row">
+      <div class="lp-section-head lp-section-head--row" reveal>
         <div>
           <p class="pub-eyebrow">Pour qui</p>
           <h2 id="lp-audience-title" class="pub-title">Pour ceux qui pratiquent le droit, <em>et ceux qui le vivent</em>.</h2>
@@ -247,13 +271,15 @@
         </div>
       </div>
 
-      <div class="lp-aud-panel" id="aud-panel" role="tabpanel" [attr.aria-label]="audience().label">
+      <div class="lp-aud-panel pub-card" id="aud-panel" role="tabpanel" [attr.aria-label]="audience().label" reveal="scale">
         <div class="lp-aud-ask">
           <span class="lp-aud-ask-label">Question type</span>
-          <p class="lp-aud-q">« {{ audience().question }} »</p>
+          @if (audience(); as a) {
+            <p class="lp-aud-q" [attr.data-id]="a.id">« {{ a.question }} »</p>
+          }
         </div>
         <ul class="lp-aud-gains">
-          @for (g of audience().gains; track g; let i = $index) {
+          @for (g of audience().gains; track audience().id + g; let i = $index) {
             <li><span>{{ (i + 1).toString().padStart(2, '0') }}</span>{{ g }}</li>
           }
         </ul>
@@ -263,13 +289,13 @@
 
   <!-- ═════════════ TÉMOIGNAGES ═════════════ -->
   @if (testimonials().length > 0) {
-    <section class="lp-testi" aria-labelledby="lp-testi-title">
+    <section class="lp-testi pub-sheet pub-sheet--apricot" aria-labelledby="lp-testi-title">
       <div class="pub-container">
-        <div class="lp-section-head">
+        <div class="lp-section-head" reveal>
           <p class="pub-eyebrow">Témoignages</p>
           <h2 id="lp-testi-title" class="pub-title">Ils l'utilisent <em>au quotidien</em>.</h2>
         </div>
-        <div class="lp-testi-grid">
+        <div class="lp-testi-grid" reveal [revealStagger]="90">
           @for (t of testimonials(); track t.id; let first = $first) {
             <figure class="lp-quote" [class.is-lead]="first">
               <blockquote>{{ t.text }}</blockquote>
@@ -287,31 +313,15 @@
     </section>
   }
 
-  @if (partners().length > 0) {
-    <section class="lp-partners" aria-label="Partenaires">
-      <div class="pub-container lp-partners-inner">
-        <p>Ils nous font confiance</p>
-        <ul>
-          @for (p of partners(); track p.id) {
-            <li>
-              @if (p.logo_url) { <img [src]="p.logo_url" [alt]="p.name" height="32" loading="lazy" /> }
-              @else { <span>{{ p.name }}</span> }
-            </li>
-          }
-        </ul>
-      </div>
-    </section>
-  }
-
   <!-- ═════════════ FAQ ═════════════ -->
   <section class="lp-faq" aria-labelledby="lp-faq-title">
     <div class="pub-container lp-faq-grid">
-      <div>
+      <div reveal="left">
         <p class="pub-eyebrow">Questions fréquentes</p>
         <h2 id="lp-faq-title" class="pub-title">Ce que l'on nous <em>demande souvent</em>.</h2>
         <p class="pub-lead">Une autre question ? <a href="#contact" class="lp-link">Écrivez-nous</a>.</p>
       </div>
-      <div class="lp-faq-list">
+      <div class="lp-faq-list" reveal [revealStagger]="80">
         <details>
           <summary><span class="lp-faq-num">01</span>JusticIA remplace-t-il un avocat&nbsp;?</summary>
           <p>Non. JusticIA est un outil d'information juridique. Pour une procédure ou une décision importante, consultez un avocat inscrit au Barreau de Guinée.</p>
@@ -334,15 +344,20 @@
 
   <!-- ═════════════ APPEL FINAL ═════════════ -->
   <section class="lp-final" aria-labelledby="lp-final-title">
-    <div class="pub-container lp-final-inner">
-      <p class="lp-final-ref" aria-hidden="true">Art. 1<sup>er</sup></p>
-      <h2 id="lp-final-title">Votre première question <em>vous attend</em>.</h2>
-      <div class="lp-final-actions">
-        <a routerLink="/signup" class="pub-btn pub-btn--accent">
-          Créer un compte gratuit
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-        <a routerLink="/pricing" class="pub-btn pub-btn--outline-light">Voir les offres</a>
+    <div class="pub-container">
+      <div class="lp-final-card" reveal="scale">
+        <span class="lp-final-blob lp-final-blob--a" aria-hidden="true"></span>
+        <span class="lp-final-blob lp-final-blob--b" aria-hidden="true"></span>
+        <p class="lp-final-ref" aria-hidden="true">Art. 1<sup>er</sup></p>
+        <h2 id="lp-final-title">Votre première question <em>vous attend</em>.</h2>
+        <p class="lp-final-lead">Compte gratuit, sans carte bancaire. Première réponse sourcée en moins d'une minute.</p>
+        <div class="lp-final-actions">
+          <a routerLink="/signup" class="pub-btn pub-btn--dark">
+            Créer un compte gratuit
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a routerLink="/pricing" class="pub-btn pub-btn--line">Voir les offres</a>
+        </div>
       </div>
     </div>
   </section>
@@ -350,7 +365,7 @@
   <!-- ═════════════ CONTACT ═════════════ -->
   <section class="lp-contact" id="contact" aria-labelledby="lp-contact-title">
     <div class="pub-container lp-contact-grid">
-      <div>
+      <div reveal="left">
         <p class="pub-eyebrow">Contact</p>
         <h2 id="lp-contact-title" class="pub-title">Parlons de <em>vos besoins</em>.</h2>
         <p class="pub-lead">Cabinet, entreprise ou institution : notre équipe vous répond sous 24 heures ouvrées.</p>
@@ -374,7 +389,7 @@
         </dl>
       </div>
 
-      <form class="lp-form" (ngSubmit)="submitContact()" novalidate>
+      <form class="lp-form pub-card" (ngSubmit)="submitContact()" novalidate reveal="right">
         <!-- Champ piège anti-robots : invisible et ignoré par les humains -->
         <div class="hp-field" aria-hidden="true">
           <label for="lp-website">Site web</label>

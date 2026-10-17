@@ -163,6 +163,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Aucun défilement horizontal : clip (et non hidden) pour ne pas créer de conteneur de défilement */
+  overflow-x: clip;
 }
 
 body {
@@ -172,7 +174,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 button {
@@ -803,4 +805,76 @@ select.app-input {
   width: 1px;
   height: 1px;
   overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Apparitions au défilement (directive [reveal]) — site public.
+   L'élément part légèrement décalé/flou et se pose quand il entre
+   dans l'écran. Variantes : up (défaut), left, right, scale, blur.
+   Avec [revealStagger], chaque enfant reçoit --rv-delay croissant.
+   ══════════════════════════════════════════════════════════════ */
+.rv {
+  --rv-y: 28px;
+  --rv-x: 0px;
+  --rv-scale: 1;
+  --rv-blur: 0px;
+  --rv-dur: 0.9s;
+  --rv-delay: 0ms;
+  opacity: 0;
+  transform: translate3d(var(--rv-x), var(--rv-y), 0) scale(var(--rv-scale));
+  filter: blur(var(--rv-blur));
+  transition:
+    opacity var(--rv-dur) cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay),
+    transform var(--rv-dur) cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay),
+    filter var(--rv-dur) cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay);
+  will-change: opacity, transform;
+
+  &.rv-left  { --rv-y: 0px; --rv-x: -36px; }
+  &.rv-right { --rv-y: 0px; --rv-x: 36px; }
+  // Mobile : pas de décalage latéral (il élargirait la page avant l'apparition)
+  @media (max-width: 960px) {
+    &.rv-left, &.rv-right { --rv-y: 24px; --rv-x: 0px; }
+  }
+  &.rv-scale { --rv-y: 12px; --rv-scale: 0.94; }
+  &.rv-blur  { --rv-y: 16px; --rv-blur: 10px; }
+  &.rv-fade  { --rv-y: 0px; }
+
+  &.is-in {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+}
+
+/* Enfants échelonnés : le parent porte .rv-stagger, chaque enfant direct .rv-child */
+.rv-stagger > .rv-child {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0ms),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0ms);
+}
+.rv-stagger.is-in > .rv-child { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv, .rv-stagger > .rv-child {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+
+/* Parallaxe (directive [parallax]) : le décalage est exposé en --py pour se composer avec d'autres transforms */
+.px { transform: translate3d(0, var(--py, 0px), 0); }
+
+/* Transitions de page (View Transitions API, via withViewTransitions) */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: 180ms cubic-bezier(0.4, 0, 1, 1) both vtOut; }
+::view-transition-new(root) { animation: 320ms cubic-bezier(0.22, 1, 0.36, 1) both vtIn; }
+@keyframes vtOut { to { opacity: 0; } }
+@keyframes vtIn  { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }

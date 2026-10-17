@@ -2,6 +2,7 @@
 
 <header class="hd" [class.is-scrolled]="isScrolled()" [class.is-open]="isMenuOpen()" [class.is-over-dark]="overDark()" [class.is-home]="isHome()">
   <div class="hd-bar">
+    <span class="hd-progress" aria-hidden="true" [style.transform]="'scaleX(' + progress() + ')'"></span>
     <div class="hd-wrap hd-bar-inner">
       <a routerLink="/" class="hd-logo" (click)="closeMenu()" aria-label="JusticIA — accueil">
         <span class="hd-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
@@ -16,6 +17,15 @@
       </nav>
 
       <div class="hd-actions">
+        <button type="button" class="hd-theme" (click)="theme.toggle()"
+                [attr.aria-label]="theme.isDark() ? 'Passer en mode clair' : 'Passer en mode nuit'"
+                [title]="theme.isDark() ? 'Mode clair' : 'Mode nuit'">
+          @if (theme.isDark()) {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.3 4.3l1.6 1.6M18.1 18.1l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.3 19.7l1.6-1.6M18.1 5.9l1.6-1.6"/></svg>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg>
+          }
+        </button>
         @if (!isAuthenticated()) {
           <a routerLink="/login" class="hd-login">Connexion</a>
           <a routerLink="/signup" class="hd-cta">
@@ -50,6 +60,10 @@
           </li>
         }
       </ol>
+      <button type="button" class="hd-sheet-theme" (click)="theme.toggle()" [attr.tabindex]="isMenuOpen() ? 0 : -1">
+        <span>{{ theme.isDark() ? 'Mode nuit' : 'Mode clair' }}</span>
+        <span class="hd-sheet-switch" [class.is-on]="theme.isDark()" aria-hidden="true"><i></i></span>
+      </button>
       <div class="hd-sheet-actions">
         @if (!isAuthenticated()) {
           <a routerLink="/login" class="hd-sheet-btn hd-sheet-btn--line" (click)="closeMenu()" [attr.tabindex]="isMenuOpen() ? 0 : -1">Connexion</a>

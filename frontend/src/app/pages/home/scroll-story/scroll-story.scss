@@ -3,9 +3,32 @@
 :host { display: block; }
 @include pub.primitives;
 
+/* Feuille sable qui chevauche le manifeste */
 .ss {
-  background: pub.$ink;
-  color: pub.$on-ink;
+  position: relative;
+  background: var(--paper-2);
+  color: var(--text);
+  border-radius: 44px 44px 0 0;
+  margin-top: -44px;
+  z-index: 1;
+  overflow: clip;
+  @media (max-width: 720px) { border-radius: 28px 28px 0 0; margin-top: -28px; }
+
+  // Halo chaud derrière le visuel
+  &::before {
+    content: '';
+    position: absolute;
+    right: -10%;
+    top: 10%;
+    width: 50vw;
+    height: 50vw;
+    max-width: 760px;
+    max-height: 760px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(var(--ink-rgb), 0.05), transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+  }
 }
 
 /* Épinglé : la piste fait 4 écrans, la scène reste collée en haut */
@@ -18,9 +41,10 @@
   align-items: center;
 }
 
-.ss:not(.is-pinned) .ss-stage { padding: 96px 0; }
+.ss:not(.is-pinned) .ss-stage { padding: 112px 0 120px; }
 
 .ss-grid {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 72px;
@@ -34,7 +58,7 @@
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: pub.$accent-ink;
+  color: var(--accent-txt);
 }
 
 .ss-title {
@@ -44,21 +68,22 @@
   font-size: clamp(2rem, 3.8vw, 3.2rem);
   line-height: 1.05;
   letter-spacing: -0.025em;
-  em { font-style: italic; color: pub.$accent-ink; }
+  color: var(--ink);
+  em { font-style: italic; color: var(--accent-txt); }
 }
 
 .ss-steps {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid rgba(245, 242, 234, 0.14);
+  border-top: 1px solid var(--line-2);
 
   li {
     display: grid;
     grid-template-columns: 40px minmax(0, 1fr);
     gap: 12px;
     padding: 18px 0;
-    border-bottom: 1px solid rgba(245, 242, 234, 0.14);
+    border-bottom: 1px solid var(--line-2);
     opacity: 0.38;
     transition: opacity 0.4s pub.$ease-out;
 
@@ -66,21 +91,22 @@
     &.is-done p { display: none; }
   }
 
-  h3 { margin: 0 0 6px; font-size: 1.02rem; font-weight: 600; color: pub.$on-ink; }
-  p { margin: 0; font-size: 0.95rem; line-height: 1.6; color: pub.$on-ink-mut; }
+  h3 { margin: 0 0 6px; font-size: 1.02rem; font-weight: 600; color: var(--ink); }
+  p { margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--muted); }
 }
 
-.ss-step-n { font-family: pub.$mono; font-size: 12px; color: pub.$accent-ink; padding-top: 3px; }
+.ss-step-n { font-family: pub.$mono; font-size: 12px; color: var(--accent-txt); padding-top: 3px; }
 
 .ss.is-pinned .ss-steps li:not(.is-active) p { display: none; }
 
-/* Visuel : compteur + champ de points */
+/* Visuel : compteur + champ de points, sur carte blanche */
 .ss-visual {
   position: relative;
-  padding: 28px;
-  border-radius: 22px;
-  background: rgba(245, 242, 234, 0.03);
-  border: 1px solid rgba(245, 242, 234, 0.1);
+  padding: 32px;
+  border-radius: 24px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-float);
 }
 
 .ss-count {
@@ -96,10 +122,10 @@
     line-height: 1;
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
-    color: pub.$on-ink;
+    color: var(--ink);
   }
 
-  span { font-family: pub.$mono; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: pub.$accent-ink; }
+  span { font-family: pub.$mono; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-txt); }
 }
 
 .ss-field {
@@ -111,29 +137,30 @@
     display: block;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: pub.$on-ink;
+    background: var(--ink);
     transition: opacity 0.5s pub.$ease-out, transform 0.5s pub.$ease-out, background 0.4s;
 
-    &.all   { opacity: 0.32; }
+    &.all   { opacity: 0.22; }
     &.off   { opacity: 0.06; transform: scale(0.6); }
-    &.on    { opacity: 1; background: pub.$accent-ink; transform: scale(1.15); }
-    &.cited { opacity: 1; background: pub.$accent; transform: scale(2.4); box-shadow: 0 0 0 4px rgba(232, 101, 10, 0.25), 0 0 28px rgba(232, 101, 10, 0.7); }
+    &.on    { opacity: 1; background: var(--ink); transform: scale(1.15); }
+    &.cited { opacity: 1; background: var(--accent); transform: scale(2.4); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2), 0 0 28px rgba(var(--accent-rgb), 0.55); }
   }
 }
 
 .ss-bar {
-  height: 2px;
+  height: 3px;
   margin-top: 24px;
-  background: rgba(245, 242, 234, 0.1);
-  border-radius: 2px;
+  background: var(--paper-2);
+  border-radius: 3px;
   overflow: hidden;
 
-  span { display: block; height: 100%; background: pub.$accent-ink; transform-origin: left; transition: transform 0.1s linear; }
+  span { display: block; height: 100%; background: var(--accent); transform-origin: left; transition: transform 0.1s linear; }
 }
 
 @media (max-width: 960px) {
   .ss-grid { grid-template-columns: 1fr; gap: 40px; }
   .ss-field { gap: 4px; }
+  .ss-visual { padding: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

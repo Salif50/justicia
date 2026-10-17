@@ -1,29 +1,12 @@
 <app-header></app-header>
 
 @if (showToast()) {
-  <div class="toast-notification" [class.toast-success]="toastSuccess()" [class.toast-error]="!toastSuccess()">
-    <div class="toast-icon">
-      @if (toastSuccess()) {
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>
-        </svg>
-      } @else {
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-      }
-    </div>
-    <div class="toast-body">
-      <div class="toast-title">{{ toastSuccess() ? 'Message envoyé !' : 'Erreur' }}</div>
-      <div class="toast-msg">{{ toastText() }}</div>
-    </div>
-    <button class="toast-close" (click)="closeToast()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
+  <div class="sp-toast" [class.is-error]="!toastSuccess()" role="status" aria-live="polite">
+    <span class="sp-toast-mark" aria-hidden="true">{{ toastSuccess() ? '✓' : '!' }}</span>
+    <p>{{ toastText() }}</p>
+    <button type="button" (click)="closeToast()" aria-label="Fermer la notification">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
-    <div class="toast-progress" [class.toast-progress-success]="toastSuccess()" [class.toast-progress-error]="!toastSuccess()"></div>
   </div>
 }
 
@@ -33,58 +16,118 @@
     <h1 class="pub-hero-title">Une équipe <em>à votre écoute</em>.</h1>
     <p class="pub-hero-lead">
       Une question sur votre compte, votre abonnement ou l'utilisation de JusticIA&nbsp;?
-      Notre équipe vous répond rapidement.
+      Nous vous répondons sous 24 heures ouvrées.
     </p>
   </div>
 </section>
 
 <section class="support-section" #scrollSection>
   <div class="pub-container">
+
+    <!-- ── Canaux ── -->
     <div class="channels">
-      <div class="channel">
-        <p class="channel-label">Email</p>
-        <h3>Écrivez-nous</h3>
+      <article class="channel">
+        <p class="channel-label">01 · E-mail</p>
+        <h2>Écrivez-nous</h2>
         @for (email of getContactEmails(); track $index) {
           <a [href]="'mailto:' + email" class="channel-link">{{ email }}</a>
         }
         <p class="channel-note">Réponse sous 24 heures ouvrées</p>
-      </div>
-      <div class="channel">
-        <p class="channel-label">Téléphone</p>
-        <h3>Appelez-nous</h3>
+      </article>
+      <article class="channel">
+        <p class="channel-label">02 · Téléphone</p>
+        <h2>Appelez-nous</h2>
         @for (phone of getContactPhones(); track $index) {
           <a [href]="phoneHref(phone)" class="channel-link">{{ phone }}</a>
         }
         <p class="channel-note">{{ getContactHours() }}</p>
-      </div>
-      <div class="channel">
-        <p class="channel-label">Documentation</p>
-        <h3>Guide d'utilisation</h3>
+      </article>
+      <article class="channel">
+        <p class="channel-label">03 · Documentation</p>
+        <h2>Guide d'utilisation</h2>
         <p class="channel-text">Toutes les fonctionnalités expliquées pas à pas, avec des exemples de questions.</p>
-        <a routerLink="/guide" class="pub-btn pub-btn--line">Consulter le guide</a>
-      </div>
+        <a routerLink="/guide" class="channel-link channel-link--arrow">Consulter le guide <span aria-hidden="true">→</span></a>
+      </article>
     </div>
 
-    <div class="faq-section">
-      <div class="faq-header">
-        <p class="pub-eyebrow">Questions fréquentes</p>
-        <h2 class="pub-title">Les réponses aux questions les plus courantes.</h2>
+    <!-- ── Formulaire ── -->
+    <div class="contact-grid" id="contact">
+      <div class="contact-intro">
+        <p class="pub-eyebrow">Nous écrire</p>
+        <h2 class="pub-title">Décrivez-nous <em>votre besoin</em>.</h2>
+        <p class="pub-lead">
+          Compte, abonnement, facturation, cabinet ou institution : notre équipe lit chaque message
+          et vous répond personnellement.
+        </p>
+        <ul class="contact-points">
+          <li>Réponse sous 24 heures ouvrées</li>
+          <li>Accompagnement à la prise en main</li>
+          <li>Offres sur mesure pour les cabinets et institutions</li>
+        </ul>
       </div>
 
-      <div class="faq-list">
-        @for (f of faqItems(); track f.id) {
-          <div class="faq-item" [class.open]="openFaqId() === f.id">
-            <button type="button" class="faq-question" (click)="toggleFaq(f.id)" [attr.aria-expanded]="openFaqId() === f.id">
-              <span>{{ f.question }}</span>
-              <span class="faq-sign" aria-hidden="true">+</span>
-            </button>
-            @if (openFaqId() === f.id) {
-              <p class="faq-answer">{{ f.answer }}</p>
+      <form class="sp-form" (ngSubmit)="submitContact()" novalidate reveal="right">
+        <!-- Champ piège anti-robots : invisible et ignoré par les humains -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="sp-website">Site web</label>
+          <input type="text" id="sp-website" name="website" tabindex="-1" autocomplete="off" [(ngModel)]="contactForm.website" />
+        </div>
+        <div class="sp-form-row">
+          <label>
+            <span>Nom complet <abbr title="obligatoire">*</abbr></span>
+            <input type="text" name="name" [(ngModel)]="contactForm.name" autocomplete="name" required />
+          </label>
+          <label>
+            <span>E-mail <abbr title="obligatoire">*</abbr></span>
+            <input type="email" name="email" [(ngModel)]="contactForm.email" autocomplete="email" inputmode="email" required />
+          </label>
+        </div>
+        <label>
+          <span>Sujet <abbr title="obligatoire">*</abbr></span>
+          <input type="text" name="subject" [(ngModel)]="contactForm.subject" required placeholder="Ex. : question sur mon abonnement" />
+        </label>
+        <label>
+          <span>Message <abbr title="obligatoire">*</abbr></span>
+          <textarea name="message" [(ngModel)]="contactForm.message" rows="6" required></textarea>
+        </label>
+        <div class="sp-form-foot">
+          <button type="submit" class="pub-btn pub-btn--dark" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Envoi en cours…' : 'Envoyer le message' }}
+          </button>
+          <p>Vos coordonnées ne servent qu'à vous répondre.</p>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── FAQ ── -->
+    @if (faqItems().length) {
+      <div class="sp-faq" aria-labelledby="sp-faq-title">
+        <div class="sp-faq-grid">
+          <div>
+            <p class="pub-eyebrow">Questions fréquentes</p>
+            <h2 id="sp-faq-title" class="pub-title">Les réponses aux questions <em>les plus courantes</em>.</h2>
+            <p class="pub-lead">Vous ne trouvez pas ? <a href="#contact" class="sp-link">Écrivez-nous</a>.</p>
+          </div>
+          <div class="sp-faq-list" reveal [revealStagger]="60">
+            @for (f of faqItems(); track f.id; let i = $index) {
+              <div class="sp-faq-item" [class.open]="openFaqId() === f.id">
+                <h3>
+                  <button type="button" class="sp-faq-q" (click)="toggleFaq(f.id)"
+                          [attr.aria-expanded]="openFaqId() === f.id" [attr.aria-controls]="'faq-a-' + f.id">
+                    <span class="sp-faq-num">{{ (i + 1).toString().padStart(2, '0') }}</span>
+                    <span class="sp-faq-text">{{ f.question }}</span>
+                    <span class="sp-faq-sign" aria-hidden="true"></span>
+                  </button>
+                </h3>
+                @if (openFaqId() === f.id) {
+                  <p class="sp-faq-a" [id]="'faq-a-' + f.id">{{ f.answer }}</p>
+                }
+              </div>
             }
           </div>
-        }
+        </div>
       </div>
-    </div>
+    }
   </div>
 </section>
 

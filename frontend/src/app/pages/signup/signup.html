@@ -3,18 +3,13 @@
 <section class="auth-page" id="contenu" tabindex="-1">
   <div class="auth-layout">
 
-    <!-- Image hero plein écran (contenu à gauche, espace formulaire à droite) -->
-    <div class="auth-visual">
-      <img src="/lojusticia.png?v=1" alt="" class="auth-hero-img" />
-      <div class="auth-caption">
-        <p class="pub-eyebrow">Rejoindre JusticIA</p>
-        <blockquote>Des réponses juridiques <em>sourcées</em>, au service de votre pratique.</blockquote>
-      </div>
-    </div>
 
-    <!-- Formulaire — zone droite de l'image -->
     <main class="auth-form-panel">
-      <div class="auth-card signup-card">
+      <div class="auth-card signup-card" reveal="scale">
+        <a routerLink="/" class="auth-brand" aria-label="JusticIA — accueil">
+          <span class="auth-brand-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
+          <span class="auth-brand-word">Justic<em>IA</em></span>
+        </a>
         @if (pendingEmail()) {
           <div class="verify-panel" role="status" aria-live="polite">
             <span class="verify-icon" aria-hidden="true">
@@ -195,15 +190,18 @@
         </div>
         }
       </div>
+      <p class="auth-legal">
+        <a routerLink="/terms">Conditions d'utilisation</a><span aria-hidden="true">·</span><a routerLink="/terms" fragment="donnees">Données personnelles</a><span aria-hidden="true">·</span><a routerLink="/support">Aide</a>
+      </p>
     </main>
 
   </div>
 
   @if (showTermsModal()) {
     <div class="terms-modal-overlay" (click)="closeTermsModal()">
-      <div class="terms-modal" (click)="$event.stopPropagation()">
+      <div class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="terms-modal-title" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Conditions d'utilisation et Politique de confidentialité</h2>
+          <h2 id="terms-modal-title">Conditions d'utilisation et Politique de confidentialité</h2>
           <button type="button" class="modal-close" (click)="closeTermsModal()" aria-label="Fermer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <line x1="18" y1="6" x2="6" y2="18"/>

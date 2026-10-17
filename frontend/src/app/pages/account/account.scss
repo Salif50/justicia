@@ -1,12 +1,4 @@
 @use '../auth-shared' as *;
 
-/* Pages de lien e-mail : une seule colonne centrée, sans photo */
-.auth-layout { grid-template-columns: 1fr; }
-
-.auth-form-panel {
-  min-height: calc(100dvh - 72px);
-  align-items: flex-start;
-  padding-top: clamp(40px, 10vh, 120px);
-}
-
+/* Pages de lien e-mail : même carte centrée que la connexion */
 .auth-card { max-width: 440px; }

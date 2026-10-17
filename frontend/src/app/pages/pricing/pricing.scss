@@ -1,24 +1,29 @@
+/* ═══════════════════════════════════════════════════════════════
+   Tarifs — « Codex vivant »
+   Trois offres en tuiles, l'offre recommandée en encre.
+   ═══════════════════════════════════════════════════════════════ */
+
 @use '../public' as pub;
 
 :host { @include pub.tokens; }
 @include pub.primitives;
 
-/* ── Plans ───────────────────────────────────────────────────────── */
 .tarif-section {
-  padding: 0 0 120px;
+  padding: 0 0 128px;
   background: var(--paper);
+  @media (max-width: 720px) { padding-bottom: 80px; }
 }
 
+/* ── Grille des offres ─────────────────────────────────────────── */
 .pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 0;
-  margin-top: -56px;
-  background: var(--white);
-  border: 1px solid var(--line);
-  box-shadow: 0 24px 60px rgba(14, 27, 44, 0.08);
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 14px;
+  margin-top: -56px;
+
+  @media (max-width: 720px) { margin-top: -40px; }
 }
 
 .pricing-card {
@@ -27,58 +32,67 @@
   flex-direction: column;
   padding: 44px 36px 36px;
   background: var(--white);
-
-  & + & { border-left: 1px solid var(--line); }
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px -28px rgba(var(--ink-rgb), 0.3);
 
   &.featured {
-    background: var(--ink);
-    color: var(--on-ink);
+    background: var(--accent-grad);
+    border-color: var(--accent-deep);
+    color: var(--on-accent);
+    box-shadow: 0 32px 64px -32px rgba(var(--accent-rgb), 0.55);
 
-    .plan-name, .amount, .currency { color: var(--on-ink); }
-    .plan-description, .price-period { color: var(--on-ink-mut); }
-    .card-price { border-color: rgba(255, 255, 255, 0.12); }
-    .features-list li { color: var(--on-ink); svg { color: var(--accent); } }
+    .plan-name, .amount, .currency { color: var(--on-accent); }
+    .plan-description, .price-period { color: var(--on-accent-mut); }
+    .card-price { border-color: var(--on-accent-line); }
+    .features-list li { color: var(--on-accent); svg { color: var(--on-accent); } }
   }
+
+  @media (max-width: 720px) { padding: 40px 24px 28px; }
 }
 
 .popular-badge {
   position: absolute;
   top: 0;
-  right: 36px;
+  right: 32px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--accent);
-  color: var(--ink);
+  border-radius: 999px;
+  background: #0F0F0E;
+  color: #F7F7F4;
+  border: 1px solid #0F0F0E;
+  font-family: var(--mono);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-
-  svg { width: 12px; height: 12px; }
 }
 
 .card-header { margin-bottom: 28px; }
 
 .plan-name {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 1.7rem;
-  color: var(--ink);
   margin: 0 0 8px;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.75rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .plan-description {
+  margin: 0;
+  min-height: 3.2em;
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--muted);
-  margin: 0;
-  min-height: 3.2em;
 }
 
 .card-price {
+  min-height: 88px;        // même hauteur sur les trois cartes, quel que soit le format du prix
   padding-bottom: 28px;
   margin-bottom: 28px;
   border-bottom: 1px solid var(--line);
@@ -87,28 +101,32 @@
 .price-amount {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 8px;
 }
 
 .currency {
-  font-size: 1rem;
-  font-weight: 600;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 500;
   color: var(--ink);
 }
 
 .amount {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 3rem;
   line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--ink);
 
-  &.custom { font-size: 2.1rem; }
+  &.custom { font-size: 2.3rem; line-height: 3rem; }   // même ligne de base que les montants chiffrés
 }
 
 .price-period {
   display: block;
-  margin-top: 8px;
-  font-size: 0.9rem;
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
   color: var(--muted);
 }
 
@@ -127,13 +145,7 @@
     line-height: 1.5;
     color: var(--text);
 
-    svg {
-      width: 18px;
-      height: 18px;
-      stroke-width: 2;
-      color: var(--accent-txt);
-      margin-top: 1px;
-    }
+    svg { margin-top: 2px; color: var(--accent-txt); }
   }
 }
 
@@ -143,106 +155,84 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 14px 20px;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
+  min-height: 48px;
+  padding: 0 20px;
   border-radius: 999px;
   border: 1px solid var(--ink);
   color: var(--ink);
   background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease;
 
-  svg { width: 16px; height: 16px; stroke-width: 2; }
-
-  &:hover { background: var(--ink); color: var(--on-ink); }
+  svg { transition: transform 0.25s pub.$ease-out; }
+  &:hover { background: var(--ink); color: var(--on-ink); svg { transform: translateX(3px); } }
+  &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
   &.btn-featured {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--ink);
-    &:hover { background: #ffa033; color: var(--ink); }
+    background: #0F0F0E;
+    border-color: #0F0F0E;
+    color: #F7F7F4;
+    &:hover { background: #262623; color: #F7F7F4; }
   }
 }
 
-/* ── FAQ ─────────────────────────────────────────────────────────── */
-.faq-section { padding-top: 120px; }
-
-.faq-header { text-align: left; max-width: 640px; margin-bottom: 48px; }
-
-.faq-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.faq-item {
-  display: flex;
-  flex-direction: column;
+/* ── Squelette de chargement ───────────────────────────────────── */
+.pricing-card.is-skeleton {
   gap: 14px;
-  padding: 32px 36px 36px;
-  background: var(--white);
-  border: 1px solid var(--line);
-
-  h4 {
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: 1.22rem;
-    line-height: 1.35;
-    color: var(--ink);
-    margin: 0;
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.7;
-    color: var(--muted);
-  }
-}
-
-@media (max-width: 960px) {
-  .pricing-card + .pricing-card { border-left: none; border-top: 1px solid var(--line); }
-  .faq-grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 720px) {
-  .tarif-section { padding-bottom: 80px; }
-  .pricing-grid { margin-top: -40px; }
-  .pricing-card { padding: 40px 24px 28px; }
-  .faq-section { padding-top: 80px; }
-  .faq-item { padding: 24px 22px 26px; gap: 12px; }
-}
-
-/* Codex vivant : cartes indépendantes et arrondies, comme les tuiles de l'accueil */
-.pricing-grid {
-  gap: 14px;
-  background: transparent;
-  border: none;
   box-shadow: none;
+
+  .sk {
+    display: block;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--paper-2) 25%, var(--paper) 50%, var(--paper-2) 75%);
+    background-size: 200% 100%;
+    animation: skShimmer 1.4s ease-in-out infinite;
+  }
+  .sk-title { width: 45%; height: 26px; }
+  .sk-text  { width: 80%; height: 14px; margin-bottom: 14px; }
+  .sk-price { width: 55%; height: 46px; margin-bottom: 22px; }
+  .sk-line  { width: 90%; height: 14px; }
+  .sk-short { width: 60%; }
+  .sk-btn   { width: 100%; height: 48px; margin-top: 24px; border-radius: 999px; }
 }
 
-.pricing-card {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 24px 48px -28px rgba(20, 18, 16, 0.3);
+@keyframes skShimmer { to { background-position: -200% 0; } }
 
-  & + & { border-left: 1px solid var(--line); }
-  &.featured { border-color: var(--ink); }
+/* ── Réassurance ───────────────────────────────────────────────── */
+.tarif-reassure {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 24px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--muted);
+    svg { flex-shrink: 0; margin-top: 2px; color: var(--accent-txt); }
+  }
+
+  @media (max-width: 760px) { grid-template-columns: 1fr; gap: 0; li { padding: 12px 0; } }
 }
 
-.popular-badge { border-radius: 999px; }
-
-/* Offres indisponibles (backend injoignable) */
+/* ── Offres indisponibles ──────────────────────────────────────── */
 .tarif-unavailable {
   position: relative;
   z-index: 1;
-  margin-top: 0;   // la grille vide remonte déjà sur le bandeau
   padding: 40px 36px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--white);
-  box-shadow: 0 24px 48px -28px rgba(20, 18, 16, .3);
+  box-shadow: 0 24px 48px -28px rgba(var(--ink-rgb), 0.3);
   text-align: center;
 
   @media (max-width: 720px) { padding: 32px 22px; }
@@ -250,7 +240,7 @@
 
 .tarif-unavailable-title {
   margin: 0 0 8px;
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 1.45rem;
   line-height: 1.3;
   color: var(--ink);
@@ -259,6 +249,59 @@
 .tarif-unavailable-text {
   margin: 0 0 22px;
   color: var(--muted);
-  font-size: .97rem;
+  font-size: 0.97rem;
   line-height: 1.6;
+}
+
+/* ── FAQ ───────────────────────────────────────────────────────── */
+.pr-faq { padding-top: 128px; @media (max-width: 720px) { padding-top: 80px; } }
+
+.pr-faq-head { max-width: 640px; margin-bottom: 48px; }
+
+.pr-faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.pr-faq-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px 36px 36px 36px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+
+  .pr-faq-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--accent-txt);
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 1.3rem;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.97rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  @media (max-width: 720px) { padding: 24px 22px 26px; gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-pricing svg { transition: none; }
+  .pricing-card.is-skeleton .sk { animation: none; }
 }

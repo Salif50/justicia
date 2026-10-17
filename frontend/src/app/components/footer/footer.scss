@@ -1,14 +1,32 @@
 @use '../../pages/public' as pub;
 
-:host { @include pub.tokens; background: pub.$ink; }
+:host { @include pub.tokens; background: var(--paper-2); }
 
 .ft {
-  background: pub.$ink;
-  color: pub.$on-ink;
+  position: relative;
+  background: var(--paper-2);
+  color: var(--text);
   overflow: hidden;
+  border-top: 1px solid var(--line);
+
+  // Halo chaud discret en bas à droite
+  &::before {
+    content: '';
+    position: absolute;
+    right: -10%;
+    bottom: -30%;
+    width: 60vw;
+    height: 60vw;
+    max-width: 900px;
+    max-height: 900px;
+    background: radial-gradient(closest-side, rgba(var(--ink-rgb), 0.05), transparent 70%);
+    filter: blur(20px);
+    pointer-events: none;
+  }
 }
 
 .ft-wrap {
+  position: relative;
   max-width: 1240px;
   margin: 0 auto;
   padding: 88px 40px 28px;
@@ -29,7 +47,7 @@
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: pub.$accent-ink;
+  color: var(--muted);
 }
 
 .ft-lead {
@@ -39,7 +57,7 @@
   font-size: clamp(1.6rem, 2.6vw, 2.1rem);
   line-height: 1.2;
   letter-spacing: -0.01em;
-  color: pub.$on-ink;
+  color: var(--ink);
 }
 
 .ft-cta {
@@ -49,16 +67,17 @@
   min-height: 48px;
   padding: 0 22px;
   border-radius: 999px;
-  background: pub.$accent;
-  color: pub.$ink;
+  background: var(--accent);
+  color: #0F0F0E;
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
-  transition: background 0.2s;
+  box-shadow: 0 10px 24px -14px rgba(var(--ink-rgb), 0.5);
+  transition: background 0.2s, transform 0.3s pub.$ease-out;
 
   svg { transition: transform 0.25s pub.$ease-out; }
-  &:hover { background: #F57A22; svg { transform: translateX(3px); } }
-  &:focus-visible { outline: 3px solid pub.$on-ink; outline-offset: 3px; }
+  &:hover { background: var(--accent-2); transform: translateY(-2px); svg { transform: translateX(3px); } }
+  &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 }
 
 .ft-cols {
@@ -72,13 +91,13 @@
   h2 {
     margin: 0 0 18px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(245, 242, 234, 0.14);
+    border-bottom: 1px solid var(--line-2);
     font-family: pub.$mono;
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: pub.$on-ink-mut;
+    color: var(--muted);
   }
 
   ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
@@ -87,15 +106,16 @@
     display: inline-flex;
     align-items: center;
     min-height: 36px;
-    color: pub.$on-ink;
+    color: var(--ink);
     font-size: 15px;
     text-decoration: none;
-    &:hover { color: pub.$accent-ink; }
-    &:focus-visible { outline: 2px solid pub.$accent; outline-offset: 2px; border-radius: 4px; }
+    transition: color 0.2s, transform 0.25s pub.$ease-out;
+    &:hover { color: var(--ink); opacity: 0.7; transform: translateX(3px); }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
   }
 }
 
-/* Logotype monumental */
+/* Logotype monumental, en contour */
 .ft-word {
   margin: 72px 0 0;
   font-family: pub.$display;
@@ -103,11 +123,12 @@
   font-size: clamp(5rem, 20vw, 18rem);
   line-height: 0.82;
   letter-spacing: -0.05em;
-  color: pub.$on-ink;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(var(--ink-rgb), 0.2);
   white-space: nowrap;
   user-select: none;
 
-  span { font-style: italic; color: pub.$accent-ink; }
+  span { font-style: italic; color: var(--accent-txt); -webkit-text-stroke: 0; }
 }
 
 .ft-bottom {
@@ -117,11 +138,15 @@
   gap: 8px 24px;
   margin-top: 28px;
   padding-top: 20px;
-  border-top: 1px solid rgba(245, 242, 234, 0.14);
+  border-top: 1px solid var(--line-2);
   font-family: pub.$mono;
   font-size: 12px;
-  color: pub.$on-ink-mut;
+  color: var(--muted);
 
   p { margin: 0; }
-  a { color: pub.$on-ink; text-decoration: underline; text-underline-offset: 3px; }
+  a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft-cta, .ft-col a { transition: none; }
 }

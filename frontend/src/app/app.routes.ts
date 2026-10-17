@@ -10,45 +10,55 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./pages/home/home').then(m => m.Home),
+    title: 'Le droit guinéen, répondu avec sources',
   },
   {
     path: 'pricing',
     loadComponent: () => import('./pages/pricing/pricing').then(m => m.Pricing),
+    title: 'Tarifs',
   },
   {
     path: 'support',
     loadComponent: () => import('./pages/support/support').then(m => m.Support),
+    title: 'Support & contact',
   },
   {
     path: 'terms',
     loadComponent: () => import('./pages/terms/terms').then(m => m.Terms),
+    title: "Conditions d'utilisation",
   },
   {
     path: 'guide',
     loadComponent: () => import('./pages/guide/guide').then(m => m.Guide),
+    title: "Guide d'utilisation",
   },
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then(m => m.Login),
     canActivate: [guestGuard],
+    title: 'Connexion',
   },
   {
     path: 'signup',
     loadComponent: () => import('./pages/signup/signup').then(m => m.Signup),
     canActivate: [guestGuard],
+    title: 'Créer un compte',
   },
   // Liens reçus par e-mail : confirmation d'adresse, mot de passe oublié
   {
     path: 'verify-email',
     loadComponent: () => import('./pages/account/verify-email').then(m => m.VerifyEmail),
+    title: 'Confirmation de l’adresse e-mail',
   },
   {
     path: 'forgot-password',
     loadComponent: () => import('./pages/account/forgot-password').then(m => m.ForgotPassword),
+    title: 'Mot de passe oublié',
   },
   {
     path: 'reset-password',
     loadComponent: () => import('./pages/account/reset-password').then(m => m.ResetPassword),
+    title: 'Nouveau mot de passe',
   },
   // Le questionnaire d'accueil est désormais une fenêtre dans l'espace client
   { path: 'onboarding', redirectTo: 'dashboard', pathMatch: 'full' },

@@ -11,40 +11,13 @@ import { ContentService, Testimonial, Partner, SiteConfig } from '../../services
 import { environment } from '../../../environments/environment';
 import { ChatSim } from './chat-sim/chat-sim';
 import { ScrollStory } from './scroll-story/scroll-story';
+import { Parallax, Reveal } from '../../core/reveal.directive';
 
-interface TitleChar { c: string; d: number; }
-interface TitleLine { em: boolean; words: TitleChar[][]; }
-
-// Révélation caractère par caractère du titre du héros.
+// Titre du héros : chaque ligne apparaît par un masque (glissement vers le haut).
 const TITLE_LINES: { text: string; em: boolean }[] = [
-  { text: 'Le droit guinéen,',      em: false },
-  { text: 'répondu avec précision', em: true  },
-  { text: "et sources à l'appui.",  em: false },
+  { text: 'Le droit guinéen,',   em: false },
+  { text: 'cité à la lettre.',   em: true  },
 ];
-const TITLE_START_MS = 200;
-const TITLE_STEP_MS  = 24;
-
-function buildTitle(): TitleLine[] {
-  let i = 0;
-  return TITLE_LINES.map(line => ({
-    em: line.em,
-    words: line.text.split(' ').map(word =>
-      [...word].map(c => ({ c, d: TITLE_START_MS + (i++) * TITLE_STEP_MS }))
-    ),
-  }));
-}
-
-/** Texture du héros : une page de références d'articles (purement décorative). */
-function buildCodexTexture(): string {
-  let seed = 11;
-  const rand = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  const parts: string[] = [];
-  for (let i = 0; i < 520; i++) {
-    const r = rand();
-    parts.push(r < 0.5 ? `Art. ${1 + Math.floor(rand() * 999)}` : `Art. ${100 + Math.floor(rand() * 430)}.${1 + Math.floor(rand() * 40)}`);
-  }
-  return parts.join('  ·  ');
-}
 
 const MANIFESTO =
   "JusticIA ne répond jamais de mémoire. Il cherche l'article, le cite mot pour mot, puis l'explique. " +
@@ -103,7 +76,7 @@ const AUDIENCES = [
 
 @Component({
   selector: 'app-accueil',
-  imports: [CommonModule, RouterLink, Header, Footer, FormsModule, ChatSim, ScrollStory],
+  imports: [CommonModule, RouterLink, Header, Footer, FormsModule, ChatSim, ScrollStory, Reveal, Parallax],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -113,9 +86,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('ledgerRef') ledgerEl?: ElementRef<HTMLElement>;
   @ViewChild('bento') bento?: ElementRef<HTMLElement>;
 
-  readonly titleLines = buildTitle();
+  readonly titleLines = TITLE_LINES;
   readonly titleText  = TITLE_LINES.map(l => l.text).join(' ');
-  readonly codexTexture = buildCodexTexture();
   readonly corpus     = CORPUS;
   readonly marquee    = MARQUEE;
   readonly audiences  = AUDIENCES;
@@ -159,7 +131,6 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     if (typeof window === 'undefined' || !this.motionOk) return;
     this.zone.runOutsideAngular(() => {
-      this.setupSpotlight();
       this.setupManifesto();
       this.setupCounters();
       this.setupTilt();
@@ -172,23 +143,6 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Effets ──────────────────────────────────────────────────────────────
-  /** Halo qui suit le pointeur et « éclaire » la page de codex du héros. */
-  private setupSpotlight() {
-    const el = this.hero?.nativeElement;
-    if (!el || !this.finePointer) return;
-    let raf = 0;
-    const move = (e: PointerEvent) => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const r = el.getBoundingClientRect();
-        el.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        el.style.setProperty('--my', `${e.clientY - r.top}px`);
-      });
-    };
-    el.addEventListener('pointermove', move);
-    this.cleanups.push(() => { el.removeEventListener('pointermove', move); cancelAnimationFrame(raf); });
-  }
-
   /** Les mots du manifeste s'encrent à mesure que la section traverse l'écran. */
   private setupManifesto() {
     const el = this.manifesto?.nativeElement;
@@ -214,9 +168,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     const el = this.ledgerEl?.nativeElement;
     if (!el || !('IntersectionObserver' in window)) return;
     this.zone.run(() => this.ledger.forEach(l => l.shown.set(0)));
-    const io = new IntersectionObserver(entries => {
-      if (!entries.some(e => e.isIntersecting)) return;
+    let started = false;
+    const run = () => {
+      if (started) return;
+      started = true;
       io.disconnect();
+      window.removeEventListener('scroll', check);
       const start = performance.now();
       const dur = 1400;
       const tick = (t: number) => {
@@ -226,9 +183,19 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         if (k < 1) requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) run();
     }, { threshold: 0.4 });
     io.observe(el);
-    this.cleanups.push(() => io.disconnect());
+    // Filet de sécurité si l'observateur ne se déclenche pas : vérification au défilement
+    const check = () => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.9 && r.bottom > 0) run();
+    };
+    window.addEventListener('scroll', check, { passive: true });
+    setTimeout(check, 900);
+    this.cleanups.push(() => { io.disconnect(); window.removeEventListener('scroll', check); });
   }
 
   /** Légère inclinaison des tuiles et reflet sous le pointeur. */

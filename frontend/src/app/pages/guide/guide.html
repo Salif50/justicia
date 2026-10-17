@@ -56,8 +56,8 @@
         </nav>
         <div class="sidebar-cta">
           <a routerLink="/signup" class="sidebar-cta-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Essayer gratuitement
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
         </div>
       </div>
@@ -165,7 +165,7 @@
             </div>
             <div class="pipe-step">
               <div class="pipe-icon"><guide-icon name="brain" [size]="18" /></div>
-              <div class="pipe-label">Génération IA<br><small>GPT-4o / Claude</small></div>
+              <div class="pipe-label">Rédaction de la réponse<br><small>Modèle de langage</small></div>
             </div>
             <div class="pipe-arrow" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -182,8 +182,8 @@
               <div class="feat-icon feat-blue">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               </div>
-              <h4>Recherche dans 23 textes de loi</h4>
-              <p>Codes pénal, civil, du travail, foncier, de l'enfant, Constitution 2025, lois OHADA et bien plus.</p>
+              <h4>Recherche dans 33 textes officiels</h4>
+              <p>Codes pénal, civil, du travail, foncier, de l'enfant, Constitution 2025, actes uniformes OHADA et bien plus — 12 282 articles indexés.</p>
             </div>
             <div class="feat-card">
               <div class="feat-icon feat-green">
@@ -284,7 +284,7 @@
                 la liste aux côtés des agents intégrés.
               </p>
               <ul class="info-list">
-                <li>Choisissez parmi les 23 textes de loi guinéens indexés</li>
+                <li>Choisissez parmi les 33 textes officiels guinéens indexés</li>
                 <li>Combinez plusieurs domaines juridiques</li>
                 <li>Nommez et personnalisez l'identité de l'agent</li>
                 <li>Partagez l'agent avec votre équipe (Enterprise)</li>
@@ -352,6 +352,7 @@
 
           <div class="limits-table">
             <h3>Limites selon le plan</h3>
+            <div class="limits-scroll">
             <table>
               <thead>
                 <tr>
@@ -388,6 +389,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
           </div>
         </article>
 
@@ -590,7 +592,7 @@
             <div class="plan-col">
               <div class="plan-header free">
                 <div class="plan-name">Gratuit</div>
-                <div class="plan-price">0 FG</div>
+                <div class="plan-price">Pour découvrir</div>
               </div>
               <ul class="plan-features">
                 <li class="ok">5 questions / jour</li>
@@ -607,7 +609,7 @@
             <div class="plan-col">
               <div class="plan-header basic">
                 <div class="plan-name">Basic</div>
-                <div class="plan-price">5 000 FG<span>/mois</span></div>
+                <div class="plan-price">Usage régulier</div>
               </div>
               <ul class="plan-features">
                 <li class="ok">10 questions / jour</li>
@@ -625,7 +627,7 @@
               <div class="plan-badge-top">Le plus populaire</div>
               <div class="plan-header pro">
                 <div class="plan-name">Pro</div>
-                <div class="plan-price">15 000 FG<span>/mois</span></div>
+                <div class="plan-price">Professionnels du droit</div>
               </div>
               <ul class="plan-features">
                 <li class="ok">Questions illimitées</li>
@@ -642,7 +644,7 @@
             <div class="plan-col">
               <div class="plan-header ent">
                 <div class="plan-name">Enterprise</div>
-                <div class="plan-price">Sur devis</div>
+                <div class="plan-price">Cabinets &amp; institutions · sur devis</div>
               </div>
               <ul class="plan-features">
                 <li class="ok">Tout du plan Pro</li>
@@ -657,6 +659,7 @@
               <a routerLink="/support" class="plan-btn plan-btn-ent">Nous contacter</a>
             </div>
           </div>
+          <p class="plans-note">Les tarifs en vigueur et le détail de chaque offre sont présentés sur la <a routerLink="/pricing">page Tarifs</a>.</p>
         </article>
 
       </main>
@@ -667,22 +670,18 @@
 <!-- ══════════════════════════════════════════════════════════════
      CTA FINAL
 ═══════════════════════════════════════════════════════════════ -->
-<section class="guide-cta">
-  <div class="container">
-    <div class="cta-card">
-      <div class="cta-bg">
-        <div class="cta-orb cta-orb-1"></div>
-        <div class="cta-orb cta-orb-2"></div>
-      </div>
-      <h2>Prêt à maîtriser le droit guinéen ?</h2>
-      <p>Rejoignez des milliers de Guinéens qui font confiance à JusticIA pour leurs questions juridiques.</p>
-      <div class="cta-actions">
-        <a routerLink="/signup" class="btn-cta">
-          Commencer gratuitement
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-        <a routerLink="/support" class="btn-ghost">Contacter l'équipe</a>
-      </div>
+<section class="guide-cta" aria-labelledby="guide-cta-title">
+  <div class="cta-card" reveal="scale">
+    <span class="cta-bg" aria-hidden="true"></span>
+    <p class="pub-eyebrow pub-eyebrow--light">Et maintenant</p>
+    <h2 id="guide-cta-title">Prêt à maîtriser <em>le droit guinéen</em> ?</h2>
+    <p>Créez votre compte gratuit et posez votre première question en moins d'une minute. Aucune carte bancaire requise.</p>
+    <div class="cta-actions">
+      <a routerLink="/signup" class="pub-btn pub-btn--dark">
+        Commencer gratuitement
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a routerLink="/support" class="pub-btn pub-btn--outline-light">Contacter l'équipe</a>
     </div>
   </div>
 </section>

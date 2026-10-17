@@ -3,10 +3,11 @@ import { CommonModule }                                 from '@angular/common';
 import { RouterLink }                                   from '@angular/router';
 import { Header }                                       from '../../components/header/header';
 import { Footer }                                       from '../../components/footer/footer';
+import { Reveal }                                       from '../../core/reveal.directive';
 
 @Component({
   selector:    'app-pcu',
-  imports:     [CommonModule, RouterLink, Header, Footer],
+  imports:     [CommonModule, RouterLink, Header, Footer, Reveal],
   templateUrl: './terms.html',
   styleUrl: './terms.scss',
 })

@@ -4,10 +4,11 @@ import { RouterLink } from '@angular/router';
 import { Header } from '../../components/header/header';
 import { Footer } from '../../components/footer/footer';
 import { ContentService, PricingPlan, FaqItem } from '../../services/content';
+import { Reveal } from '../../core/reveal.directive';
 
 @Component({
   selector: 'app-tarif',
-  imports: [CommonModule, RouterLink, Header, Footer],
+  imports: [CommonModule, RouterLink, Header, Footer, Reveal],
   templateUrl: './pricing.html',
   styleUrl: './pricing.scss',
 })

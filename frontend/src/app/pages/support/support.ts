@@ -7,10 +7,11 @@ import { Header } from '../../components/header/header';
 import { Footer } from '../../components/footer/footer';
 import { ContentService, FaqItem, SiteConfig } from '../../services/content';
 import { environment } from '../../../environments/environment';
+import { Reveal } from '../../core/reveal.directive';
 
 @Component({
   selector: 'app-support',
-  imports: [CommonModule, RouterLink, Header, Footer, FormsModule],
+  imports: [CommonModule, RouterLink, Header, Footer, FormsModule, Reveal],
   templateUrl: './support.html',
   styleUrl: './support.scss',
 })

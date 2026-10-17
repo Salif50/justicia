@@ -150,7 +150,7 @@
               <div class="setting-title"><h3>Thème</h3><p>Clair, sombre ou automatique</p></div>
             </div>
             <select class="setting-select" [value]="theme()"
-                    (change)="theme.set($any($event.target).value); onChange()">
+                    (change)="setTheme($any($event.target).value)">
               <option value="light">Clair</option>
               <option value="dark">Sombre</option>
               <option value="auto">Automatique</option>
