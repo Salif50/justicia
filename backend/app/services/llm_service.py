@@ -50,9 +50,11 @@ class LLMService:
         temperature: float = 0.2,
         max_tokens:  int   = 6000,
         provider:    Optional[str] = None,
+        model:       Optional[str] = None,
     ) -> str:
         """
-        Appel LLM synchrone. À exécuter dans un thread pool (jamais dans l'event loop).
+        Appel LLM synchrone. `model` : modèle OpenAI à utiliser à la place du modèle par
+        défaut (ignoré par les autres fournisseurs). À exécuter dans un thread pool (jamais dans l'event loop).
         Retourne le texte généré.
         """
         p = (provider or settings.LLM_PROVIDER).lower()
@@ -67,7 +69,7 @@ class LLMService:
             elif p == "compatible":
                 return self._call_compatible(system, user, temperature, max_tokens, json_mode)
             else:  # openai (défaut)
-                return self._call_openai(system, user, temperature, max_tokens, json_mode)
+                return self._call_openai(system, user, temperature, max_tokens, json_mode, model)
         except Exception as exc:
             log.error("LLM error (provider=%s): %s", p, exc)
             raise
@@ -83,6 +85,7 @@ class LLMService:
         temperature: float = 0.2,
         max_tokens:  int   = 6000,
         provider:    Optional[str] = None,
+        model:       Optional[str] = None,
     ) -> str:
         """Appel LLM asynchrone (délègue au thread pool pour ne pas bloquer l'event loop)."""
         loop = asyncio.get_event_loop()
@@ -95,6 +98,7 @@ class LLMService:
                 temperature=temperature,
                 max_tokens=max_tokens,
                 provider=provider,
+                model=model,
             ),
         )
 
@@ -168,12 +172,13 @@ class LLMService:
     # ── OpenAI GPT ────────────────────────────────────────────────────────────
 
     def _call_openai(
-        self, system: str, user: str, temperature: float, max_tokens: int, json_mode: bool
+        self, system: str, user: str, temperature: float, max_tokens: int, json_mode: bool,
+        model: Optional[str] = None,
     ) -> str:
         from openai import OpenAI
         client = OpenAI(api_key=settings.OPENAI_API_KEY)
         kwargs: dict = dict(
-            model=settings.OPENAI_MODEL,
+            model=model or settings.OPENAI_MODEL,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user",   "content": user},

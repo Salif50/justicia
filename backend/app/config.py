@@ -75,6 +75,9 @@ class Settings(BaseSettings):
     RAG_LLM_PROVIDER:     str = ""
     RAG_OLLAMA_MODEL:     str = ""   # Si vide, utilise OLLAMA_MODEL
     RAG_REQUEST_TIMEOUT_SECONDS: int = 120
+    # Modèle rapide (OpenAI) pour analyser la question avant la recherche et
+    # rédiger l'accompagnement quand aucun texte n'est trouvé
+    ASSISTANT_FAST_MODEL: str = "gpt-4o-mini"
     # Charger les modèles dès le démarrage (activé en Docker, désactivé en dev)
     RAG_WARMUP:           bool = False
 

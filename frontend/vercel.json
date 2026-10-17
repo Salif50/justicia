@@ -6,7 +6,11 @@
   "outputDirectory": "dist/justicIA/browser",
   "rewrites": [
     {
-      "source": "/((?!.*\\.(?:js|mjs|css|map)$).*)",
+      "source": "/(.*)\\.(js|mjs|css|map)",
+      "destination": "/__fichier-introuvable"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],

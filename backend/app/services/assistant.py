@@ -18,10 +18,12 @@ import json
 import logging
 import re
 import unicodedata
+from dataclasses import dataclass, field
 
 
 from sqlalchemy import select
 
+from app.config import settings
 from app.models.content import PricingPlan
 from app.services.llm_service import llm
 
@@ -35,6 +37,7 @@ class Kind:
     FAREWELL = "farewell"      # au revoir, bonne journée…
     ABOUT = "about"            # qui es-tu, que sais-tu faire, tarifs…
     OFFTOPIC = "offtopic"      # hors du droit guinéen
+    CLARIFY = "clarify"        # intention juridique mais sujet impossible à cerner → questions de précision
 
     CONVERSATIONAL = {GREETING, THANKS, FAREWELL, ABOUT, OFFTOPIC}
 
@@ -319,23 +322,232 @@ async def reply(kind: str, message: str, streak: int, db, user_name: str | None 
         return fallback_reply(kind, streak, user_name)
 
 
-async def classify_unanswered(message: str) -> str:
-    """Le RAG n'a trouvé aucun texte : question de droit sans réponse, ou demande hors sujet ?"""
-    system = (
-        "Tu classes un message adressé à un assistant juridique spécialisé dans le droit guinéen. "
-        "Réponds uniquement en JSON : {\"type\": \"legal\" | \"offtopic\" | \"about\" | \"greeting\"}.\n"
-        "- legal : toute question ou situation qui relève du droit, de la justice, de démarches ou de droits "
-        "et obligations, même mal formulée ou en langage courant.\n"
-        "- about : question sur l'assistant lui-même, la plateforme, ses fonctions ou ses tarifs.\n"
-        "- greeting : salutation, politesse, remerciement sans autre demande.\n"
-        "- offtopic : tout le reste (cuisine, sport, santé, informatique, devoirs, culture générale…)."
-    )
+# ══════════════════════════════════════════════════════════════════════════════
+#  Analyse de la question (avant la recherche) et accompagnement (après)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@dataclass
+class Triage:
+    kind: str                                   # legal | clarify | offtopic | about | greeting
+    search_query: str = ""                      # reformulation juridique pour la recherche
+    topic: str = ""                             # sujet en quelques mots (« viol sur mineur »)
+    sensitive: bool = False                     # violence, abus, enfant en danger, détresse…
+    clarify_questions: list[str] = field(default_factory=list)
+
+
+TRIAGE_PROMPT = """Tu analyses le message d'un utilisateur adressé à JusticIA, assistant spécialisé dans le droit
+de la République de Guinée, AVANT la recherche dans les textes de loi. Réponds UNIQUEMENT en JSON :
+{"type": "...", "search_query": "...", "topic": "...", "sensitive": true|false, "clarify_questions": ["..."]}
+
+type :
+- "legal" : le sujet juridique est identifiable, même formulé en langage courant, avec des fautes ou de
+  façon très générale (« les articles sur le viol », « mon patron ne me paie pas », « comment divorcer »).
+- "clarify" : RARE. Seulement si l'utilisateur veut de l'aide juridique mais qu'il est IMPOSSIBLE de savoir
+  sur quel sujet (« que dois-je faire pour ma famille ? », « j'ai un problème », « aide-moi ») et que
+  l'historique ne l'éclaire pas. Aussi si un numéro d'article est cité SANS AUCUN nom de texte ni dans le
+  message ni dans l'historique (« que dit l'article 12 ? ») : demande alors de quel code il s'agit.
+  Dès qu'un sujet ou un texte est identifiable, c'est "legal" : « que dit l'article 268 du Code pénal ? »,
+  « les articles 272 et 273 du code pénal », « l'article qui condamne les abus sexuels sur mineur » → legal.
+  Ne demande jamais « de quel pays » : il s'agit toujours du droit guinéen.
+- "about" : question sur JusticIA, ses fonctions ou ses tarifs.  "greeting" : pure politesse.
+- "offtopic" : rien à voir avec le droit (cuisine, sport, code informatique, santé, devoirs…).
+
+search_query (si legal) : 6 à 20 mots-clés pour un moteur de recherche dans les codes guinéens.
+TRADUIS le langage courant dans le VOCABULAIRE DES TEXTES DE LOI et ajoute les notions juridiques voisines
+qu'un code emploierait. N'y mets PAS « article », « loi », « Guinée », « code » ni de formule de politesse.
+Exemples :
+- « l'article qui condamne les abus sexuels sur mineur » → « viol attentat à la pudeur atteinte sexuelle enfant mineur âgé de moins de 16 ans peine réclusion »
+- « mon patron m'a renvoyé sans raison » → « licenciement abusif motif légitime indemnité préavis employeur travailleur »
+- « mon mari veut prendre une 2e femme sans mon accord » → « polygamie consentement épouse mariage option monogamie »
+- « mon frère refuse de partager l'héritage » → « succession partage héritiers indivision part réservataire »
+Tiens compte de l'historique pour les questions de suivi. Corrige les fautes de frappe.
+N'invente JAMAIS de numéro d'article, de peine ou de montant.
+topic : le sujet en 2 à 6 mots.
+sensitive : true UNIQUEMENT si l'utilisateur décrit une situation VÉCUE (lui-même ou un proche victime de
+violence, d'abus, enfant en danger, détresse) : « ma fille a été touchée par un voisin ». false pour une
+simple demande d'information ou de texte sur une infraction : « que dit l'article sur le viol ? ».
+clarify_questions (si clarify) : 2 ou 3 questions courtes, bienveillantes et CONCRÈTES pour cerner la
+situation. Propose des pistes précises liées aux mots employés (pour « ma famille » : s'agit-il d'un mariage,
+d'un divorce, de la garde des enfants, d'une pension alimentaire, d'un héritage ?). Jamais de question vague
+du type « avez-vous besoin d'aide juridique ? ».
+"""
+
+
+async def triage(message: str, history: list[dict] | None = None) -> Triage | None:
+    """Analyse rapide (modèle léger). None si indisponible : on garde alors les règles."""
+    recent = ""
+    if history:
+        recent = "Historique récent :\n" + "\n".join(
+            f"{'Utilisateur' if h['role'] == 'user' else 'JusticIA'} : {h['content'][:300]}" for h in history[-4:]
+        ) + "\n\n"
     try:
-        raw = await llm.acall(system, message[:800], json_mode=True, temperature=0, max_tokens=20)
-        kind = json.loads(raw).get("type", "legal")
-    except Exception:  # noqa: BLE001 — en cas de doute, on garde la réponse juridique prudente
-        return Kind.LEGAL
-    return {"legal": Kind.LEGAL, "offtopic": Kind.OFFTOPIC, "about": Kind.ABOUT,
-            "greeting": Kind.GREETING}.get(kind, Kind.LEGAL)
+        raw = await llm.acall(
+            TRIAGE_PROMPT, f"{recent}Message : « {message[:1200]} »",
+            json_mode=True, temperature=0, max_tokens=260, model=settings.ASSISTANT_FAST_MODEL,
+        )
+        data = json.loads(raw)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("triage_failed error=%s", type(exc).__name__)
+        return None
+    kind = {"legal": Kind.LEGAL, "clarify": Kind.CLARIFY, "offtopic": Kind.OFFTOPIC,
+            "about": Kind.ABOUT, "greeting": Kind.GREETING}.get(str(data.get("type")), Kind.LEGAL)
+    questions = [str(q).strip() for q in (data.get("clarify_questions") or []) if str(q).strip()][:3]
+    if kind == Kind.CLARIFY and (not questions or _clearly_legal(message, history)):
+        kind = Kind.LEGAL
+    # « Que dit la loi guinéenne sur… » n'est jamais hors sujet, même si le thème est inattendu
+    if kind == Kind.OFFTOPIC and _STRONG_LEGAL.search(normalize(message)):
+        kind = Kind.LEGAL
+    return Triage(
+        kind=kind,
+        search_query=str(data.get("search_query") or "")[:300],
+        topic=str(data.get("topic") or "")[:80],
+        sensitive=bool(data.get("sensitive")),
+        clarify_questions=questions,
+    )
 
 
+_STRONG_LEGAL = re.compile(
+    r"\b(lois?|legal|legale|legaux|illegal\w*|juridiques?|legislation|reglementation|droit guineen|"
+    r"tribunal|juge|avocat|plainte|code (?:penal|civil|du travail|de travail|minier|foncier|electoral|de l enfant))\b"
+)
+_ARTICLE_REF = re.compile(r"\bart(?:icle)?s?\.?\s*(?:premier|\d)", re.I)
+_TEXT_NAMES = re.compile(
+    r"\b(code|constitution|charte|loi|decret|ordonnance|ohada)\b", re.I,
+)
+
+
+def _clearly_legal(message: str, history: list[dict] | None) -> bool:
+    """Le sujet est identifiable sans ambiguïté : pas de questions de précision.
+
+    - un article cité avec le nom d'un texte (dans le message ou l'historique récent) ;
+    - ou une notion juridique reconnue par les règles (licenciement, viol, héritage…).
+    """
+    context = normalize(message + " " + " ".join(h["content"] for h in (history or [])[-4:]))
+    if _ARTICLE_REF.search(normalize(message)):
+        # Un numéro d'article : clair seulement si le texte visé est nommé quelque part
+        return bool(_TEXT_NAMES.search(context))
+    padded = f" {normalize(message)} "
+    return any(stem in padded for stem in _LEGAL_STEMS)
+
+
+def clarify_reply(t: Triage, user_name: str | None = None) -> str:
+    """Questions de précision quand le sujet ne peut pas être identifié."""
+    lines = "\n".join(f"- {q}" for q in t.clarify_questions)
+    return (
+        "Je veux vous orienter au mieux, mais j'ai besoin de mieux comprendre votre situation.\n\n"
+        f"{lines}\n\n"
+        "Avec ces précisions, je rechercherai les textes guinéens qui s'appliquent à votre cas "
+        "(famille, mariage, succession, garde des enfants, travail, terrain…) et je vous les citerai."
+    )
+
+
+SUPPORT_PROMPT = """Tu es JusticIA, assistant juridique spécialisé dans le droit de la République de Guinée.
+La recherche dans les textes officiels guinéens n'a pas permis de confirmer une réponse par un article précis.
+Tu rédiges malgré tout une réponse UTILE et HUMAINE, comme le ferait un juriste bienveillant au premier contact.
+
+Structure (en français, vouvoiement, 120 à 220 mots, sans titre principal) :
+1. Une phrase qui montre que tu as compris la demande{empathy}.
+2. Une phrase transparente : tu n'as pas pu rattacher la réponse à un article précis des textes que tu consultes,
+   donc tu donnes une orientation générale.
+3. « **Ce que vous pouvez faire :** » puis 3 à 5 puces concrètes et prudentes (démarches, preuves à conserver,
+   interlocuteurs : commissariat ou gendarmerie, tribunal, avocat inscrit au Barreau de Guinée, notaire,
+   services sociaux… selon le cas).
+4. « **Pour une réponse fondée sur les textes :** » puis 1 ou 2 reformulations de la question que l'utilisateur
+   peut me poser pour que je retrouve l'article exact.
+
+Interdictions absolues :
+- AUCUN numéro d'article, AUCUNE référence de loi ou de décret, AUCUNE peine, durée, montant ou délai chiffré :
+  ces éléments ne peuvent venir que des textes, et ils ne sont pas confirmés ici.
+- N'invente aucun organisme, numéro de téléphone ou adresse. Reste générique.
+- Pas de droit étranger.
+{sensitive_rule}"""
+
+_SENSITIVE_RULE = (
+    "- Sujet sensible (violence, abus, enfant en danger) : ton calme et protecteur ; rappelle qu'en cas de danger "
+    "immédiat il faut contacter sans attendre la police ou la gendarmerie, et qu'un enfant victime doit être "
+    "mis en sécurité et accompagné (médecin, proches de confiance, autorités)."
+)
+_FORBIDDEN_REF = re.compile(
+    r"\b(?:art(?:icle)?s?\.?\s*\d|loi\s+n|l/\d{4}|d[ée]cret\s+n|\d+\s*(?:ans?|mois|jours?)\s+(?:de|d)\s+"
+    r"(?:prison|emprisonnement|r[ée]clusion)|\d[\d\s.]*\s*(?:gnf|francs?\s+guin))",
+    re.I,
+)
+
+SUPPORT_FOOTER = (
+    "\n\n---\n*Orientation générale, non fondée sur un article précis. Pour une décision importante, "
+    "consultez un avocat inscrit au Barreau de Guinée.*"
+)
+
+
+def _support_fallback(t: Triage | None) -> str:
+    safety = ""
+    if t and t.sensitive:
+        safety = ("\n- En cas de danger immédiat, contactez sans attendre la police ou la gendarmerie ; "
+                  "si un enfant est concerné, mettez-le en sécurité et faites-le accompagner (médecin, proches de confiance).")
+    topic = f" sur « {t.topic} »" if t and t.topic else ""
+    return (
+        f"Je comprends votre demande{topic}. Je n'ai pas pu rattacher ma réponse à un article précis des textes "
+        "guinéens que je consulte ; je préfère donc vous orienter sans vous donner de référence inexacte.\n\n"
+        "**Ce que vous pouvez faire :**\n"
+        "- Rassemblez les éléments utiles (dates, documents, témoins, échanges écrits).\n"
+        "- Rapprochez-vous d'un avocat inscrit au Barreau de Guinée pour une analyse de votre situation."
+        f"{safety}\n\n"
+        "**Pour une réponse fondée sur les textes :** reformulez votre question en précisant la situation et le "
+        "domaine (par exemple : « Quelle peine prévoit le Code pénal pour… ? »)."
+    )
+
+
+async def support_reply(message: str, t: Triage | None, history: list[dict] | None = None) -> str:
+    """Accompagnement quand aucun article ne permet de confirmer une réponse."""
+    system = SUPPORT_PROMPT.format(
+        empathy=" et, si la situation est difficile, une marque d'empathie sobre" ,
+        sensitive_rule=_SENSITIVE_RULE if (t and t.sensitive) else "",
+    )
+    context = ""
+    if history:
+        context = "Historique récent :\n" + "\n".join(
+            f"{'Utilisateur' if h['role'] == 'user' else 'JusticIA'} : {h['content'][:250]}" for h in history[-4:]
+        ) + "\n\n"
+    user = f"{context}Question : « {message[:1200]} »" + (f"\nSujet identifié : {t.topic}" if t and t.topic else "")
+    for attempt in range(2):
+        try:
+            text = (await llm.acall(system, user, temperature=0.3, max_tokens=520)).strip()
+        except Exception as exc:  # noqa: BLE001
+            log.warning("support_reply_failed error=%s", type(exc).__name__)
+            break
+        if len(text) > 60 and not _FORBIDDEN_REF.search(text):
+            return text + SUPPORT_FOOTER
+        user += "\n\nATTENTION : ta réponse précédente contenait une référence ou un chiffre interdit. Recommence sans aucun."
+        log.info("support_reply_retry attempt=%s", attempt + 1)
+    return _support_fallback(t) + SUPPORT_FOOTER
+
+
+# ── Situations sensibles : quelques mots humains avant les textes ──────────────
+
+PREFACE_PROMPT = """Tu es JusticIA, assistant juridique guinéen. L'utilisateur décrit une situation difficile
+(violence, abus, enfant ou personne en danger). Une réponse juridique sourcée suivra ton texte.
+Écris UNIQUEMENT un court paragraphe d'introduction (50 à 90 mots, vouvoiement, ton calme et humain) :
+une marque d'empathie sobre, puis les premiers réflexes concrets (mise en sécurité, soins médicaux si besoin,
+conserver les preuves, signaler les faits à la police ou à la gendarmerie, se faire accompagner).
+Termine par une phrase qui introduit les textes, par exemple : « Voici ce que prévoit la loi guinéenne : ».
+Interdits : numéro d'article, référence de loi, peine, durée, montant, numéro de téléphone, nom d'organisme précis."""
+
+
+def _preface_fallback() -> str:
+    return (
+        "Je suis sincèrement désolé pour ce que vous traversez. En priorité, mettez la personne concernée en "
+        "sécurité, faites-la examiner par un médecin si nécessaire, conservez tous les éléments utiles et "
+        "signalez les faits à la police ou à la gendarmerie. Vous n'avez pas à affronter cela seul : un avocat "
+        "peut vous accompagner. Voici ce que prévoit la loi guinéenne :"
+    )
+
+
+async def sensitive_preface(message: str) -> str:
+    try:
+        text = (await llm.acall(PREFACE_PROMPT, f"Message : « {message[:800]} »",
+                                temperature=0.3, max_tokens=200, model=settings.ASSISTANT_FAST_MODEL)).strip()
+        if 40 < len(text) < 900 and not _FORBIDDEN_REF.search(text) and not re.search(r"\d{6,}", text):
+            return text
+    except Exception as exc:  # noqa: BLE001
+        log.warning("sensitive_preface_failed error=%s", type(exc).__name__)
+    return _preface_fallback()

@@ -263,6 +263,7 @@ def _run_rag_sync(
     history:        Optional[list[dict]] = None,
     system_prompt:  Optional[str]        = None,
     request_id:     Optional[str]        = None,
+    search_hint:    Optional[str]        = None,
 ) -> tuple[str, list[dict]]:
     """Exécution synchrone du pipeline RAG (appelé depuis thread pool)."""
     pipeline = _load_pipeline()
@@ -279,6 +280,7 @@ def _run_rag_sync(
         history       = history or [],
         system_prompt = system_prompt,
         request_id    = request_id,
+        search_hint   = search_hint,
     )
 
 
@@ -290,6 +292,7 @@ async def ask_rag(
     history:        Optional[list[dict]] = None,
     system_prompt:  Optional[str]        = None,
     request_id:     Optional[str]        = None,
+    search_hint:    Optional[str]        = None,
 ) -> tuple[str, list[dict]]:
     """
     Appel asynchrone au pipeline RAG.
@@ -301,7 +304,8 @@ async def ask_rag(
     """
     loop = asyncio.get_event_loop()
     future = loop.run_in_executor(
-        _executor, _run_rag_sync, question, agent_id, top_k, custom_domains, history, system_prompt, request_id
+        _executor, _run_rag_sync, question, agent_id, top_k, custom_domains, history, system_prompt, request_id,
+        search_hint,
     )
     return await asyncio.wait_for(future, timeout=settings.RAG_REQUEST_TIMEOUT_SECONDS)
 

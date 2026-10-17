@@ -33,3 +33,6 @@ docs/admin.md
 
 # Sauvegardes produites sur le VPS par deploy/backup.sh
 deploy/backups/
+
+# Cache des reformulations de l évaluation RAG
+model/evaluation/.hints_cache.json

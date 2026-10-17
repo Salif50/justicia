@@ -20,7 +20,7 @@ from app.services.assistant import Kind
 from app.services.quota import resolve_quota
 from app.services.rag_service import (AGENT_DOMAIN_MAP, AGENT_NAMES,
                                        AGENT_DEFAULT_PROMPTS, ask_rag, format_sources,
-                                       is_no_source_answer)
+                                       is_no_source_answer, is_unverified_answer)
 
 DEFAULT_TITLE = "Nouvelle consultation"
 
@@ -170,16 +170,28 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
     streak = assistant.conversational_streak(history_kinds)
     technical_error = False
 
+    rag_history = [h for h, k in zip(conversation_history, message_kinds or [None] * len(conversation_history))
+                   if k not in Kind.CONVERSATIONAL]
+
+    # ── Analyse de la question (modèle rapide) : nature, reformulation juridique ─
+    triage = None
+    if kind not in Kind.CONVERSATIONAL:
+        triage = await assistant.triage(body.message, rag_history)
+        if triage and triage.kind != Kind.LEGAL:
+            kind = triage.kind
+
     if kind in Kind.CONVERSATIONAL:
-        # ── Accueil : salutation, remerciement, question sur JusticIA ───────────
+        # ── Accueil : salutation, remerciement, question sur JusticIA, hors sujet ─
         response_text = await assistant.reply(
             kind, body.message, streak, db, current_user.name, conversation_history,
         )
         sources = []
+    elif kind == Kind.CLARIFY:
+        # ── Sujet impossible à cerner : questions de précision, sans recherche ───
+        response_text = assistant.clarify_reply(triage, current_user.name)
+        sources = []
     else:
-        # ── Appel RAG (avec historique : les échanges d'accueil n'y sont pas utiles) ─
-        rag_history = [h for h, k in zip(conversation_history, message_kinds or [None] * len(conversation_history))
-                       if k not in Kind.CONVERSATIONAL]
+        # ── Recherche dans les textes (RAG), orientée par la reformulation juridique ─
         try:
             response_text, articles = await ask_rag(
                 body.message,
@@ -188,6 +200,7 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
                 history       = rag_history,
                 system_prompt = agent_system_prompt,
                 request_id    = request_id,
+                search_hint   = triage.search_query if triage else None,
             )
             sources = format_sources(articles)
         except Exception as e:
@@ -199,15 +212,13 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
             sources       = []
             technical_error = True
 
-        if is_no_source_answer(response_text):
-            # Aucun texte trouvé : question de droit sans réponse, ou demande hors sujet ?
-            unanswered_kind = await assistant.classify_unanswered(body.message)
-            if unanswered_kind != Kind.LEGAL:
-                kind = unanswered_kind
-                response_text = await assistant.reply(
-                    kind, body.message, streak, db, current_user.name, conversation_history,
-                )
-                sources = []
+        if is_no_source_answer(response_text) or is_unverified_answer(response_text):
+            # Aucun article ne confirme la réponse : accompagnement humain plutôt qu'un refus sec
+            response_text = await assistant.support_reply(body.message, triage, rag_history)
+            sources = []
+        elif triage and triage.sensitive and sources and not technical_error:
+            # Situation difficile : quelques mots humains et les premiers réflexes avant les textes
+            response_text = f"{await assistant.sensitive_preface(body.message)}\n\n{response_text}"
 
     # Tout message consomme le quota (anti-gaspillage), sauf une erreur technique de notre côté
     counted = not technical_error

@@ -67,6 +67,13 @@ DOMAIN_KEYWORDS: dict[str, list[str]] = {
         "infraction", "recidive", "legitime defense",
         "complicite", "coauteur", "prescription penale",
         "code penal", "procedure penale", "sanction penale",
+        # Atteintes aux personnes et infractions sexuelles (formulations courantes)
+        "vole", "voler", "volee", "escroquerie", "abus de confiance",
+        "abus sexuel", "abus sexuels", "agression sexuelle", "atteinte sexuelle",
+        "attentat a la pudeur", "harcelement sexuel", "pedophil", "pornographi",
+        "inceste", "proxenet", "prostitution", "traite des personnes", "violences",
+        "coups et blessures", "torture", "enlevement", "sequestration", "excision",
+        "mutilation genitale",
     ],
     "Droit foncier": [
         "terrain", "foncier", "propriete immobiliere",
@@ -222,6 +229,8 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
         "quel est le chatiment", "punition", "risque d emprisonnement",
         "risque de prison", "combien d annees de prison", "peine encour",
         "sanction prev", "infraction punie", "crime puni",
+        "qui condamne", "qui punit", "qui sanctionne", "qui reprime", "est puni", "est il puni",
+        "est ce puni", "est ce un crime", "est ce un delit",
     ]),
     (QueryIntent.CONDITIONS, [
         "quelles sont les conditions", "conditions pour etre", "conditions pour avoir",
@@ -290,10 +299,9 @@ _LEGAL_SYNONYMS: dict[str, list[str]] = {
 
 def _enrich_with_synonyms(query: str) -> str:
     """Ajoute des synonymes juridiques à la requête pour améliorer le recall BM25."""
-    q_lower = query.lower()
     additions = []
     for term, synonyms in _LEGAL_SYNONYMS.items():
-        if term in q_lower:
+        if _keyword_in(query, term):
             additions.extend(synonyms[:2])  # max 2 synonymes par terme
     if additions:
         return f"{query} {' '.join(additions)}"
@@ -313,6 +321,116 @@ def _normalize_for_keywords(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+# Formules conversationnelles qui diluent la recherche (« Ok parfait alors je voudrais que tu me donnes… »)
+_CONVERSATIONAL_PREFIX = re.compile(
+    r"^(?:\s*(?:salut|bonjour|bonsoir|hello|coucou|ok|okay|d accord|parfait|super|merci|alors|bon|bien|"
+    r"svp|s il (?:te|vous) pla[iî]t|stp|euh|et|donc|oui|non)\b[\s,.!]*)+",
+    re.I,
+)
+_REQUEST_PREAMBLE = re.compile(
+    r"^(?:je (?:voudrais|veux|souhaite|souhaiterais|aimerais)(?: bien)?(?: que (?:tu|vous) me)?|"
+    r"(?:peux|pourrais|pouvez|pourriez)[ -](?:tu|vous) me|est ce que (?:tu peux|vous pouvez) me|"
+    r"(?:donne|donnez|dis|dites|cite|citez|montre|montrez|explique|expliquez|trouve|trouvez)[ -]moi)\s+"
+    r"(?:(?:donner|dire|citer|montrer|expliquer|trouver|savoir|conna[iî]tre|sortir|avoir)\s+)?",
+    re.I,
+)
+
+
+def _strip_conversational(question: str) -> str:
+    """Retire salutations et formules de demande pour ne garder que l'objet juridique."""
+    q = question.strip()
+    for _ in range(2):
+        q = _CONVERSATIONAL_PREFIX.sub("", q).strip()
+        q = _REQUEST_PREAMBLE.sub("", q).strip()
+    return q if len(q) >= 8 else question
+
+
+# ── Références explicites : « article 268 du Code pénal » ──────────────────────
+# Le moteur cherche par le sens et ne « comprend » pas un numéro : sans ce
+# raccourci, « article 268 du Code pénal » renvoyait l'article 945 du CPP.
+# Noms usuels → identifiants de documents de l'index (le plus récent en premier).
+_DOC_ALIASES: list[tuple[str, list[str]]] = sorted([
+    ("code de procedure penale", ["doc_020"]), ("procedure penale", ["doc_020"]), ("cpp", ["doc_020"]),
+    ("code penal", ["doc_008"]),
+    ("code civil", ["doc_032"]),
+    ("code du travail", ["doc_023", "doc_009"]), ("code de travail", ["doc_023", "doc_009"]),
+    ("code de l enfant", ["doc_005"]), ("code foncier", ["doc_006"]), ("code domanial", ["doc_006"]),
+    ("code minier", ["doc_007"]), ("constitution", ["doc_011"]), ("code electoral", ["doc_012"]),
+    ("charte de la transition", ["doc_014"]), ("securite sociale", ["doc_034", "doc_015"]),
+    ("code petrolier", ["doc_016"]), ("code maritime", ["doc_031"]),
+    ("code general des impots", ["doc_033"]), ("code des impots", ["doc_033"]), ("cgi", ["doc_033"]),
+    ("activites economiques", ["doc_001"]), ("code des affaires", ["doc_001"]),
+    ("code de l environnement", ["doc_003"]), ("environnement", ["doc_003"]),
+    ("faune", ["doc_004"]), ("chasse", ["doc_004"]), ("organisation judiciaire", ["doc_025"]),
+    ("cybersecurite", ["doc_029"]), ("cyber securite", ["doc_029"]), ("donnees a caractere personnel", ["doc_029"]),
+    ("marches publics", ["doc_022"]), ("acces a l information", ["doc_021"]),
+    ("agent public", ["doc_002"]), ("forces de defense", ["doc_019"]), ("bancaire", ["doc_030"]),
+    ("contenu local", ["doc_026"]), ("identification des personnes", ["doc_028"]),
+    ("maintien de l ordre", ["doc_024"]), ("ordre public", ["doc_024"]),
+], key=lambda x: -len(x[0]))
+
+_NUM = r"\d+(?:[.\-]\d+)?"
+# « article 268 », « art. 172.23 », « articles 272 et 273 », « articles 267 à 270 », « article premier »
+_ARTICLE_NUM_RE = re.compile(
+    rf"\bart(?:icle)?s?\.?\s*(premier|{_NUM}(?:\s*(?:er|ere|bis))?(?:\s*(?:,|et|a|au|ou)\s*{_NUM})*)"
+)
+
+
+def _explicit_article_refs(question: str) -> tuple[list[str], list[str] | None]:
+    """(numéros d'articles cités, documents visés ou None si aucun code nommé)."""
+    q = _normalize_for_keywords(question)
+    nums: list[str] = []
+
+    def add(n: str) -> None:
+        n = n.replace("-", ".")
+        if n not in nums:
+            nums.append(n)
+
+    for m in _ARTICLE_NUM_RE.finditer(q):
+        group = m.group(1)
+        if group == "premier":
+            add("1")
+            continue
+        found = re.findall(_NUM, group)
+        # Plage « 267 à 270 » (entiers, 10 articles au plus)
+        if len(found) == 2 and re.search(r"\b(?:a|au)\b", group) and found[0].isdigit() and found[1].isdigit() \
+                and 0 < int(found[1]) - int(found[0]) <= 10:
+            for n in range(int(found[0]), int(found[1]) + 1):
+                add(str(n))
+        else:
+            for n in found:
+                add(n)
+    docs = None
+    for alias, ids in _DOC_ALIASES:
+        if _keyword_in(q, alias):
+            docs = ids
+            break
+    return nums[:10], docs
+
+
+def _ref_number(article_ref: str) -> str | None:
+    m = re.match(r"\s*(?:article|art)\.?\s*(\d+(?:[.\-]\d+)?)", article_ref or "", re.I)
+    return m.group(1).replace("-", ".") if m else None
+
+
+def _keyword_in(text: str, keyword: str) -> bool:
+    """Le mot-clé apparaît-il comme MOT (ou début de mot) dans le texte ?
+
+    Une simple inclusion de chaîne faisait correspondre « mine » à « mineur »,
+    « or » à « corps », « vol » à « volontaire », « usa » à « usage » : des
+    questions sur les mineurs partaient chercher dans le Code minier.
+    Règles : le mot-clé commence toujours en début de mot ; s'il est court
+    (≤ 5 lettres), il doit aussi finir le mot (pluriel en s/x toléré). Les
+    radicaux plus longs (« licenci », « expropri ») restent des préfixes.
+    """
+    t = f" {_normalize_for_keywords(text)} "
+    kw = _normalize_for_keywords(keyword)
+    if not kw:
+        return False
+    end = r"(?:s|x)?(?![a-z0-9])" if len(kw.replace(" ", "")) <= 5 else ""
+    return re.search(r"(?<![a-z0-9])" + re.escape(kw) + end, t) is not None
+
+
 def detect_domain(question: str) -> Optional[str]:
     """
     Détecte automatiquement le domaine juridique d'une question.
@@ -325,7 +443,7 @@ def detect_domain(question: str) -> Optional[str]:
         score = 0
         for kw in keywords:
             kw_norm = _normalize_for_keywords(kw)
-            if kw_norm in q:
+            if _keyword_in(q, kw_norm):
                 # Bonus pour les mots-clés très spécifiques (> 10 chars)
                 score += 2 if len(kw_norm) > 10 else 1
         if score > 0:
@@ -365,6 +483,14 @@ def detect_domain(question: str) -> Optional[str]:
 # test_exactitude.py — voir le plan "Amélioration RAG — performance + garde-fous
 # qualité".
 MIN_SCORE_INCLUDE  = 0.05  # En dessous : article ignoré même si récupéré
+# Recherche sans filtre de domaine : même seuil que la recherche filtrée (0.05, validé par
+# test_exactitude). L'ancien seuil implicite de 0.28 du moteur écartait presque tout :
+# le reranker multilingue sous-note le français juridique. Le contrôle de pertinence
+# (_judge_relevance) retire ensuite le bruit.
+GLOBAL_SCORE_THRESHOLD = float(os.getenv("RAG_GLOBAL_THRESHOLD", "0.05"))
+SOFT_DOMAIN = os.getenv("RAG_SOFT_DOMAIN", "1") == "1"
+# Candidats (BM25 + sémantique, fusion RRF) reclassés par le cross-encoder, par requête
+N_CANDIDATES = int(os.getenv("RAG_N_CANDIDATES", "40"))  # mesuré : 30 → 88,3 %, 40 → 89,6 %, 50 → 90,0 % (top 10)
 MIN_SCORE_CONFIDENT = 0.15  # En dessous de ce seuil : disclaimer affiché
 MIN_SCORE_ANSWER   = 0.03  # En dessous du meilleur score : refus de répondre
 
@@ -391,6 +517,7 @@ Dans un domaine juridique, une réponse fausse est plus dangereuse que l'absence
 5. **Jamais d'invention** — ne cite JAMAIS un article dont le numéro n'apparaît pas dans la liste "RÉFÉRENCES AUTORISÉES" du contexte.
 6. **Structure unique** — produis la réponse UNE SEULE FOIS, sans répéter les sections.
 7. **Vérification finale** — avant de finaliser, relis chaque article cité et confirme qu'il figure dans la liste des articles fournis.
+8. **Hiérarchie des textes** — si la question porte sur ce qui interdit, condamne ou punit un comportement, présente EN PREMIER les articles qui définissent l'infraction et fixent la peine (Code pénal, textes de fond), puis seulement ensuite les articles de procédure qui s'y rapportent.
 
 ## Format OBLIGATOIRE (4 sections dans cet ordre exact)
 
@@ -427,6 +554,13 @@ RESPONSE_FOOTER = "\n\n---\n*JusticIA-GN — République de Guinée. Analyse à 
 # Titre du refus « aucun texte applicable » : repéré par le backend pour distinguer
 # une question de droit sans réponse d'une demande hors sujet.
 NO_SOURCE_TITLE = "Aucun texte applicable trouvé"
+# Rappel ajouté au prompt lors de la seconde tentative de génération
+STRICT_CITATION_REMINDER = (
+    "\n\nRAPPEL IMPÉRATIF : chaque affirmation juridique doit être suivie de l'identifiant exact de sa "
+    "source entre crochets, tel qu'il figure dans le contexte (ex. 【S1】). N'utilise aucun autre "
+    "identifiant et ne cite AUCUN numéro d'article qui ne figure pas dans le contexte fourni. "
+    "Si un point n'est couvert par aucune source, dis-le simplement sans le développer."
+)
 # Titre de la réponse retenue par le contrôle des citations (référence non vérifiable)
 UNVERIFIED_TITLE = "Réponse non confirmée par les textes"
 _LOGGER = logging.getLogger("justicia.rag")
@@ -515,9 +649,15 @@ def _verify_cited_articles(response: str, retrieved_articles: list[dict]) -> lis
     qui ne correspondent à aucun article récupéré.
     Retourne la liste des numéros suspects (potentiellement inventés).
     """
+    # Les citations mot pour mot (lignes « > » et texte entre « guillemets ») reproduisent le
+    # texte officiel : leurs renvois internes (« prévues à l'article 93 ») ne sont pas des
+    # références inventées. Seul le texte rédigé par le modèle est contrôlé.
+    analysed = "\n".join(line for line in response.splitlines() if not line.lstrip().startswith(">"))
+    analysed = re.sub(r"«[^»]*»", " ", analysed)
+
     # Extraire les numéros d'articles mentionnés dans la réponse
-    cited_numbers = set(re.findall(r'\bArt(?:icle)?\.?\s*(\d+)', response, re.IGNORECASE))
-    cited_numbers.update(re.findall(r'\bart\.?\s*(\d+)', response, re.IGNORECASE))
+    cited_numbers = set(re.findall(r'\bArt(?:icle)?\.?\s*(\d+)', analysed, re.IGNORECASE))
+    cited_numbers.update(re.findall(r'\bart\.?\s*(\d+)', analysed, re.IGNORECASE))
 
     # Construire l'ensemble des numéros disponibles dans le contexte
     available_numbers: set[str] = set()
@@ -642,7 +782,12 @@ def build_context_prompt(
     if not articles_valides:
         articles_valides = articles
 
-    articles_tries = sorted(articles_valides, key=lambda a: a.get("score", 0), reverse=True)
+    # Ordre décidé en amont (contrôle de pertinence + textes de fond d'abord) s'il existe,
+    # sinon ordre du moteur de recherche.
+    if all("_rank" in a for a in articles_valides):
+        articles_tries = sorted(articles_valides, key=lambda a: a["_rank"])
+    else:
+        articles_tries = sorted(articles_valides, key=lambda a: a.get("score", 0), reverse=True)
 
     # Adapter le nombre d'articles à citer en intégralité selon l'intention
     N_FULL_CITE = 4 if intent in (QueryIntent.CONDITIONS, QueryIntent.LISTE) else 3
@@ -774,6 +919,56 @@ def _build_messages(prompt: str, history: list[dict], system_prompt: Optional[st
     return messages
 
 
+# Contrôle de pertinence : un modèle léger relit les articles retrouvés AVANT la rédaction.
+# Il n'écrit rien : il écarte les articles hors sujet et place en tête ceux qui répondent.
+RELEVANCE_MODEL = os.getenv("RAG_JUDGE_MODEL", "gpt-4o-mini")
+
+_RELEVANCE_PROMPT = """Tu aides un assistant juridique guinéen à choisir ses sources.
+On te donne une question et des extraits d'articles numérotés [1], [2]…
+Garde TOUT article qui aide à répondre, même partiellement. Écarte seulement ceux qui ne traitent pas
+vraiment du sujet (homonymie, mot proche mais autre notion, autre domaine) : par exemple un article sur la
+« cryptologie » ne traite pas des « cryptomonnaies », un article sur la procédure d'appel ne définit pas une peine.
+Classe les articles gardés du plus utile au moins utile : d'abord ceux qui définissent la règle, l'infraction
+ou la peine demandée, puis le contexte, enfin la procédure.
+Réponds UNIQUEMENT en JSON : {"keep": [numéros dans l'ordre], "covered": true|false}
+covered = false si AUCUN article ne traite réellement de la question."""
+
+
+def _judge_relevance(question: str, articles: list[dict], provider: str) -> Optional[list[int]]:
+    """Indices (0-based) des articles pertinents, triés ; [] si aucun ; None si contrôle indisponible."""
+    if provider != "openai" or not os.getenv("OPENAI_API_KEY") or not articles:
+        return None
+    try:
+        from openai import OpenAI
+        listing = "\n".join(
+            f"[{i + 1}] {a.get('nom_doc', '')[:60]} — {a.get('article_ref', '')} : "
+            f"{(a.get('texte') or a.get('document') or '')[:500].replace(chr(10), ' ')}"
+            for i, a in enumerate(articles)
+        )
+        resp = OpenAI().chat.completions.create(
+            model=RELEVANCE_MODEL,
+            messages=[{"role": "system", "content": _RELEVANCE_PROMPT},
+                      {"role": "user", "content": f"Question : {question[:600]}\n\nArticles :\n{listing}"}],
+            response_format={"type": "json_object"}, temperature=0, max_tokens=120, timeout=20,
+        )
+        import json as _json
+        data = _json.loads(resp.choices[0].message.content or "{}")
+        if data.get("covered") is False:
+            return []
+        keep: list[int] = []
+        for n in data.get("keep") or []:
+            try:
+                i = int(n) - 1
+            except (TypeError, ValueError):
+                continue
+            if 0 <= i < len(articles) and i not in keep:
+                keep.append(i)
+        return keep
+    except Exception as exc:  # noqa: BLE001 — sans contrôle, on garde le classement du moteur
+        _LOGGER.warning("relevance_judge_unavailable error=%s", type(exc).__name__)
+        return None
+
+
 def _call_llm(prompt: str, provider: str, history: Optional[list[dict]] = None, system_prompt: Optional[str] = None, **kwargs) -> str:
     """Appel LLM universel — supporte Ollama, Mistral, Anthropic, OpenAI."""
     messages = _build_messages(prompt, history or [], system_prompt=system_prompt)
@@ -868,57 +1063,74 @@ class JusticIAPipeline:
             print(f"✅ JusticIAPipeline — provider: {provider}" +
                   (f" ({ollama_model or os.getenv('OLLAMA_MODEL', '')})" if provider == "ollama" else ""))
 
-    def answer(
+    def lookup_articles(self, question: str) -> list[dict]:
+        """Articles cités explicitement par leur numéro (« article 268 du Code pénal »)."""
+        nums, docs = _explicit_article_refs(question)
+        if not nums:
+            return []
+        if getattr(self, "_ref_index", None) is None:
+            data = self.retriever.collection.get(include=["metadatas"])
+            index: dict[tuple[str, str], list[str]] = {}
+            for aid, meta in zip(data["ids"], data["metadatas"]):
+                n = _ref_number(meta.get("article_ref", ""))
+                if n:
+                    index.setdefault((meta.get("doc_id", ""), n), []).append(aid)
+            self._ref_index = index
+        doc_order = docs or sorted({d for d, _ in self._ref_index})
+        ids: list[str] = []
+        for n in nums:
+            found = [aid for d in doc_order for aid in self._ref_index.get((d, n), [])]
+            # Sans code nommé, un numéro existe dans beaucoup de textes : on ne devine pas
+            if docs is None and len(found) > 2:
+                continue
+            ids.extend(found[:2])
+        if not ids:
+            return []
+        got = self.retriever.collection.get(ids=ids, include=["metadatas"])
+        by_id = dict(zip(got["ids"], got["metadatas"]))
+        out = []
+        for aid in ids:
+            meta = by_id.get(aid)
+            if not meta:
+                continue
+            out.append({
+                "id": aid, "article_ref": meta.get("article_ref", ""), "titre": meta.get("titre", ""),
+                "chapitre": meta.get("chapitre", ""), "section": meta.get("section", ""),
+                "texte": meta.get("texte", ""), "nom_doc": meta.get("nom", ""), "domaine": meta.get("domaine", ""),
+                "type_doc": meta.get("type_doc", ""), "numero": meta.get("numero", ""), "date": meta.get("date", ""),
+                "source": meta.get("source", ""), "source_url": meta.get("source_url", ""),
+                "source_file": meta.get("source_file", ""), "source_status": meta.get("source_status", "inconnu"),
+                "page": meta.get("page", ""), "score": 1.0, "rrf_score": 0.0, "_exact": True,
+            })
+        return out
+
+    def retrieve_articles(
         self,
-        question:      str,
-        domaine:       Optional[str]       = None,
-        top_k:         int                 = TOP_K,
-        history:       Optional[list[dict]] = None,
-        system_prompt: Optional[str]       = None,
-        request_id:    Optional[str]       = None,
-    ) -> tuple[str, list[dict]]:
-        """
-        Pipeline complet :
-          1. Détection automatique du domaine si non fourni
-          2. Retrieval hybride (BM25 + Sémantique + RRF + Cross-encoder)
-          3. Évaluation qualité du contexte récupéré
-          4. Construction prompt avec indicateurs de pertinence
-          5. Appel LLM avec historique de conversation
-        Retourne (réponse_llm, articles_sources).
-        """
+        question:    str,
+        domaine:     Optional[str]        = None,
+        top_k:       int                  = TOP_K,
+        history:     Optional[list[dict]] = None,
+        search_hint: Optional[str]        = None,
+    ) -> dict:
+        """Étapes 1 à 3 : domaine, enrichissement, recherche multi-requêtes et filtrage.
 
-        started_at = time.perf_counter()
-        # 0. Filtre rapide : questions concernant un autre pays → refus immédiat
-        _PAYS_ETRANGERS = [
-            "france", "sénégal", "senegal", "mali", "côte d'ivoire", "cote d'ivoire",
-            "maroc", "algérie", "algerie", "tunisie", "cameroun", "belgique",
-            "canada", "états-unis", "etats-unis", "usa", "europe",
-        ]
-        question_lower = question.lower()
-        pays_detecte = next(
-            (p for p in _PAYS_ETRANGERS if p in question_lower
-             and "guinée" not in question_lower and "guinea" not in question_lower),
-            None
-        )
-        if pays_detecte:
-            refus = (
-                f"Je suis **JusticIA-GN**, l'assistant juridique dédié au droit de la "
-                f"**République de Guinée**. Ma compétence est strictement limitée au droit "
-                f"positif guinéen.\n\n"
-                f"Votre question porte sur le droit de **{pays_detecte.title()}**, "
-                f"qui ne relève pas de ma compétence.\n\n"
-                f"Pour toute question relative au droit guinéen (travail, pénal, civil, "
-                f"foncier, famille, mines, constitution…), je reste à votre entière disposition."
-            )
-            return refus + RESPONSE_FOOTER, []
-
+        Séparée de answer() pour être évaluée seule (model/evaluation/eval_retrieval.py),
+        sans génération : c'est exactement la recherche utilisée en production.
+        """
         # 1. Détecter le domaine automatiquement si aucun filtre actif
+        # Suivi de conversation détecté sur la question ORIGINALE (le « Et … ? » initial est un
+        # signal de suite) ; les formules de politesse ne sont retirées qu'ensuite.
         retrieval_question = _standalone_retrieval_question(question, history or [])
+        if retrieval_question == question:
+            retrieval_question = _strip_conversational(question)
+        search_hint = (search_hint or "").strip()[:300] or None
         effective_domain = domaine
         auto_detected    = None
 
         if domaine is None:
             auto_detected = detect_domain(retrieval_question)
+            if not auto_detected and search_hint:
+                auto_detected = detect_domain(search_hint)
             if auto_detected:
                 effective_domain = auto_detected
                 if self.verbose:
@@ -946,6 +1158,11 @@ class JusticIAPipeline:
             "mariage":           "conditions célébration époux consentement capacité",
             "corruption":        "fonctionnaire avantage indu peine sanction agent public",
             "viol":              "agression sexuelle contrainte violence peine qualification",
+            "abus sexuel":       "viol attentat à la pudeur atteinte sexuelle enfant mineur moins de 16 ans peine",
+            "abus sexuels":      "viol attentat à la pudeur atteinte sexuelle enfant mineur moins de 16 ans peine",
+            "agression sexuelle": "viol attentat à la pudeur atteinte sexuelle contrainte violence peine",
+            "attouchement":      "attentat à la pudeur atteinte sexuelle enfant mineur violence peine",
+            "pedophil":          "attentat à la pudeur atteinte sexuelle viol enfant mineur moins de 16 ans peine",
             "terrain":           "propriété foncière acte acquisition titre immatriculation",
             "loyer":             "bail locataire bailleur expulsion résiliation",
             "salaire":           "rémunération paiement SMIG heure travail prime",
@@ -984,7 +1201,7 @@ class JusticIAPipeline:
 
         question_lower_exp = retrieval_question.lower()
         expansion = next(
-            (v for k, v in _TOPIC_EXPANSION.items() if k in question_lower_exp),
+            (v for k, v in _TOPIC_EXPANSION.items() if _keyword_in(question_lower_exp, k.strip())),
             ""
         )
         query_enrichie = _ensure_accents(retrieval_question)
@@ -1001,6 +1218,12 @@ class JusticIAPipeline:
         all_retrieved: dict[str, dict] = {}  # id → article (dédupliqué)
 
         queries_to_run = [query_enrichie]
+        if search_hint:
+            # La reformulation juridique passe en tête : c'est elle qui porte les bons termes
+            hint_expansion = next(
+                (v for k, v in _TOPIC_EXPANSION.items() if _keyword_in(search_hint, k.strip())), ""
+            )
+            queries_to_run.insert(0, _enrich_with_synonyms(f"{_ensure_accents(search_hint)} {hint_expansion}".strip()))
 
         # Requête 2 : version "termes clés uniquement" (meilleure pour BM25)
         mots_cles = " ".join([
@@ -1038,8 +1261,24 @@ class JusticIAPipeline:
             queries_to_run,
             domaine=effective_domain,
             top_k=effective_top_k,
+            score_threshold=None if effective_domain else GLOBAL_SCORE_THRESHOLD,
+            n_candidates=N_CANDIDATES,
         )
-        for q_idx, (q_variant, retrieved) in enumerate(zip(queries_to_run, all_variant_results)):
+        variant_labels = list(queries_to_run)
+
+        # Domaine DEVINÉ (et non choisi par l'agent) : on cherche aussi dans tout le corpus.
+        # Mesuré sur model/evaluation/synthetic_eval.jsonl : dans 57 % des échecs, le domaine
+        # deviné était faux et le filtre écartait le bon texte (ex. « servitude » → foncier
+        # alors que la règle est au Code civil). Les deux résultats sont fusionnés.
+        if auto_detected and domaine is None and SOFT_DOMAIN:
+            global_queries = queries_to_run[:2]
+            all_variant_results = list(all_variant_results) + list(self.retriever.retrieve_multi(
+                global_queries, domaine=None, top_k=effective_top_k, score_threshold=GLOBAL_SCORE_THRESHOLD,
+                n_candidates=N_CANDIDATES,
+            ))
+            variant_labels += [f"[tout le corpus] {q}" for q in global_queries]
+
+        for q_idx, (q_variant, retrieved) in enumerate(zip(variant_labels, all_variant_results)):
             for art in retrieved:
                 aid = art.get("id", "")
                 if aid and aid not in all_retrieved:
@@ -1049,7 +1288,7 @@ class JusticIAPipeline:
                     all_retrieved[aid] = art
 
             if self.verbose:
-                print(f"  Query {q_idx+1}/{len(queries_to_run)}: {len(retrieved)} articles — '{q_variant[:60]}'")
+                print(f"  Query {q_idx+1}/{len(variant_labels)}: {len(retrieved)} articles — '{q_variant[:60]}'")
 
         # Fusionner, trier par score et limiter à top_k
         articles = sorted(all_retrieved.values(), key=lambda x: x.get("score", 0), reverse=True)
@@ -1070,8 +1309,108 @@ class JusticIAPipeline:
             if history:
                 print(f"  Historique : {len(history)} message(s)")
 
+        # Articles demandés explicitement par leur numéro : toujours en tête
+        # Le nom du code peut venir de l'historique (« et l'article 269 ? »)
+        exact = self.lookup_articles(question)
+        if not exact and retrieval_question != question:
+            exact = self.lookup_articles(f"{question} {retrieval_question}")
+        if exact:
+            exact_ids = {a["id"] for a in exact}
+            articles = exact + [a for a in articles if a.get("id") not in exact_ids]
+            articles = articles[: max(top_k, len(exact))]
+            if self.verbose:
+                print("  📌 Référence explicite : " + ", ".join(f"{a['nom_doc'][:25]} {a['article_ref']}" for a in exact))
+
+        return {
+            "articles": articles, "all_retrieved": all_retrieved, "retrieval_question": retrieval_question,
+            "intent": intent, "auto_detected": auto_detected, "retrieval_ms": retrieval_ms,
+            "search_hint": search_hint,
+        }
+
+    def answer(
+        self,
+        question:      str,
+        domaine:       Optional[str]       = None,
+        top_k:         int                 = TOP_K,
+        history:       Optional[list[dict]] = None,
+        system_prompt: Optional[str]       = None,
+        request_id:    Optional[str]       = None,
+        search_hint:   Optional[str]       = None,
+    ) -> tuple[str, list[dict]]:
+        """
+        search_hint : reformulation juridique de la question (mots-clés, sans fait
+        inventé), produite en amont ; elle oriente la recherche mais n'est jamais
+        citée ni montrée à l'utilisateur.
+
+        Pipeline complet :
+          1. Détection automatique du domaine si non fourni
+          2. Retrieval hybride (BM25 + Sémantique + RRF + Cross-encoder)
+          3. Évaluation qualité du contexte récupéré
+          4. Construction prompt avec indicateurs de pertinence
+          5. Appel LLM avec historique de conversation
+        Retourne (réponse_llm, articles_sources).
+        """
+
+        started_at = time.perf_counter()
+        # 0. Filtre rapide : questions concernant un autre pays → refus immédiat
+        _PAYS_ETRANGERS = [
+            "france", "sénégal", "senegal", "mali", "côte d'ivoire", "cote d'ivoire",
+            "maroc", "algérie", "algerie", "tunisie", "cameroun", "belgique",
+            "canada", "états-unis", "etats-unis", "usa", "europe",
+        ]
+        question_lower = question.lower()
+        pays_detecte = next(
+            (p for p in _PAYS_ETRANGERS if _keyword_in(question_lower, p)
+             and "guinée" not in question_lower and "guinea" not in question_lower),
+            None
+        )
+        if pays_detecte:
+            refus = (
+                f"Je suis **JusticIA-GN**, l'assistant juridique dédié au droit de la "
+                f"**République de Guinée**. Ma compétence est strictement limitée au droit "
+                f"positif guinéen.\n\n"
+                f"Votre question porte sur le droit de **{pays_detecte.title()}**, "
+                f"qui ne relève pas de ma compétence.\n\n"
+                f"Pour toute question relative au droit guinéen (travail, pénal, civil, "
+                f"foncier, famille, mines, constitution…), je reste à votre entière disposition."
+            )
+            return refus + RESPONSE_FOOTER, []
+
+        r = self.retrieve_articles(question, domaine=domaine, top_k=top_k, history=history, search_hint=search_hint)
+        articles, all_retrieved = r["articles"], r["all_retrieved"]
+        retrieval_question, intent = r["retrieval_question"], r["intent"]
+        retrieval_ms, search_hint = r["retrieval_ms"], r["search_hint"]
+
         # 4. Évaluer la qualité du contexte récupéré
         quality_level, quality_msg = _assess_context_quality(retrieval_question, articles)
+
+        # 4b. Contrôle de pertinence par un modèle léger : écarte les homonymies
+        # (« cryptologie » ≠ « cryptomonnaies ») et met en tête les articles de fond.
+        if quality_level != ContextQuality.BLOCKED and articles:
+            judged = _judge_relevance(
+                f"{question} (reformulation juridique : {search_hint})" if search_hint else retrieval_question,
+                articles, self.provider,
+            )
+            if judged is not None:
+                if not judged:
+                    if self.verbose:
+                        print("  ⚖️  Contrôle de pertinence : aucun article ne traite réellement la question")
+                    quality_level, quality_msg = ContextQuality.BLOCKED, "Aucun article ne traite réellement la question."
+                else:
+                    # Copies : les articles du cache du moteur ne doivent pas garder un rang d'une autre question
+                    exact_first = [dict(a) for a in articles if a.get("_exact")]
+                    articles = exact_first + [dict(articles[i]) for i in judged if not articles[i].get("_exact")]
+                    # Textes de fond (infraction, peine, règle) avant la procédure,
+                    # sauf si la question porte justement sur la procédure.
+                    asks_procedure = intent == QueryIntent.PROCEDURE or _keyword_in(
+                        retrieval_question, "procedure") or _keyword_in(retrieval_question, "porter plainte")
+                    if not asks_procedure:
+                        articles.sort(key=lambda a: "PROCEDURE" in _normalize_for_keywords(a.get("nom_doc", "")).upper())
+                    for rank, art in enumerate(articles):
+                        art["_rank"] = rank
+                    if self.verbose:
+                        print(f"  ⚖️  Contrôle de pertinence : {len(articles)} article(s) gardé(s) — "
+                              + ", ".join(a.get("article_ref", "") for a in articles[:6]))
 
         # ── REFUS si contexte insuffisant (anti-hallucination) ────────────────
         if quality_level == ContextQuality.BLOCKED or not articles:
@@ -1106,6 +1445,19 @@ class JusticIAPipeline:
             ollama_base_url = self.ollama_base_url,
             ollama_model    = self.ollama_model,
         )
+
+        # 7a. Contrôle des citations ; en cas d'échec, une seconde génération plus stricte
+        if (_verify_source_markers(reponse, articles) or _verify_cited_articles(reponse, articles)
+                or not _SOURCE_MARKER_RE.search(reponse)):
+            _LOGGER.info("citation_guard_retry request_id=%s", request_id or "none")
+            reponse = _call_llm(
+                prompt + STRICT_CITATION_REMINDER,
+                provider        = self.provider,
+                history         = history or [],
+                system_prompt   = system_prompt,
+                ollama_base_url = self.ollama_base_url,
+                ollama_model    = self.ollama_model,
+            )
 
         llm_ms = (time.perf_counter() - llm_started_at) * 1000
         # 7. Vérification post-génération : la réponse doit être traçable.
