@@ -1,4 +1,3 @@
-<!-- Toast -->
 @if (showToast()) {
   <div class="lp-toast" [class.is-error]="!toastSuccess()" role="status" aria-live="polite">
     <span class="lp-toast-mark" aria-hidden="true">{{ toastSuccess() ? '✓' : '!' }}</span>
@@ -13,362 +12,280 @@
 
 <main id="contenu" tabindex="-1">
 
-  <!-- ═════════════ HÉROS ═════════════ -->
-  <section class="lp-hero" #hero aria-labelledby="lp-hero-title">
-    <div class="lp-sky" aria-hidden="true">
-      <span class="lp-sky-grid"></span>
-      <span class="lp-sky-glow lp-sky-glow--a" parallax="0.06"></span>
-      <span class="lp-sky-glow lp-sky-glow--b" parallax="-0.04"></span>
-    </div>
-
-    <div class="pub-container lp-hero-inner">
-      <div class="lp-hero-copy">
-        <p class="lp-kicker lp-rise" style="--d: 0ms">
-          <span class="lp-kicker-rule" aria-hidden="true"></span>
-          Assistant juridique · République de Guinée
-        </p>
-
-        <h1 id="lp-hero-title" class="lp-hero-title" [attr.aria-label]="titleText">
-          @for (line of titleLines; track $index; let i = $index) {
-            <span class="lp-line" aria-hidden="true">
-              <span class="lp-line-inner" [class.is-em]="line.em" [style.--d]="(120 + i * 110) + 'ms'">{{ line.text }}</span>
-            </span>
-          }
-        </h1>
-
-        <p class="lp-hero-lead lp-rise" style="--d: 560ms">
-          Posez votre question comme à un juriste. JusticIA retrouve l'article applicable dans
-          les textes officiels, le cite mot pour mot, puis vous l'explique.
-        </p>
-
-        <div class="lp-hero-actions lp-rise" style="--d: 700ms">
-          <a routerLink="/signup" class="pub-btn pub-btn--dark">
-            Créer mon compte gratuit
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-          <a href="#comment" class="pub-btn pub-btn--line">Comment ça marche</a>
-        </div>
-
-        <dl class="lp-hero-meta lp-rise" style="--d: 860ms" #ledgerRef aria-label="Chiffres clés">
-          @for (l of ledger; track l.label) {
-            <div>
-              <dd [attr.aria-label]="formatNumber(l.value)"><span aria-hidden="true">{{ formatNumber(l.shown()) }}</span></dd>
-              <dt>{{ l.label }}</dt>
-            </div>
-          }
-        </dl>
-      </div>
-
-      <div class="lp-hero-stage lp-rise" style="--d: 380ms">
-        <span class="lp-stage-paper lp-stage-paper--2" aria-hidden="true"></span>
-        <span class="lp-stage-paper lp-stage-paper--1" aria-hidden="true"></span>
-        <div class="lp-stage-frame">
-          <app-chat-sim class="lp-hero-chat"></app-chat-sim>
-        </div>
-        <figure class="lp-stage-cite" aria-hidden="true">
-          <figcaption><span class="lp-stage-cite-dot"></span>Source vérifiée</figcaption>
-          <p>« …ne peut, en aucun cas, être supérieure à trois mois… »</p>
-          <span class="lp-stage-cite-ref">Art. 121.6 — Code du travail, 2014</span>
-        </figure>
-      </div>
-    </div>
-
-    @if (partners().length > 0) {
-      <div class="pub-container lp-trust lp-rise" style="--d: 1100ms" aria-label="Ils nous font confiance">
-        <p>Ils nous font confiance</p>
-        <ul>
-          @for (p of partners(); track p.id) {
-            <li>
-              @if (p.logo_url) { <img [src]="p.logo_url" [alt]="p.name" height="28" loading="lazy" /> }
-              @else { <span>{{ p.name }}</span> }
-            </li>
-          }
-        </ul>
-      </div>
-    }
-  </section>
-
-  <!-- ═════════════ BANDEAU DES CODES ═════════════ -->
-  <section class="lp-marquee" [class.is-paused]="marqueePaused()" aria-label="Textes indexés">
-    <div class="lp-marquee-track" aria-hidden="true">
-      @for (rep of [0, 1]; track rep) {
-        <ul>
-          @for (m of marquee; track m) { <li>{{ m }}<span>§</span></li> }
-        </ul>
-      }
-    </div>
-    <ul class="lp-sr">
-      @for (m of marquee; track m) { <li>{{ m }}</li> }
-    </ul>
-    <button type="button" class="lp-marquee-btn" (click)="marqueePaused.set(!marqueePaused())"
-            [attr.aria-pressed]="marqueePaused()"
-            [attr.aria-label]="marqueePaused() ? 'Reprendre le défilement' : 'Mettre le défilement en pause'">
-      @if (marqueePaused()) {
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>
-      } @else {
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
-      }
-    </button>
-  </section>
-
-  <!-- ═════════════ MANIFESTE ═════════════ -->
-  <section class="lp-manifesto-wrap" id="comment" aria-labelledby="lp-manifesto">
+  <section class="lp-hero" aria-labelledby="lp-hero-title">
     <div class="pub-container">
-      <p class="pub-eyebrow" reveal>Le principe</p>
-      <h2 id="lp-manifesto" class="lp-manifesto" #manifesto [attr.aria-label]="manifestoText">
-        @for (w of manifestoWords; track $index; let i = $index) {
-          <span aria-hidden="true" [class.is-lit]="i < litWords()" [class.is-em]="w.em">{{ w.w }} </span>
+      <div class="lp-hero-grid">
+        <div class="lp-hero-copy">
+          <p class="lp-kicker">Assistant juridique · République de Guinée</p>
+          <h1 id="lp-hero-title">Le droit guinéen, cité à la lettre.</h1>
+          <p class="lp-lead">
+            Posez votre question. JusticIA retrouve l’article dans les textes officiels,
+            le cite mot pour mot, puis vous l’explique.
+          </p>
+          <div class="lp-actions">
+            <a routerLink="/signup" class="pub-btn pub-btn--dark">Créer un compte gratuit</a>
+            <a href="#comment" class="pub-btn pub-btn--line">Comment ça marche</a>
+          </div>
+          <dl class="lp-facts">
+            @for (item of ledger; track item.label) {
+              <div>
+                <dd>{{ formatNumber(item.shown()) }}</dd>
+                <dt>{{ item.label }}</dt>
+              </div>
+            }
+          </dl>
+        </div>
+
+        <article class="lp-example" [class.is-play]="examplePlay()" aria-labelledby="lp-example-title">
+          <h2 id="lp-example-title" class="lp-example-label">Exemple de réponse</h2>
+          <p class="lp-example-q">Quel est le préavis d’un cadre en CDI&nbsp;?</p>
+          <p class="lp-example-a">
+            Trois mois pour un cadre, deux mois pour un agent de maîtrise,
+            un mois pour le personnel d’exécution.
+          </p>
+          <figure class="lp-cite">
+            <figcaption>
+              <span class="lp-cite-mark" aria-hidden="true"></span>
+              Art. 172.23 — Code du travail, 2014
+            </figcaption>
+            <blockquote>
+              <p>«&nbsp;La période de préavis est fonction de la catégorie professionnelle du salarié. Elle est de trois mois pour le personnel cadre et assimilé, deux mois pour les agents de maîtrise et contremaître et un mois pour le personnel d’exécution.&nbsp;»</p>
+            </blockquote>
+          </figure>
+        </article>
+      </div>
+
+      @if (partners().length > 0) {
+        <div class="lp-trust">
+          <p>Ils nous font confiance</p>
+          <ul>
+            @for (p of partners(); track p.id) {
+              <li>
+                @if (p.logo_url) {
+                  <img [src]="p.logo_url" [alt]="p.name" height="28" loading="lazy" />
+                } @else {
+                  <span>{{ p.name }}</span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="lp-section" id="comment" aria-labelledby="lp-steps-title">
+    <div class="pub-container">
+      <header class="lp-head" reveal>
+        <p class="lp-kicker">Comment ça marche</p>
+        <h2 id="lp-steps-title">Trois étapes, toujours les mêmes.</h2>
+      </header>
+      <ol class="lp-flow" [attr.data-step]="flowStep()"
+          (pointerenter)="pauseFlow()" (pointerleave)="resumeFlow()">
+        <li [class.is-on]="flowStep() === 0" [attr.aria-current]="flowStep() === 0 ? 'step' : null">
+          <span class="lp-flow-num" aria-hidden="true">01</span>
+          <div class="lp-flow-viz" aria-hidden="true">
+            <p class="lp-flow-q"><span>{{ flowQuestion() }}</span><i class="lp-caret"></i></p>
+          </div>
+          <h3>{{ steps[0].title }}</h3>
+          <p>{{ steps[0].text }}</p>
+        </li>
+        <li [class.is-on]="flowStep() === 1" [attr.aria-current]="flowStep() === 1 ? 'step' : null">
+          <span class="lp-flow-num" aria-hidden="true">02</span>
+          <div class="lp-flow-viz" aria-hidden="true">
+            <ul class="lp-scan">
+              @for (code of flowCodes; track code) {
+                <li [class.is-hit]="code === 'Code du travail' && flowStep() === 1">{{ code }}</li>
+              }
+            </ul>
+          </div>
+          <h3>{{ steps[1].title }}</h3>
+          <p>{{ steps[1].text }}</p>
+        </li>
+        <li [class.is-on]="flowStep() === 2" [attr.aria-current]="flowStep() === 2 ? 'step' : null">
+          <span class="lp-flow-num" aria-hidden="true">03</span>
+          <div class="lp-flow-viz" aria-hidden="true">
+            <p class="lp-stamp" [class.is-in]="flowStep() === 2">
+              <span>Art. 172.23</span>
+              Code du travail, 2014
+            </p>
+          </div>
+          <h3>{{ steps[2].title }}</h3>
+          <p>{{ steps[2].text }}</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="lp-section" aria-labelledby="lp-tools-title">
+    <div class="pub-container">
+      <header class="lp-head" reveal>
+        <p class="lp-kicker">L’espace de travail</p>
+        <h2 id="lp-tools-title">Le travail juridique, au même endroit.</h2>
+        <p class="lp-intro">Le même compte sert aussi à résumer un document, comparer deux textes et traduire en pular, malinké ou soussou.</p>
+      </header>
+      <ul class="lp-tools" reveal [revealStagger]="70">
+        @for (tool of tools; track tool.title) {
+          <li>
+            <h3>{{ tool.title }}</h3>
+            <p>{{ tool.text }}</p>
+          </li>
         }
-      </h2>
+      </ul>
     </div>
   </section>
 
-  <!-- ═════════════ SOUS LE CAPOT (épinglé) ═════════════ -->
-  <app-scroll-story></app-scroll-story>
-
-  <!-- ═════════════ MODULES (bento) ═════════════ -->
-  <section class="lp-modules pub-sheet pub-sheet--cream" aria-labelledby="lp-modules-title">
+  <section class="lp-section" aria-labelledby="lp-who-title">
     <div class="pub-container">
-      <div class="lp-section-head" reveal>
-        <p class="pub-eyebrow">L'espace de travail</p>
-        <h2 id="lp-modules-title" class="pub-title">Un cabinet complet, <em>dans un onglet</em>.</h2>
-        <p class="pub-lead">Au-delà des questions, JusticIA organise le travail juridique de bout en bout.</p>
-      </div>
-
-      <div class="lp-bento" #bento reveal [revealStagger]="70">
-        <article class="lp-tile lp-tile--chat">
-          <div class="lp-viz lp-viz-chat" aria-hidden="true">
-            <span class="b b-user">Quel préavis pour un cadre en CDI ?</span>
-            <span class="b b-ai">Trois mois pour le personnel cadre et assimilé. <i class="pub-ref">Art. 172.23</i></span>
-            <span class="b b-ai b-short"><i class="pub-ref">Code du travail 2014</i></span>
-          </div>
-          <h3>Consultation sourcée</h3>
-          <p>Posez vos questions en langage courant, avec l'historique et des agents spécialisés par domaine.</p>
-        </article>
-
-        <article class="lp-tile lp-tile--cases">
-          <div class="lp-viz lp-viz-cases" aria-hidden="true">
-            <span><b>Camara c/ Diallo</b><i>12 pièces</i></span>
-            <span><b>SARL Kaloum Bail</b><i>4 pièces</i></span>
-            <span><b>Succession Bah</b><i>7 pièces</i></span>
-          </div>
-          <h3>Procès &amp; pièces</h3>
-          <p>Un dossier par affaire ; l'assistant lit vos pièces.</p>
-        </article>
-
-        <article class="lp-tile lp-tile--agenda">
-          <div class="lp-viz lp-viz-cal" aria-hidden="true">
-            @for (d of [1,2,3,4,5,6,7,8,9,10,11,12,13,14]; track d) {
-              <span [class.is-due]="d === 9" [class.is-hearing]="d === 4">{{ d }}</span>
-            }
-          </div>
-          <h3>Agenda des délais</h3>
-          <p>Audiences et délais de recours, sans oubli.</p>
-        </article>
-
-        <article class="lp-tile lp-tile--gen">
-          <div class="lp-viz lp-viz-doc" aria-hidden="true">
-            <span class="doc-title">CONTRAT DE BAIL</span>
-            <span class="l"></span><span class="l"></span><span class="l l-short"></span>
-            <span class="doc-art">Article 3 — Durée</span>
-            <span class="l"></span><span class="l l-mid"></span>
-            <span class="doc-sign">Fait à Conakry</span>
-          </div>
-          <h3>Génération &amp; audit d'actes</h3>
-          <p>Contrats de travail, baux, mises en demeure : rédigés conformes au droit guinéen, ou audités clause par clause.</p>
-        </article>
-
-        <article class="lp-tile lp-tile--codex">
-          <div class="lp-viz lp-viz-spines" aria-hidden="true">
-            @for (h of [72, 88, 64, 96, 80, 70, 92, 60, 84, 76, 90, 66]; track $index) {
-              <span [style.height.%]="h"></span>
-            }
-          </div>
-          <h3>Encyclopédie</h3>
-          <p>33 textes, consultables article par article.</p>
-        </article>
-
-        <article class="lp-tile lp-tile--lang">
-          <div class="lp-viz lp-viz-lang" aria-hidden="true">
-            <span class="from">Français</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            <span>Pular</span><span>Malinké</span><span>Soussou</span>
-          </div>
-          <h3>Traduction &amp; vulgarisation</h3>
-          <p>Un texte juridique rendu clair, dans votre langue.</p>
-        </article>
-
-        <article class="lp-tile lp-tile--sum">
-          <div class="lp-viz lp-viz-sum" aria-hidden="true">
-            <span class="pdf">PDF</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            <span class="lines"><i>Parties</i><i>Obligations</i><i>Échéances</i></span>
-          </div>
-          <h3>Résumé de document</h3>
-          <p>Un PDF juridique résumé : parties, obligations, risques.</p>
-        </article>
-
-        <article class="lp-tile lp-tile--cmp">
-          <div class="lp-viz lp-viz-cmp" aria-hidden="true">
-            <span><b>A</b><i></i><i class="del"></i><i></i></span>
-            <span><b>B</b><i></i><i class="add"></i><i></i></span>
-          </div>
-          <h3>Comparaison de textes</h3>
-          <p>Deux versions comparées, ou un texte confronté au droit.</p>
-        </article>
-      </div>
+      <header class="lp-head" reveal>
+        <p class="lp-kicker">Pour qui</p>
+        <h2 id="lp-who-title">Pour ceux qui pratiquent le droit, et ceux qui le vivent.</h2>
+      </header>
+      <ul class="lp-who" reveal [revealStagger]="70">
+        @for (person of audiences; track person.title) {
+          <li>
+            <h3>{{ person.title }}</h3>
+            <p>{{ person.text }}</p>
+          </li>
+        }
+      </ul>
     </div>
   </section>
 
-  <!-- ═════════════ SOMMAIRE DU CORPUS ═════════════ -->
-  <section class="lp-corpus pub-sheet pub-sheet--sand" aria-labelledby="lp-corpus-title">
-    <span class="lp-corpus-mark" aria-hidden="true" parallax="0.06">§</span>
-    <div class="pub-container lp-corpus-grid">
-      <div class="lp-corpus-head" reveal="left">
-        <p class="pub-eyebrow">Le corpus</p>
-        <h2 id="lp-corpus-title" class="pub-title">Le droit positif guinéen, <em>indexé article par article</em>.</h2>
-        <p class="pub-lead">Codes, lois organiques et décrets en vigueur. Chaque texte est découpé, indexé et rattaché à sa source officielle.</p>
-        <a routerLink="/signup" class="pub-btn pub-btn--dark">
-          Explorer l'encyclopédie
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-      </div>
+  <section class="lp-section" aria-labelledby="lp-corpus-title">
+    <div class="pub-container lp-split">
+      <header class="lp-head" reveal="left">
+        <p class="lp-kicker">Les textes</p>
+        <h2 id="lp-corpus-title">Les réponses s’appuient sur le droit en vigueur.</h2>
+        <p class="lp-intro">Codes, lois et décrets de la République de Guinée, découpés et rattachés à leur source officielle.</p>
+        <a routerLink="/signup" class="pub-btn pub-btn--line">Créer un compte pour consulter</a>
+      </header>
+      <ol class="lp-codes" reveal [revealStagger]="40">
+        @for (code of corpus; track code.titre) {
+          <li>
+            <span class="lp-codes-title">{{ code.titre }}</span>
+            <span class="lp-codes-meta">{{ code.annee }} · {{ formatNumber(code.articles) }} articles</span>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
 
-      <div class="lp-toc pub-card" reveal="right">
-        <p class="lp-toc-head" aria-hidden="true"><span>Texte</span><span>Articles</span></p>
-        <ol reveal [revealStagger]="45">
-          @for (c of corpus; track c.titre; let i = $index) {
+  @if (testimonials().length > 0) {
+    <section class="lp-section" aria-labelledby="lp-quotes-title">
+      <div class="pub-container">
+        <header class="lp-head">
+          <p class="lp-kicker">Témoignages</p>
+          <h2 id="lp-quotes-title">Ils l’utilisent au quotidien.</h2>
+        </header>
+        <ul class="lp-quotes" reveal [revealStagger]="80">
+          @for (t of testimonials(); track t.id) {
             <li>
-              <span class="lp-toc-num">{{ (i + 1).toString().padStart(2, '0') }}</span>
-              <span class="lp-toc-title">{{ c.titre }} <small>{{ c.annee }}</small></span>
-              <span class="lp-toc-dots" aria-hidden="true"></span>
-              <span class="lp-toc-count">{{ formatNumber(c.articles) }}</span>
+              <blockquote>
+                <p>{{ t.text }}</p>
+              </blockquote>
+              <footer>
+                <strong>{{ t.name }}</strong>
+                <span>{{ t.role }}</span>
+              </footer>
             </li>
           }
-        </ol>
-        <p class="lp-toc-more">+ 23 autres textes : marchés publics, sécurité sociale, environnement, numérique…</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═════════════ POUR QUI ═════════════ -->
-  <section class="lp-audience pub-sheet pub-sheet--cream" aria-labelledby="lp-audience-title">
-    <div class="pub-container">
-      <div class="lp-section-head lp-section-head--row" reveal>
-        <div>
-          <p class="pub-eyebrow">Pour qui</p>
-          <h2 id="lp-audience-title" class="pub-title">Pour ceux qui pratiquent le droit, <em>et ceux qui le vivent</em>.</h2>
-        </div>
-        <div class="lp-aud-tabs" role="tablist" aria-label="Profils">
-          @for (a of audiences; track a.id) {
-            <button type="button" role="tab" class="lp-aud-tab"
-                    [attr.aria-selected]="audience().id === a.id"
-                    [attr.tabindex]="audience().id === a.id ? 0 : -1"
-                    [attr.aria-controls]="'aud-panel'"
-                    (click)="audience.set(a)"
-                    (keydown)="onAudienceKey($event)">{{ a.label }}</button>
-          }
-        </div>
-      </div>
-
-      <div class="lp-aud-panel pub-card" id="aud-panel" role="tabpanel" [attr.aria-label]="audience().label" reveal="scale">
-        <div class="lp-aud-ask">
-          <span class="lp-aud-ask-label">Question type</span>
-          @if (audience(); as a) {
-            <p class="lp-aud-q" [attr.data-id]="a.id">« {{ a.question }} »</p>
-          }
-        </div>
-        <ul class="lp-aud-gains">
-          @for (g of audience().gains; track audience().id + g; let i = $index) {
-            <li><span>{{ (i + 1).toString().padStart(2, '0') }}</span>{{ g }}</li>
-          }
         </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═════════════ TÉMOIGNAGES ═════════════ -->
-  @if (testimonials().length > 0) {
-    <section class="lp-testi pub-sheet pub-sheet--apricot" aria-labelledby="lp-testi-title">
-      <div class="pub-container">
-        <div class="lp-section-head" reveal>
-          <p class="pub-eyebrow">Témoignages</p>
-          <h2 id="lp-testi-title" class="pub-title">Ils l'utilisent <em>au quotidien</em>.</h2>
-        </div>
-        <div class="lp-testi-grid" reveal [revealStagger]="90">
-          @for (t of testimonials(); track t.id; let first = $first) {
-            <figure class="lp-quote" [class.is-lead]="first">
-              <blockquote>{{ t.text }}</blockquote>
-              <figcaption>
-                <span class="lp-quote-avatar" aria-hidden="true">
-                  @if (t.avatar_url) { <img [src]="t.avatar_url" alt="" width="40" height="40" loading="lazy" /> }
-                  @else { {{ t.name.charAt(0) }} }
-                </span>
-                <span><strong>{{ t.name }}</strong><small>{{ t.role }}</small></span>
-              </figcaption>
-            </figure>
-          }
-        </div>
       </div>
     </section>
   }
 
-  <!-- ═════════════ FAQ ═════════════ -->
-  <section class="lp-faq" aria-labelledby="lp-faq-title">
-    <div class="pub-container lp-faq-grid">
-      <div reveal="left">
-        <p class="pub-eyebrow">Questions fréquentes</p>
-        <h2 id="lp-faq-title" class="pub-title">Ce que l'on nous <em>demande souvent</em>.</h2>
-        <p class="pub-lead">Une autre question ? <a href="#contact" class="lp-link">Écrivez-nous</a>.</p>
-      </div>
-      <div class="lp-faq-list" reveal [revealStagger]="80">
+  <section class="lp-section" aria-labelledby="lp-faq-title">
+    <div class="pub-container lp-split">
+      <header class="lp-head">
+        <p class="lp-kicker">Questions fréquentes</p>
+        <h2 id="lp-faq-title">Ce qu’il faut savoir avant de commencer.</h2>
+        <p class="lp-intro">Une autre question&nbsp;? <a href="#contact">Écrivez-nous</a>.</p>
+      </header>
+      <div class="lp-faq">
         <details>
-          <summary><span class="lp-faq-num">01</span>JusticIA remplace-t-il un avocat&nbsp;?</summary>
-          <p>Non. JusticIA est un outil d'information juridique. Pour une procédure ou une décision importante, consultez un avocat inscrit au Barreau de Guinée.</p>
+          <summary>JusticIA remplace-t-il un avocat&nbsp;?</summary>
+          <p>Non. JusticIA est un outil d’information juridique. Pour une procédure ou une décision importante, consultez un avocat inscrit au Barreau de Guinée.</p>
         </details>
         <details>
-          <summary><span class="lp-faq-num">02</span>D'où viennent les textes utilisés&nbsp;?</summary>
-          <p>Des textes officiels de la République de Guinée : codes, lois et décrets publiés. Chaque réponse indique la loi et l'article cités, avec un extrait du texte.</p>
+          <summary>D’où viennent les textes utilisés&nbsp;?</summary>
+          <p>Des textes officiels de la République de Guinée&nbsp;: codes, lois et décrets publiés. Chaque réponse indique la loi et l’article cités, avec un extrait du texte.</p>
         </details>
         <details>
-          <summary><span class="lp-faq-num">03</span>Et si la réponse n'est pas dans les textes&nbsp;?</summary>
-          <p>JusticIA vous l'indique explicitement. Il ne complète jamais une réponse par une disposition qui ne figure pas dans le corpus.</p>
+          <summary>Et si la réponse n’est pas dans les textes&nbsp;?</summary>
+          <p>JusticIA vous l’indique explicitement. Il ne complète jamais une réponse par une disposition qui ne figure pas dans le corpus.</p>
         </details>
         <details>
-          <summary><span class="lp-faq-num">04</span>Que deviennent mes questions&nbsp;?</summary>
-          <p>Vos conversations et vos dossiers sont stockés sur notre infrastructure et ne sont ni vendus ni utilisés pour entraîner un modèle d'IA. Pour rédiger la réponse, la question et les articles retrouvés sont transmis à un modèle de langage hébergé par notre fournisseur. Le mode éphémère permet de ne rien conserver.</p>
+          <summary>Que deviennent mes questions&nbsp;?</summary>
+          <p>Vos conversations et vos dossiers sont stockés sur notre infrastructure et ne sont ni vendus ni utilisés pour entraîner un modèle d’IA. Pour rédiger la réponse, la question et les articles retrouvés sont transmis à un modèle de langage hébergé par notre fournisseur. Le mode éphémère permet de ne rien conserver.</p>
         </details>
       </div>
     </div>
   </section>
 
-  <!-- ═════════════ APPEL FINAL ═════════════ -->
-  <section class="lp-final" aria-labelledby="lp-final-title">
+  <section class="lp-section lp-live" id="direct" aria-labelledby="lp-live-title">
     <div class="pub-container">
-      <div class="lp-final-card" reveal="scale">
-        <span class="lp-final-blob lp-final-blob--a" aria-hidden="true"></span>
-        <span class="lp-final-blob lp-final-blob--b" aria-hidden="true"></span>
-        <p class="lp-final-ref" aria-hidden="true">Art. 1<sup>er</sup></p>
-        <h2 id="lp-final-title">Votre première question <em>vous attend</em>.</h2>
-        <p class="lp-final-lead">Compte gratuit, sans carte bancaire. Première réponse sourcée en moins d'une minute.</p>
-        <div class="lp-final-actions">
-          <a routerLink="/signup" class="pub-btn pub-btn--dark">
-            Créer un compte gratuit
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-          <a routerLink="/pricing" class="pub-btn pub-btn--line">Voir les offres</a>
-        </div>
+      <header class="lp-head" reveal>
+        <p class="lp-kicker"><span class="lp-live-dot" aria-hidden="true"></span>En direct</p>
+        <h2 id="lp-live-title">Le parcours d’une question, en temps réel.</h2>
+      </header>
+
+      <div class="lp-schema" [attr.data-step]="liveStep()"
+           (pointerenter)="pauseLive()" (pointerleave)="resumeLive()">
+        <p class="lp-schema-bar">
+          <span class="lp-schema-pipe">Pipeline juridique</span>
+          <span class="lp-schema-status" aria-live="polite">{{ liveStatus() }}</span>
+        </p>
+
+        <ol>
+          <li [class.is-on]="liveStep() === 0" [class.is-done]="liveStep() > 0">
+            <span class="lp-schema-role">Vous</span>
+            <strong>Question</strong>
+            <p>Quel préavis pour un cadre&nbsp;?</p>
+          </li>
+          <li [class.is-on]="liveStep() === 1" [class.is-done]="liveStep() > 1">
+            <span class="lp-schema-role">33 textes</span>
+            <strong>Recherche</strong>
+            <ul class="lp-schema-scan">
+              @for (code of flowCodes; track code) {
+                <li [class.is-scan]="liveStep() === 1 && liveScan() === $index"
+                    [class.is-hit]="code === 'Code du travail' && liveStep() >= 2">{{ code }}</li>
+              }
+            </ul>
+          </li>
+          <li [class.is-on]="liveStep() === 2" [class.is-done]="liveStep() > 2">
+            <span class="lp-schema-role">Source</span>
+            <strong>Article</strong>
+            <p class="lp-schema-cite">Art. 172.23</p>
+            <p>Code du travail, 2014</p>
+          </li>
+          <li [class.is-on]="liveStep() === 3" [class.is-done]="liveStep() === 3">
+            <span class="lp-schema-role">Sortie</span>
+            <strong>Réponse</strong>
+            <p>Trois mois pour un cadre.</p>
+          </li>
+        </ol>
       </div>
     </div>
   </section>
 
-  <!-- ═════════════ CONTACT ═════════════ -->
-  <section class="lp-contact" id="contact" aria-labelledby="lp-contact-title">
-    <div class="pub-container lp-contact-grid">
-      <div reveal="left">
-        <p class="pub-eyebrow">Contact</p>
-        <h2 id="lp-contact-title" class="pub-title">Parlons de <em>vos besoins</em>.</h2>
-        <p class="pub-lead">Cabinet, entreprise ou institution : notre équipe vous répond sous 24 heures ouvrées.</p>
+  <section class="lp-end" aria-labelledby="lp-end-title">
+    <div class="pub-container">
+      <h2 id="lp-end-title">Votre première question prend moins d’une minute.</h2>
+      <p>Compte gratuit, sans carte bancaire.</p>
+      <div class="lp-actions">
+        <a routerLink="/signup" class="pub-btn pub-btn--dark">Créer un compte gratuit</a>
+        <a routerLink="/pricing" class="pub-btn pub-btn--line">Voir les tarifs</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-section lp-contact" id="contact" aria-labelledby="lp-contact-title">
+    <div class="pub-container lp-split">
+      <header class="lp-head">
+        <p class="lp-kicker">Contact</p>
+        <h2 id="lp-contact-title">Parlons de vos besoins.</h2>
+        <p class="lp-intro">Cabinet, entreprise ou institution&nbsp;: notre équipe vous répond sous 24 heures ouvrées.</p>
         <dl class="lp-contact-info">
           <div>
             <dt>Téléphone</dt>
@@ -387,10 +304,9 @@
             <dd>{{ getContactHours() }}</dd>
           </div>
         </dl>
-      </div>
+      </header>
 
-      <form class="lp-form pub-card" (ngSubmit)="submitContact()" novalidate reveal="right">
-        <!-- Champ piège anti-robots : invisible et ignoré par les humains -->
+      <form class="lp-form" (ngSubmit)="submitContact()" novalidate>
         <div class="hp-field" aria-hidden="true">
           <label for="lp-website">Site web</label>
           <input type="text" id="lp-website" name="website" tabindex="-1" autocomplete="off" [(ngModel)]="contactForm.website" />

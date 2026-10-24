@@ -1,0 +1,38 @@
+<div class="app-page notifications-page">
+  <header class="app-head notifications-head">
+    <div>
+      <p class="app-eyebrow">Centre de suivi</p>
+      <h1 class="app-title">Notifications</h1>
+      <p class="app-sub">Retrouvez les mises à jour de vos dossiers et de vos consultations.</p>
+    </div>
+    @if (notifications.unreadCount() > 0) {
+      <button class="app-btn" (click)="notifications.markAllRead()">Tout marquer comme lu</button>
+    }
+  </header>
+
+  <div class="notice-toolbar">
+    <div class="notice-tabs" role="tablist">
+      <button [class.active]="filter() === 'all'" (click)="filter.set('all')">Toutes <span>{{ notifications.notifications().length }}</span></button>
+      <button [class.active]="filter() === 'unread'" (click)="filter.set('unread')">Non lues <span>{{ notifications.unreadCount() }}</span></button>
+    </div>
+    <button class="text-action" [disabled]="!hasRead()" (click)="notifications.clearRead()">Effacer les lues</button>
+  </div>
+
+  @if (loading()) {
+    <div class="notice-panel notice-empty"><div class="loader"></div><p>Chargement de vos notifications…</p></div>
+  } @else if (error()) {
+    <div class="notice-panel notice-empty"><h2>{{ error() }}</h2><p>Réessayez dans quelques instants.</p></div>
+  } @else if (!visible().length) {
+    <div class="notice-panel notice-empty"><div class="empty-mark">✓</div><h2>Tout est à jour</h2><p>Les nouvelles activités apparaîtront ici.</p></div>
+  } @else {
+    <div class="notice-panel">
+      @for (item of visible(); track item.id) {
+        <article class="notice-row" [class.unread]="!item.is_read" (click)="open(item)">
+          <span class="notice-icon" [class]="'type-' + item.type">{{ icon(item.type) }}</span>
+          <div class="notice-copy"><div class="notice-title"><strong>{{ item.title }}</strong>@if (!item.is_read) {<i></i>}</div><p>{{ item.message }}</p><time>{{ date(item.created_at) }}</time></div>
+          <button class="notice-delete" title="Supprimer" (click)="$event.stopPropagation(); notifications.delete(item.id)">×</button>
+        </article>
+      }
+    </div>
+  }
+</div>

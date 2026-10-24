@@ -29,7 +29,7 @@
         <!-- Mode maintenance -->
         <div class="as-card" [class.as-card--danger]="maintenance.enabled">
           <div class="as-card-header">
-            <div class="as-card-icon as-card-icon--red">🔧</div>
+            <div class="as-card-icon as-card-icon--red">SYS</div>
             <div class="as-card-title">
               <strong>Mode maintenance</strong>
               <span>Bloquer l'accès à tous les utilisateurs</span>
@@ -43,7 +43,7 @@
           </div>
 
           @if (maintenance.enabled) {
-            <div class="as-warn-badge">⚠️ La plateforme sera inaccessible pour tous les utilisateurs</div>
+            <div class="as-warn-badge">Attention : la plateforme sera inaccessible pour tous les utilisateurs</div>
           }
 
           <div class="as-field">
@@ -54,14 +54,14 @@
 
           <button class="as-save-btn" [class.as-save-btn--danger]="maintenance.enabled"
             (click)="saveMaintenance()" [disabled]="saveStatus() === 'saving'">
-            {{ maintenance.enabled ? '⚠️ Activer la maintenance' : 'Enregistrer' }}
+            {{ maintenance.enabled ? 'Activer la maintenance' : 'Enregistrer' }}
           </button>
         </div>
 
         <!-- Annonce globale -->
         <div class="as-card" [class.as-card--glow]="announcement.enabled">
           <div class="as-card-header">
-            <div class="as-card-icon as-card-icon--blue">📣</div>
+            <div class="as-card-icon as-card-icon--blue">INFO</div>
             <div class="as-card-title">
               <strong>Annonce globale</strong>
               <span>Bandeau visible par tous les utilisateurs connectés</span>
@@ -94,7 +94,7 @@
 
           @if (announcement.enabled && announcement.message) {
             <div class="as-preview-banner" [style.border-color]="announcementColor()" [style.background]="'color-mix(in srgb, ' + announcementColor() + ' 10%, transparent)'">
-              <span [style.color]="announcementColor()">📣</span>
+              <span [style.color]="announcementColor()">INFO</span>
               {{ announcement.message }}
             </div>
           }
@@ -122,7 +122,7 @@
         <!-- Export données -->
         <div class="as-card">
           <div class="as-card-header">
-            <div class="as-card-icon as-card-icon--green">📥</div>
+            <div class="as-card-icon as-card-icon--green">DATA</div>
             <div class="as-card-title">
               <strong>Export des données</strong>
               <span>Télécharger des rapports CSV</span>
@@ -148,7 +148,7 @@
         <!-- Top utilisateurs -->
         <div class="as-card">
           <div class="as-card-header">
-            <div class="as-card-icon as-card-icon--cyan">🏆</div>
+            <div class="as-card-icon as-card-icon--cyan">TOP</div>
             <div class="as-card-title">
               <strong>Utilisateurs les plus actifs</strong>
               <span>{{ activityDays }} derniers jours</span>
@@ -182,7 +182,7 @@
         <!-- Alertes quota -->
         <div class="as-card">
           <div class="as-card-header">
-            <div class="as-card-icon as-card-icon--orange">⚡</div>
+            <div class="as-card-icon as-card-icon--orange">LIVE</div>
             <div class="as-card-title">
               <strong>Alertes quota</strong>
               <span>Utilisateurs ayant dépassé 3 questions/jour</span>
@@ -210,7 +210,7 @@
         <!-- Connexions récentes -->
         <div class="as-card">
           <div class="as-card-header">
-            <div class="as-card-icon as-card-icon--green">🟢</div>
+            <div class="as-card-icon as-card-icon--green">ACTIF</div>
             <div class="as-card-title">
               <strong>Connexions récentes</strong>
               <span>Derniers utilisateurs connectés</span>

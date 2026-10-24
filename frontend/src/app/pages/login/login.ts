@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { Header } from '../../components/header/header';
-import { Reveal } from '../../core/reveal.directive';
 
 @Component({
   selector: 'app-connexion',
-  imports: [CommonModule, FormsModule, RouterLink, Header, Reveal],
+  imports: [CommonModule, FormsModule, RouterLink, Header],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

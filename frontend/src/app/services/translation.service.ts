@@ -33,12 +33,12 @@ export interface SimplifyResponse {
 }
 
 export const LANGUAGES = [
-  { code: 'fr',      label: 'Français',           flag: '🇫🇷' },
-  { code: 'en',      label: 'English',             flag: '🇬🇧' },
-  { code: 'ar',      label: 'Arabe (عربية)',        flag: '🇸🇦' },
-  { code: 'pular',   label: 'Pular (Fulfulde)',     flag: '🇬🇳', local: true },
-  { code: 'malinke', label: 'Malinké (Mandingue)', flag: '🇬🇳', local: true },
-  { code: 'soussou', label: 'Soussou',              flag: '🇬🇳', local: true },
+  { code: 'fr',      label: 'Français',           flag: 'FR' },
+  { code: 'en',      label: 'English',             flag: 'EN' },
+  { code: 'ar',      label: 'Arabe (عربية)',        flag: 'AR' },
+  { code: 'pular',   label: 'Pular (Fulfulde)',     flag: 'GN', local: true },
+  { code: 'malinke', label: 'Malinké (Mandingue)', flag: 'GN', local: true },
+  { code: 'soussou', label: 'Soussou',              flag: 'GN', local: true },
 ];
 
 export const SIMPLIFY_LEVELS = [

@@ -97,12 +97,15 @@
 
             @if (message.sources && message.sources.length > 0) {
               <div class="message-sources">
-                <span class="sources-label">Sources</span>
+                <span class="sources-label">Sources consultées</span>
                 @for (src of groupSources(message.sources); track src.nom_doc) {
-                  <span class="source-chip" [title]="src.refs ? 'Art. ' + src.refs : ''">
-                    {{ src.nom_doc }}
-                    @if (src.count > 1) { <span class="source-count">{{ src.count }}</span> }
-                  </span>
+                  <details class="source-group">
+                    <summary class="source-chip">
+                      <span class="source-doc-name">{{ src.nom_doc }}</span>
+                      <span class="source-count">{{ src.count }} article{{ src.count > 1 ? 's' : '' }}</span>
+                    </summary>
+                    <span class="source-refs">{{ src.refs }}</span>
+                  </details>
                 }
               </div>
             }

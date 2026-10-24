@@ -23,10 +23,10 @@
 // ── Couleurs (mode clair) ────────────────────────────────────────────
 $ink:        #0F0F0E;
 $ink-2:      #262623;
-$paper:      #FFFFFF;
-$paper-2:    #F4F4F2;
-$paper-3:    #FAFAF8;
-$white:      #FFFFFF;
+$paper:      #F6F5F0;
+$paper-2:    #ECEBE5;
+$paper-3:    #F0EFEA;
+$white:      #FFFDF8;
 $line:       #E7E7E3;
 $line-2:     #D4D4CF;
 $text:       #1E1E1C;
@@ -86,7 +86,7 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   --ink-2: #{$ink-2};
   --ink-rgb: 15, 15, 14;
   --paper: #{$paper};
-  --paper-rgb: 255, 255, 255;
+  --paper-rgb: 246, 245, 240;
   --paper-2: #{$paper-2};
   --paper-3: #{$paper-3};
   --white: #{$white};
@@ -264,45 +264,29 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
     @media (max-width: 480px) { padding: 0 16px; }
   }
 
-  /* En-tête de page intérieure : gris très clair → blanc, quadrillage fin */
+  /* En-tête de page intérieure : même calme que l'accueil */
   .pub-hero {
     position: relative;
-    overflow: hidden;
-    background: linear-gradient(180deg, var(--paper-2) 0%, var(--paper) 100%);
+    background: var(--paper);
     color: var(--text);
-    padding: 136px 0 112px;
-    @include aurora(0.8);
+    padding: 128px 0 56px;
+    border-bottom: 1px solid var(--line);
 
-    // Quadrillage fin, fondu vers le bas
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      @include linegrid();
-      -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
-      mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
-    }
-
-    > * { position: relative; z-index: 1; }
-
-    @media (max-width: 720px) { padding: 108px 0 72px; }
+    @media (max-width: 720px) { padding: 108px 0 40px; }
   }
 
   .pub-hero-title {
-    font-family: $display;
-    font-optical-sizing: auto;
-    font-weight: 400;
-    font-size: clamp(2.5rem, 5.4vw, 4.6rem);
-    line-height: 1.02;
-    letter-spacing: -0.025em;
+    font-family: $sans;
+    font-weight: 600;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
     color: var(--ink);
-    margin: 0 0 24px;
-    max-width: 900px;
+    margin: 0 0 16px;
+    max-width: 28ch;
     text-wrap: balance;
 
-    em { font-style: italic; color: var(--accent-txt); }
+    em { font-style: normal; font-weight: 600; color: inherit; }
   }
 
   .pub-hero-lead {
@@ -318,22 +302,13 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    font-family: $mono;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-family: $sans;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--muted);
-    margin: 0 0 20px;
-
-    &::before {
-      content: '§';
-      font-family: $display;
-      font-size: 18px;
-      letter-spacing: 0;
-      text-transform: none;
-      color: var(--accent-txt);
-    }
+    margin: 0 0 12px;
 
     // Conservé pour compatibilité : sur fond clair, même rendu
     &--light { color: var(--muted); }
@@ -348,17 +323,16 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   }
 
   .pub-title {
-    font-family: $display;
-    font-optical-sizing: auto;
-    font-weight: 400;
-    font-size: clamp(2rem, 3.6vw, 3rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    font-family: $sans;
+    font-weight: 600;
+    font-size: clamp(1.75rem, 2.6vw, 2.125rem);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
     color: var(--ink);
-    margin: 0 0 16px;
+    margin: 0 0 12px;
     text-wrap: balance;
 
-    em { font-style: italic; color: var(--accent-txt); }
+    em { font-style: normal; font-weight: 600; color: inherit; }
   }
 
   .pub-lead {
@@ -464,6 +438,5 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
 
   @media (prefers-reduced-motion: reduce) {
     .pub-btn, .pub-btn svg, .pub-card { transition: none; }
-    .pub-hero::before { animation: none; }
   }
 }

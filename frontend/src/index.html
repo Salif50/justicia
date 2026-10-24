@@ -6,13 +6,13 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="JusticIA retrouve l'article applicable dans les textes officiels de la République de Guinée, le cite mot pour mot et vous l'explique. Pour les citoyens, les avocats, les entreprises et les institutions.">
-  <meta name="theme-color" content="#FFFFFF">
+  <meta name="theme-color" content="#0F0F0E">
   <script>
-    /* Thème avant le premier rendu (évite le flash) : préférence stockée, sinon système */
+    /* Thème avant le premier rendu : la préférence stockée, sinon le mode nuit. */
     (function () {
       try {
         var m = localStorage.getItem('theme');
-        var dark = m === 'dark' || ((m !== 'light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var dark = m !== 'light';
         var t = dark ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', t);
         document.documentElement.style.colorScheme = t;

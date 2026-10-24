@@ -51,8 +51,8 @@ export class GlobalSearch implements AfterViewInit {
 
   typeIcon(type: string): string {
     const icons: Record<string, string> = {
-      conversation: '💬', case: '⚖️', document: '📄', note: '📝',
+      conversation: 'C', case: 'D', document: 'F', note: 'N',
     };
-    return icons[type] ?? '🔍';
+    return icons[type] ?? 'R';
   }
 }

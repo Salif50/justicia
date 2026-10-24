@@ -184,13 +184,11 @@ export const routes: Routes = [
       // ── Productivity ──────────────────────────────────────────────────────────
       {
         path: 'search',
-        loadComponent: () => import('./pages/coming-soon/coming-soon').then(m => m.ComingSoon),
-        data: { feature: 'search' },
+        loadComponent: () => import('./pages/search/search').then(m => m.SearchPage),
       },
       {
         path: 'notifications',
-        loadComponent: () => import('./pages/coming-soon/coming-soon').then(m => m.ComingSoon),
-        data: { feature: 'notifications' },
+        loadComponent: () => import('./pages/notifications/notifications').then(m => m.NotificationsPage),
       },
 
       // ── Account ───────────────────────────────────────────────────────────────
@@ -224,18 +222,17 @@ export const routes: Routes = [
       // ── Law firm (enterprise) ─────────────────────────────────────────────────
       {
         path: 'firm',
-        loadComponent: () => import('./pages/coming-soon/coming-soon').then(m => m.ComingSoon),
-        data: { feature: 'firm' },
+        loadComponent: () => import('./pages/firm/firm').then(m => m.Firm),
       },
       {
         path: 'clients',
-        loadComponent: () => import('./pages/coming-soon/coming-soon').then(m => m.ComingSoon),
-        data: { feature: 'clients' },
+        loadComponent: () => import('./pages/clients/clients').then(m => m.Clients),
       },
       {
         path: 'billing',
-        loadComponent: () => import('./pages/coming-soon/coming-soon').then(m => m.ComingSoon),
-        data: { feature: 'billing' },
+        // La facturation partage le centre d'abonnement : plans, Mosagix Pay,
+        // factures PDF et annulation sont déjà gérés dans cet écran.
+        loadComponent: () => import('./pages/subscription/subscription').then(m => m.Subscription),
       },
     ],
   },

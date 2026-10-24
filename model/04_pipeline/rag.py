@@ -490,7 +490,7 @@ MIN_SCORE_INCLUDE  = 0.05  # En dessous : article ignoré même si récupéré
 GLOBAL_SCORE_THRESHOLD = float(os.getenv("RAG_GLOBAL_THRESHOLD", "0.05"))
 SOFT_DOMAIN = os.getenv("RAG_SOFT_DOMAIN", "1") == "1"
 # Candidats (BM25 + sémantique, fusion RRF) reclassés par le cross-encoder, par requête
-N_CANDIDATES = int(os.getenv("RAG_N_CANDIDATES", "40"))  # mesuré : 30 → 88,3 %, 40 → 89,6 %, 50 → 90,0 % (top 10)
+N_CANDIDATES = int(os.getenv("RAG_N_CANDIDATES", "60"))  # recall élargi ; le cross-encoder tranche ensuite
 MIN_SCORE_CONFIDENT = 0.15  # En dessous de ce seuil : disclaimer affiché
 MIN_SCORE_ANSWER   = 0.03  # En dessous du meilleur score : refus de répondre
 
@@ -512,37 +512,36 @@ Dans un domaine juridique, une réponse fausse est plus dangereuse que l'absence
 
 1. **FRANÇAIS EXCLUSIVEMENT** — toute phrase dans une autre langue est une faute grave.
 2. **Les articles fournis sont LA LOI** — base TOUTE ta réponse sur les textes du contexte.
-3. **Citation intégrale** — les articles marqués ★ doivent être reproduits MOT POUR MOT dans la section "Textes de loi applicables", entre guillemets «». Ne résume pas, ne reformule pas : copie le texte exact.
+3. **Citations utiles** — recopie mot pour mot uniquement les passages nécessaires pour répondre ; évite les longs blocs qui rendent la réponse difficile à lire.
 4. **Citations inline** — après chaque argument, ajoute le marqueur de source contrôlé du contexte, par exemple 【S1】. Ne fabrique jamais un marqueur.
 5. **Jamais d'invention** — ne cite JAMAIS un article dont le numéro n'apparaît pas dans la liste "RÉFÉRENCES AUTORISÉES" du contexte.
 6. **Structure unique** — produis la réponse UNE SEULE FOIS, sans répéter les sections.
 7. **Vérification finale** — avant de finaliser, relis chaque article cité et confirme qu'il figure dans la liste des articles fournis.
 8. **Hiérarchie des textes** — si la question porte sur ce qui interdit, condamne ou punit un comportement, présente EN PREMIER les articles qui définissent l'infraction et fixent la peine (Code pénal, textes de fond), puis seulement ensuite les articles de procédure qui s'y rapportent.
 
-## Format OBLIGATOIRE (4 sections dans cet ordre exact)
+## Format de réponse (simple et lisible)
 
 ### Textes de loi applicables
 
-> **[Référence] — [Nom complet du texte de loi]**
-> « [TEXTE INTÉGRAL copié mot pour mot — zéro paraphrase] »
+> [Nom du texte] — [article]
+> « [court extrait exact utile à la réponse] »
 
 **Commentaire juridique :** [2-3 phrases d'interprétation UNIQUEMENT basées sur le texte ci-dessus et les autres articles fournis. N'ajoute aucune information extérieure.]
 
-[2 à 4 articles marqués ★ uniquement]
+[1 à 4 sources principales uniquement]
 
 ---
 
 ### Analyse juridique
 
-1. **[Titre du point]** — [Explication précise, 2-3 phrases]. *(Nom du Code, Art. X)*
-2. **[Titre du point]** — [Explication précise]. *(Nom du Code, Art. Y)*
-3. **[Titre du point]** — [Explication précise]. *(Nom du Code, Art. Z)*
-[3 à 5 points — chaque point cite un article différent et AUTORISÉ]
+1. [Titre du point] — [Explication précise, 2-3 phrases].
+2. [Titre du point] — [Explication précise].
+[2 à 4 points maximum, chacun avec son marqueur de source]
 
 ### Observations pratiques
 
-- **[Intitulé]** : [Conseil concret, délai légal ou démarche à suivre].
-- **[Intitulé]** : [Mise en garde ou procédure pratique].
+- [Conseil concret, délai légal ou démarche à suivre].
+- [Mise en garde ou procédure pratique].
 
 ### Documents consultés
 
@@ -789,8 +788,8 @@ def build_context_prompt(
     else:
         articles_tries = sorted(articles_valides, key=lambda a: a.get("score", 0), reverse=True)
 
-    # Adapter le nombre d'articles à citer en intégralité selon l'intention
-    N_FULL_CITE = 4 if intent in (QueryIntent.CONDITIONS, QueryIntent.LISTE) else 3
+    # Limiter les citations intégrales : la réponse doit rester lisible.
+    N_FULL_CITE = 2 if intent in (QueryIntent.CONDITIONS, QueryIntent.LISTE) else 1
 
     # Construire les blocs d'articles
     parts = []
@@ -809,7 +808,7 @@ def build_context_prompt(
         score = art.get("score", 0)
 
         if i <= N_FULL_CITE:
-            marqueur = f"★ CITER EN INTÉGRALITÉ ({score:.0%} pertinence)"
+            marqueur = f"Source principale ({score:.0%} pertinence)"
         else:
             marqueur = f"Référence complémentaire ({score:.0%})"
 

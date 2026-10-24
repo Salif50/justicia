@@ -406,13 +406,37 @@
   cursor: default;
 }
 
+.source-group {
+  position: relative;
+  max-width: min(100%, 30rem);
+
+  summary { list-style: none; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  &[open] summary { border-color: var(--glow-cyan); color: var(--text-primary); }
+}
+
+.source-doc-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-refs {
+  display: block;
+  margin-top: .35rem;
+  padding: .5rem .7rem;
+  border: 1px solid var(--divider);
+  border-radius: .55rem;
+  background: var(--card-bg-solid);
+  color: var(--text-muted);
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
 .source-count {
-  min-width: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
+  padding: 0;
   background: var(--page-bg);
   font-size: .7rem;
-  line-height: 18px;
   text-align: center;
   color: var(--text-muted);
 }

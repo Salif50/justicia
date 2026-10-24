@@ -30,7 +30,16 @@ export class MarkdownPipe implements PipeTransform {
 
   transform(value: string | null | undefined): SafeHtml {
     if (!value) return '';
-    const html = marked.parse(value) as string;
+    // Certains fournisseurs renvoient des astérisques échappés ou des
+    // séparateurs décoratifs (`***`) au lieu d'un Markdown propre. On les
+    // normalise avant marked pour éviter l'affichage brut des `*` dans le chat.
+    const normalized = value
+      .replace(/\\([*_])/g, '$1')
+      .replace(/^\s*\*{3,}\s*$/gm, '---')
+      .replace(/^\s*\*\s+/gm, '- ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    const html = marked.parse(normalized) as string;
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }

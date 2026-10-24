@@ -1,7 +1,4 @@
-import {
-  AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, signal,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -9,116 +6,121 @@ import { Header } from '../../components/header/header';
 import { Footer } from '../../components/footer/footer';
 import { ContentService, Testimonial, Partner, SiteConfig } from '../../services/content';
 import { environment } from '../../../environments/environment';
-import { ChatSim } from './chat-sim/chat-sim';
-import { ScrollStory } from './scroll-story/scroll-story';
-import { Parallax, Reveal } from '../../core/reveal.directive';
-
-// Titre du héros : chaque ligne apparaît par un masque (glissement vers le haut).
-const TITLE_LINES: { text: string; em: boolean }[] = [
-  { text: 'Le droit guinéen,',   em: false },
-  { text: 'cité à la lettre.',   em: true  },
-];
-
-const MANIFESTO =
-  "JusticIA ne répond jamais de mémoire. Il cherche l'article, le cite mot pour mot, puis l'explique. " +
-  "Et quand le texte n'existe pas, il vous le dit.";
-const MANIFESTO_EM = new Set(['mémoire.', 'mot', 'dit.']);
-
-/** Sommaire du corpus (nombre d'articles par texte, tel qu'affiché dans l'Encyclopédie). */
-const CORPUS = [
-  { titre: 'Code des activités économiques', annee: 1994, articles: 2010 },
-  { titre: 'Code civil',                     annee: 2019, articles: 1637 },
-  { titre: 'Code de procédure pénale',       annee: 2016, articles: 1260 },
-  { titre: 'Code pénal',                     annee: 2016, articles: 1011 },
-  { titre: 'Code de procédure civile',       annee: 2018, articles: 915 },
-  { titre: 'Code général des impôts',        annee: 2020, articles: 820 },
-  { titre: 'Code du travail',                annee: 2014, articles: 464 },
-  { titre: 'Code minier',                    annee: 2013, articles: 252 },
-  { titre: 'Code foncier et domanial',       annee: 1992, articles: 241 },
-  { titre: 'Constitution de la République',  annee: 2025, articles: 201 },
-];
-
-const MARQUEE = [
-  'Constitution 2025', 'Code civil', 'Code pénal', 'Code du travail', 'Code de procédure pénale',
-  'Code de procédure civile', 'Code général des impôts', 'Code minier', 'Code foncier et domanial',
-  'Code électoral', 'Code des marchés publics', 'Code des activités économiques', 'Code de la sécurité sociale',
-];
+import { Reveal } from '../../core/reveal.directive';
 
 const LEDGER = [
-  { label: 'Textes officiels',     value: 33 },
-  { label: 'Articles indexés',     value: 12282 },
-  { label: 'Domaines du droit',    value: 23 },
+  { label: 'Textes officiels', value: 33 },
+  { label: 'Articles indexés', value: 12282 },
   { label: 'Réponses sans source', value: 0 },
 ];
 
+const STEPS = [
+  {
+    title: 'Vous posez la question',
+    text: 'En langage courant, comme vous le feriez avec un juriste.',
+  },
+  {
+    title: 'JusticIA cherche l’article',
+    text: 'Dans les codes, lois et décrets officiels de la République de Guinée.',
+  },
+  {
+    title: 'Il cite, puis il explique',
+    text: 'L’extrait exact, la référence, et une explication en langage clair.',
+  },
+];
+
+const FLOW_QUESTION = 'Quel préavis pour un cadre ?';
+const FLOW_CODES = ['Code civil', 'Code du travail', 'Code pénal', 'Code minier'];
+const FLOW_HOLD = [2800, 2400, 3000];
+const LIVE_HOLD = [1700, 2400, 1900, 2800];
+const LIVE_STATUS = [
+  'Question reçue',
+  'Parcours des textes officiels…',
+  'Art. 172.23 — Code du travail, 2014',
+  'Réponse citée · trois mois',
+];
+
+const TOOLS = [
+  {
+    title: 'Questions sourcées',
+    text: 'Chaque réponse indique la loi et l’article, avec un extrait du texte.',
+  },
+  {
+    title: 'Dossiers et délais',
+    text: 'Pièces, audiences et délais de recours, réunis par affaire.',
+  },
+  {
+    title: 'Actes et contrats',
+    text: 'Rédigés ou relus à partir du droit guinéen en vigueur.',
+  },
+  {
+    title: 'Encyclopédie',
+    text: '33 textes officiels, consultables article par article.',
+  },
+];
+
 const AUDIENCES = [
-  {
-    id: 'avocats', label: 'Avocats & juristes',
-    question: "Quels sont les droits d'une personne placée en garde à vue ?",
-    gains: ["L'article exact en quelques secondes", 'Dossiers, pièces et délais au même endroit', "Brouillons d'actes conformes au droit guinéen"],
-  },
-  {
-    id: 'entreprises', label: 'Entreprises',
-    question: 'Comment licencier un salarié sans risque de contentieux ?',
-    gains: ["Décisions RH sécurisées, texte à l'appui", 'Contrats générés puis audités', 'Veille sur le droit du travail et fiscal'],
-  },
-  {
-    id: 'citoyens', label: 'Citoyens',
-    question: 'Quels sont mes droits en cas de divorce ?',
-    gains: ['Vos droits expliqués simplement', 'Les démarches pas à pas', 'Traduction en Pular, Malinké ou Soussou'],
-  },
-  {
-    id: 'institutions', label: 'Institutions',
-    question: 'Quelle procédure pour un marché public de gré à gré ?',
-    gains: ['Accès des agents aux textes en vigueur', 'Réponses homogènes et traçables', 'Formation et accompagnement dédiés'],
-  },
+  { title: 'Avocats et juristes', text: 'L’article exact, les dossiers et les délais au même endroit.' },
+  { title: 'Entreprises', text: 'Des décisions et des contrats appuyés sur le texte en vigueur.' },
+  { title: 'Citoyens', text: 'Vos droits expliqués simplement, y compris en pular, malinké ou soussou.' },
+  { title: 'Institutions', text: 'Des réponses homogènes et traçables pour les agents.' },
+];
+
+/** Sommaire du corpus (nombre d’articles par texte, tel qu’affiché dans l’Encyclopédie). */
+const CORPUS = [
+  { titre: 'Code des activités économiques', annee: 1994, articles: 2010 },
+  { titre: 'Code civil', annee: 2019, articles: 1637 },
+  { titre: 'Code de procédure pénale', annee: 2016, articles: 1260 },
+  { titre: 'Code pénal', annee: 2016, articles: 1011 },
+  { titre: 'Code de procédure civile', annee: 2018, articles: 915 },
+  { titre: 'Code général des impôts', annee: 2020, articles: 820 },
+  { titre: 'Code du travail', annee: 2014, articles: 464 },
+  { titre: 'Code minier', annee: 2013, articles: 252 },
+  { titre: 'Code foncier et domanial', annee: 1992, articles: 241 },
+  { titre: 'Constitution de la République', annee: 2025, articles: 201 },
 ];
 
 @Component({
   selector: 'app-accueil',
-  imports: [CommonModule, RouterLink, Header, Footer, FormsModule, ChatSim, ScrollStory, Reveal, Parallax],
+  imports: [RouterLink, Header, Footer, FormsModule, Reveal],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('hero') hero?: ElementRef<HTMLElement>;
-  @ViewChild('manifesto') manifesto?: ElementRef<HTMLElement>;
-  @ViewChild('ledgerRef') ledgerEl?: ElementRef<HTMLElement>;
-  @ViewChild('bento') bento?: ElementRef<HTMLElement>;
+  readonly ledger = LEDGER.map(item => ({ ...item, shown: signal(item.value) }));
+  readonly steps = STEPS;
+  readonly tools = TOOLS;
+  readonly audiences = AUDIENCES;
+  readonly corpus = CORPUS;
+  readonly flowCodes = FLOW_CODES;
+  readonly flowStep = signal(0);
+  readonly flowQuestion = signal(FLOW_QUESTION);
+  readonly examplePlay = signal(false);
+  readonly liveStep = signal(0);
+  readonly liveScan = signal(-1);
 
-  readonly titleLines = TITLE_LINES;
-  readonly titleText  = TITLE_LINES.map(l => l.text).join(' ');
-  readonly corpus     = CORPUS;
-  readonly marquee    = MARQUEE;
-  readonly audiences  = AUDIENCES;
-  readonly manifestoText = MANIFESTO;
-  readonly manifestoWords = MANIFESTO.split(' ').map(w => ({ w, em: MANIFESTO_EM.has(w) }));
-
-  readonly ledger = LEDGER.map(l => ({ ...l, shown: signal(l.value) }));
-  readonly litWords = signal(MANIFESTO.split(' ').length);
-  readonly marqueePaused = signal(false);
-  readonly audience = signal(AUDIENCES[0]);
-
-  // ── Données du site ─────────────────────────────────────────────────────
   testimonials = signal<Testimonial[]>([]);
-  partners     = signal<Partner[]>([]);
-  siteConfig   = signal<SiteConfig | null>(null);
+  partners = signal<Partner[]>([]);
+  siteConfig = signal<SiteConfig | null>(null);
 
-  contactForm  = { name: '', email: '', subject: '', message: '', website: '' };
+  contactForm = { name: '', email: '', subject: '', message: '', website: '' };
   /** Durée de remplissage du formulaire (anti-robots). */
   private readonly contactOpenedAt = Date.now();
   isSubmitting = signal(false);
 
-  showToast    = signal(false);
+  showToast = signal(false);
   toastSuccess = signal(true);
-  toastText    = signal('');
+  toastText = signal('');
   private toastTimer: ReturnType<typeof setTimeout> | undefined;
-
+  private flowTimer: ReturnType<typeof setTimeout> | undefined;
+  private typeTimer: ReturnType<typeof setTimeout> | undefined;
+  private liveTimer: ReturnType<typeof setTimeout> | undefined;
+  private liveScanTimer: ReturnType<typeof setTimeout> | undefined;
+  private flowPaused = false;
+  private livePaused = false;
+  private liveStarted = false;
   private readonly motionOk =
     typeof window !== 'undefined' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  private readonly finePointer =
-    typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
-  private cleanups: (() => void)[] = [];
 
   constructor(private contentService: ContentService, private http: HttpClient, private zone: NgZone) {}
 
@@ -129,115 +131,137 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    if (typeof window === 'undefined' || !this.motionOk) return;
-    this.zone.runOutsideAngular(() => {
-      this.setupManifesto();
-      this.setupCounters();
-      this.setupTilt();
+    if (typeof window === 'undefined') return;
+    if (!this.motionOk) {
+      this.watchLive();
+      return;
+    }
+    this.zone.run(() => {
+      this.ledger.forEach(item => item.shown.set(0));
+      this.flowQuestion.set('');
     });
+    this.playExample();
+    this.runCounters();
+    this.startFlow();
+    this.startLive();
   }
 
   ngOnDestroy() {
-    this.cleanups.forEach(fn => fn());
     if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.stopFlow();
+    this.stopLive();
   }
 
-  // ── Effets ──────────────────────────────────────────────────────────────
-  /** Les mots du manifeste s'encrent à mesure que la section traverse l'écran. */
-  private setupManifesto() {
-    const el = this.manifesto?.nativeElement;
-    if (!el) return;
-    const total = this.manifestoWords.length;
-    this.zone.run(() => this.litWords.set(0));
-    let raf = 0;
-    const measure = () => {
-      const r = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const p = Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (r.height + vh * 0.35)));
-      const n = Math.round(p * total);
-      if (n !== this.litWords()) this.zone.run(() => this.litWords.set(n));
-    };
-    const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    measure();
-    this.cleanups.push(() => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); });
+  pauseFlow() { this.flowPaused = true; }
+  resumeFlow() { this.flowPaused = false; }
+  pauseLive() { this.livePaused = true; }
+  resumeLive() { this.livePaused = false; }
+
+  liveStatus(): string {
+    return LIVE_STATUS[this.liveStep()] ?? LIVE_STATUS[0];
   }
 
-  /** Compteurs qui défilent jusqu'à leur valeur réelle à l'apparition. */
-  private setupCounters() {
-    const el = this.ledgerEl?.nativeElement;
-    if (!el || !('IntersectionObserver' in window)) return;
-    this.zone.run(() => this.ledger.forEach(l => l.shown.set(0)));
-    let started = false;
-    const run = () => {
-      if (started) return;
-      started = true;
-      io.disconnect();
-      window.removeEventListener('scroll', check);
-      const start = performance.now();
-      const dur = 1400;
-      const tick = (t: number) => {
-        const k = Math.min(1, (t - start) / dur);
-        const ease = 1 - Math.pow(1 - k, 4);
-        this.zone.run(() => this.ledger.forEach(l => l.shown.set(Math.round(l.value * ease))));
-        if (k < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
-    const io = new IntersectionObserver(entries => {
-      if (entries.some(e => e.isIntersecting)) run();
-    }, { threshold: 0.4 });
-    io.observe(el);
-    // Filet de sécurité si l'observateur ne se déclenche pas : vérification au défilement
-    const check = () => {
-      const r = el.getBoundingClientRect();
-      if (r.top < window.innerHeight * 0.9 && r.bottom > 0) run();
-    };
-    window.addEventListener('scroll', check, { passive: true });
-    setTimeout(check, 900);
-    this.cleanups.push(() => { io.disconnect(); window.removeEventListener('scroll', check); });
+  private playExample() {
+    this.zone.run(() => this.examplePlay.set(false));
+    setTimeout(() => this.zone.run(() => this.examplePlay.set(true)), 40);
   }
 
-  /** Légère inclinaison des tuiles et reflet sous le pointeur. */
-  private setupTilt() {
-    const grid = this.bento?.nativeElement;
-    if (!grid || !this.finePointer) return;
-    const move = (e: PointerEvent) => {
-      const tile = (e.target as HTMLElement).closest<HTMLElement>('.lp-tile');
-      if (!tile) return;
-      const r = tile.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width;
-      const y = (e.clientY - r.top) / r.height;
-      tile.style.setProperty('--rx', `${(0.5 - y) * 5}deg`);
-      tile.style.setProperty('--ry', `${(x - 0.5) * 5}deg`);
-      tile.style.setProperty('--gx', `${x * 100}%`);
-      tile.style.setProperty('--gy', `${y * 100}%`);
+  private runCounters() {
+    const start = performance.now();
+    const tick = () => {
+      const k = Math.min(1, (performance.now() - start) / 1200);
+      const ease = 1 - Math.pow(1 - k, 4);
+      this.zone.run(() => this.ledger.forEach(item => item.shown.set(Math.round(item.value * ease))));
+      if (k < 1) setTimeout(tick, 32);
     };
-    const leave = (e: PointerEvent) => {
-      const tile = (e.target as HTMLElement).closest<HTMLElement>('.lp-tile');
-      tile?.style.setProperty('--rx', '0deg');
-      tile?.style.setProperty('--ry', '0deg');
-    };
-    grid.addEventListener('pointermove', move);
-    grid.addEventListener('pointerout', leave);
-    this.cleanups.push(() => { grid.removeEventListener('pointermove', move); grid.removeEventListener('pointerout', leave); });
+    tick();
   }
 
-  // ── Interactions ────────────────────────────────────────────────────────
-  /** Navigation clavier entre les onglets « Pour qui » (flèches gauche/droite). */
-  onAudienceKey(event: KeyboardEvent) {
-    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
-    event.preventDefault();
-    const i = AUDIENCES.findIndex(a => a.id === this.audience().id);
-    const next = (i + (event.key === 'ArrowRight' ? 1 : -1) + AUDIENCES.length) % AUDIENCES.length;
-    this.audience.set(AUDIENCES[next]);
-    const tabs = (event.currentTarget as HTMLElement).parentElement?.querySelectorAll<HTMLElement>('[role="tab"]');
-    tabs?.[next]?.focus();
+  private startFlow() {
+    this.playStep(0);
+  }
+
+  private playStep(step: number) {
+    this.zone.run(() => this.flowStep.set(step));
+    if (step === 0) this.typeQuestion();
+    this.flowTimer = setTimeout(() => this.advanceFrom(step), FLOW_HOLD[step]);
+  }
+
+  private advanceFrom(step: number) {
+    if (this.flowPaused) {
+      this.flowTimer = setTimeout(() => this.advanceFrom(step), 200);
+      return;
+    }
+    this.playStep((step + 1) % 3);
+  }
+
+  private typeQuestion() {
+    if (this.typeTimer) clearTimeout(this.typeTimer);
+    this.zone.run(() => this.flowQuestion.set(''));
+    let i = 0;
+    const tick = () => {
+      i += 1;
+      this.zone.run(() => this.flowQuestion.set(FLOW_QUESTION.slice(0, i)));
+      if (i < FLOW_QUESTION.length) this.typeTimer = setTimeout(tick, 38);
+    };
+    this.typeTimer = setTimeout(tick, 180);
+  }
+
+  private stopFlow() {
+    if (this.flowTimer) clearTimeout(this.flowTimer);
+    if (this.typeTimer) clearTimeout(this.typeTimer);
+  }
+
+  private watchLive() {
+    this.zone.run(() => {
+      this.liveStep.set(3);
+      this.liveScan.set(1);
+    });
+  }
+
+  private startLive() {
+    if (this.liveStarted) return;
+    this.liveStarted = true;
+    this.playLive(0);
+  }
+
+  private playLive(step: number) {
+    this.zone.run(() => this.liveStep.set(step));
+    if (step === 1) this.runLiveScan();
+    if (step === 0) this.zone.run(() => this.liveScan.set(-1));
+    this.liveTimer = setTimeout(() => this.advanceLive(step), LIVE_HOLD[step]);
+  }
+
+  private advanceLive(step: number) {
+    if (this.livePaused) {
+      this.liveTimer = setTimeout(() => this.advanceLive(step), 200);
+      return;
+    }
+    this.playLive((step + 1) % 4);
+  }
+
+  private runLiveScan() {
+    if (this.liveScanTimer) clearTimeout(this.liveScanTimer);
+    let i = 0;
+    const tick = () => {
+      this.zone.run(() => this.liveScan.set(i));
+      i += 1;
+      if (i < FLOW_CODES.length) {
+        this.liveScanTimer = setTimeout(tick, 320);
+        return;
+      }
+      this.zone.run(() => this.liveScan.set(1));
+    };
+    tick();
+  }
+
+  private stopLive() {
+    if (this.liveTimer) clearTimeout(this.liveTimer);
+    if (this.liveScanTimer) clearTimeout(this.liveScanTimer);
   }
 
   formatNumber(n: number): string { return n.toLocaleString('fr-FR'); }
 
-  // ── Contact ─────────────────────────────────────────────────────────────
   getContactEmails(): string[] {
     return this.siteConfig()?.contact?.emails ?? ['mosagix.contact@gmail.com'];
   }

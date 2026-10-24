@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CaseService, CaseOut } from '../../services/case.service';
+import { ClientRecord, ClientService } from '../../services/client.service';
 
 @Component({
   selector: 'app-cases',
@@ -16,14 +17,17 @@ export class Cases implements OnInit {
   showModal  = signal(false);
   isCreating = signal(false);
   createError = signal('');
+  clients = signal<ClientRecord[]>([]);
+  newClientId = signal('');
 
   newName        = signal('');
   newDescription = signal('');
 
-  constructor(private svc: CaseService, private router: Router) {}
+  constructor(private svc: CaseService, private clientService: ClientService, private router: Router) {}
 
   ngOnInit() {
     this.load();
+    this.clientService.list().subscribe(list => this.clients.set(list));
   }
 
   load() {
@@ -37,6 +41,7 @@ export class Cases implements OnInit {
   openModal() {
     this.newName.set('');
     this.newDescription.set('');
+    this.newClientId.set('');
     this.createError.set('');
     this.showModal.set(true);
   }
@@ -50,7 +55,7 @@ export class Cases implements OnInit {
     if (!name) { this.createError.set('Le nom du procès est obligatoire.'); return; }
     this.isCreating.set(true);
     this.createError.set('');
-    this.svc.create(name, this.newDescription().trim()).subscribe({
+    this.svc.create(name, this.newDescription().trim(), this.newClientId()).subscribe({
       next: (c) => {
         this.isCreating.set(false);
         this.showModal.set(false);

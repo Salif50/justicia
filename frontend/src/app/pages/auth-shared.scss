@@ -12,32 +12,7 @@
 .auth-page {
   position: relative;
   min-height: 100dvh;
-  background: var(--paper-2);
-  overflow: hidden;
-
-  // Quadrillage fin fondu vers le bas + lueur orange discrète en haut
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    @include pub.linegrid(rgba(var(--ink-rgb), 0.05), 72px);
-    -webkit-mask-image: radial-gradient(80% 60% at 50% 0%, #000 20%, transparent 100%);
-    mask-image: radial-gradient(80% 60% at 50% 0%, #000 20%, transparent 100%);
-  }
-  &::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: -240px;
-    width: 720px;
-    height: 480px;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(var(--accent-rgb), 0.12), transparent 70%);
-    filter: blur(40px);
-    pointer-events: none;
-  }
+  background: var(--paper);
 }
 
 .auth-layout {
@@ -59,12 +34,11 @@
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
-  padding: 40px 40px 32px;
+  max-width: 420px;
+  padding: 32px 32px 28px;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 22px;
-  box-shadow: var(--shadow-float);
+  border-radius: 12px;
 }
 
 /* Marque en tête de carte */
@@ -106,22 +80,22 @@
 }
 
 .auth-header {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 
   h1 {
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: 2.1rem;
-    line-height: 1.1;
+    font-weight: 600;
+    font-size: 1.75rem;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
     color: var(--ink);
-    margin: 0 0 10px;
+    margin: 0 0 8px;
   }
 
   p {
     margin: 0;
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text);
   }
 }
 
@@ -315,11 +289,13 @@
   list-style: none;
   margin: 2px 0 0;
   padding: 0;
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   gap: 4px 12px;
   font-size: 0.76rem;
   color: var(--muted);
+
+  &.is-active { display: flex; }
 
   li {
     display: inline-flex;
@@ -395,12 +371,12 @@
   text-align: center;
 
   h1 {
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: 2rem;
-    line-height: 1.15;
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
     color: var(--ink);
-    margin: 18px 0 12px;
+    margin: 16px 0 10px;
   }
 
   p {
@@ -452,7 +428,7 @@
 
 @media (max-width: 480px) {
   .auth-form-panel { padding: calc(64px + 20px) 14px calc(32px + env(safe-area-inset-bottom)); }
-  .auth-card { padding: 28px 22px 24px; border-radius: 18px; }
+  .auth-card { padding: 24px 20px 20px; border-radius: 12px; }
   .auth-brand { margin-bottom: 22px; }
   .auth-header h1 { font-size: 1.85rem; }
   .verify-panel h1 { font-size: 1.7rem; }

@@ -151,7 +151,13 @@ export class CustomAgents implements OnInit {
 
   // ── Lancer une conversation ───────────────────────────────────────────────
   startConversation(agentId: string) {
-    localStorage.setItem('selectedAgent', agentId);
+    // Le chat lit ces deux clés au démarrage. L'ancienne clé `selectedAgent`
+    // n'était jamais consommée : un agent personnalisé ouvrait donc parfois
+    // la conversation avec l'agent généraliste.
+    localStorage.setItem('currentAgentId', agentId);
+    const custom = this.customAgents().find(agent => agent.id === agentId);
+    const builtin = this.builtinAgents().find(agent => agent.id === agentId);
+    localStorage.setItem('currentAiName', custom?.name || builtin?.name || 'JusticIA');
     this.router.navigate(['/dashboard/chat']);
   }
 

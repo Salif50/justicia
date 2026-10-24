@@ -35,11 +35,13 @@ class CaseNoteOut(BaseModel):
 class CaseCreate(BaseModel):
     name: str
     description: Optional[str] = ""
+    client_id: Optional[str] = None
 
 
 class CaseUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    client_id: Optional[str] = None
 
 
 class CaseOut(BaseModel):
@@ -49,6 +51,8 @@ class CaseOut(BaseModel):
     document_count: int
     created_at: datetime
     updated_at: datetime
+    client_id: Optional[str] = None
+    client_name: Optional[str] = None
 
 
 class CaseDocumentOut(BaseModel):

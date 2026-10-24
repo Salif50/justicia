@@ -39,7 +39,7 @@
     <!-- État vide (avant toute recherche) -->
     @if (!query) {
       <div class="gs-empty">
-        <div class="gs-empty-icon">🔍</div>
+        <div class="gs-empty-icon">Recherche</div>
         <p>Tapez pour rechercher dans tous vos contenus</p>
         <div class="gs-shortcuts">
           <span><kbd>↑</kbd><kbd>↓</kbd> Naviguer</span>
@@ -52,7 +52,7 @@
     <!-- Aucun résultat -->
     @if (query && !loading && !hasResults) {
       <div class="gs-empty">
-        <div class="gs-empty-icon">😕</div>
+        <div class="gs-empty-icon">Aucun</div>
         <p>Aucun résultat pour <strong>« {{ query }} »</strong></p>
         <p class="gs-sub">Essayez d'autres mots clés</p>
       </div>
@@ -62,7 +62,7 @@
     @if (results.conversations.length > 0) {
       <div class="gs-group">
         <div class="gs-group-label">
-          <span>💬</span> Conversations
+          <span>C</span> Conversations
           <span class="gs-count">{{ results.conversations.length }}</span>
         </div>
         @for (item of results.conversations; track item.id) {
@@ -88,7 +88,7 @@
     @if (results.cases.length > 0) {
       <div class="gs-group">
         <div class="gs-group-label">
-          <span>⚖️</span> Procès
+          <span>D</span> Procès
           <span class="gs-count">{{ results.cases.length }}</span>
         </div>
         @for (item of results.cases; track item.id) {
@@ -114,7 +114,7 @@
     @if (results.documents.length > 0) {
       <div class="gs-group">
         <div class="gs-group-label">
-          <span>📄</span> Documents
+          <span>F</span> Documents
           <span class="gs-count">{{ results.documents.length }}</span>
         </div>
         @for (item of results.documents; track item.id) {
@@ -141,7 +141,7 @@
     @if (results.notes.length > 0) {
       <div class="gs-group">
         <div class="gs-group-label">
-          <span>📝</span> Notes & Déclarations
+          <span>N</span> Notes & Déclarations
           <span class="gs-count">{{ results.notes.length }}</span>
         </div>
         @for (item of results.notes; track item.id) {

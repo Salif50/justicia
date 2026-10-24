@@ -5,7 +5,6 @@ import { Router, RouterLink } from '@angular/router';
 import { Auth, isSignupPending } from '../../services/auth';
 import { Header } from '../../components/header/header';
 import { Captcha } from '../../components/captcha/captcha';
-import { Reveal } from '../../core/reveal.directive';
 import { environment } from '../../../environments/environment';
 
 /** Mêmes règles que le serveur (validate_password_strength). */
@@ -18,7 +17,7 @@ const PASSWORD_RULES: { label: string; test: (p: string) => boolean }[] = [
 
 @Component({
   selector: 'app-inscription',
-  imports: [CommonModule, FormsModule, RouterLink, Header, Captcha, Reveal],
+  imports: [CommonModule, FormsModule, RouterLink, Header, Captcha],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
 })

@@ -11,6 +11,8 @@ export interface CaseOut {
   document_count: number;
   created_at: string;
   updated_at: string;
+  client_id?: string | null;
+  client_name?: string | null;
 }
 
 export interface CaseDocumentOut {
@@ -63,8 +65,8 @@ export class CaseService {
     return this.http.get<CaseDetail>(`${this.api}/${id}`).pipe(catchError(() => of(null)));
   }
 
-  create(name: string, description: string): Observable<CaseOut> {
-    return this.http.post<CaseOut>(`${this.api}/`, { name, description });
+  create(name: string, description: string, client_id?: string | null): Observable<CaseOut> {
+    return this.http.post<CaseOut>(`${this.api}/`, { name, description, client_id: client_id || null });
   }
 
   update(id: string, data: { name?: string; description?: string }): Observable<CaseOut> {

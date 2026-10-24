@@ -21,9 +21,11 @@ from typing import Optional
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.core.deps import DB, CurrentUser
 from app.models.case import Case, CaseDocument, CaseMessage, CaseNote
+from app.models.client import Client
 from app.schemas.case import (CaseChatRequest, CaseChatResponse,
                                CaseCreate, CaseDocumentOut, CaseMessageOut,
                                CaseNoteCreate, CaseNoteOut, CaseNoteUpdate,
@@ -44,7 +46,7 @@ async def _get_case_or_404(case_id: str, user_id, db) -> Case:
     except ValueError:
         raise HTTPException(status_code=404, detail="Procès introuvable.")
     result = await db.execute(
-        select(Case).where(Case.id == cid, Case.user_id == user_id)
+        select(Case).options(selectinload(Case.client)).where(Case.id == cid, Case.user_id == user_id)
     )
     case = result.scalar_one_or_none()
     if not case:
@@ -60,6 +62,8 @@ def _case_out(case: Case) -> CaseOut:
         document_count=len(case.documents),
         created_at=case.created_at,
         updated_at=case.updated_at,
+        client_id=str(case.client_id) if case.client_id else None,
+        client_name=case.client.name if case.client else None,
     )
 
 
@@ -95,7 +99,7 @@ def _doc_out(doc: CaseDocument) -> CaseDocumentOut:
 @router.get("/", response_model=list[CaseOut])
 async def list_cases(current_user: CurrentUser, db: DB):
     result = await db.execute(
-        select(Case)
+        select(Case).options(selectinload(Case.client))
         .where(Case.user_id == current_user.id)
         .order_by(Case.updated_at.desc())
     )
@@ -108,8 +112,18 @@ async def list_cases(current_user: CurrentUser, db: DB):
 
 @router.post("/", response_model=CaseOut, status_code=201)
 async def create_case(body: CaseCreate, current_user: CurrentUser, db: DB):
+    client_id = None
+    if body.client_id:
+        try:
+            client_id = _uuid.UUID(body.client_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Client invalide.") from exc
+        owned = (await db.execute(select(Client).where(Client.id == client_id, Client.user_id == current_user.id))).scalar_one_or_none()
+        if not owned:
+            raise HTTPException(status_code=404, detail="Client introuvable.")
     case = Case(
         user_id=current_user.id,
+        client_id=client_id,
         name=body.name.strip(),
         description=body.description.strip() if body.description else "",
     )
@@ -132,6 +146,8 @@ async def get_case(case_id: str, current_user: CurrentUser, db: DB):
         notes=[_note_out(n) for n in case.notes],
         created_at=case.created_at,
         updated_at=case.updated_at,
+        client_id=str(case.client_id) if case.client_id else None,
+        client_name=case.client.name if case.client else None,
     )
 
 
@@ -142,6 +158,18 @@ async def update_case(case_id: str, body: CaseUpdate, current_user: CurrentUser,
         case.name = body.name.strip()
     if body.description is not None:
         case.description = body.description.strip()
+    if body.client_id is not None:
+        if body.client_id == "":
+            case.client_id = None
+        else:
+            try:
+                client_id = _uuid.UUID(body.client_id)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="Client invalide.") from exc
+            owned = (await db.execute(select(Client).where(Client.id == client_id, Client.user_id == current_user.id))).scalar_one_or_none()
+            if not owned:
+                raise HTTPException(status_code=404, detail="Client introuvable.")
+            case.client_id = client_id
     await db.commit()
     await db.refresh(case, ["documents"])
     return _case_out(case)

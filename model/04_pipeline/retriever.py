@@ -491,12 +491,32 @@ class HybridRetriever:
         domaine:         Optional[str],
         score_threshold: Optional[float],
         top_k:           int,
+        lexical_query:   str = "",
     ) -> list[dict]:
         """Étapes 6-7 de retrieve() : assemblage, tri, seuil adaptatif, dédoublonnage."""
         articles = []
         for rid, raw_score in zip(valid_ids, ce_raw_scores):
             meta  = id_to_data[rid]["meta"]
             score = sigmoid(float(raw_score))  # normalisation → [0, 1]
+            # Le cross-encoder mmarco sous-note parfois une expression juridique
+            # française pourtant présente mot pour mot dans l'article (ex. « légitime
+            # défense »). Une petite preuve lexicale récupère ces cas sans remplacer
+            # le reranking sémantique.
+            if lexical_query:
+                query_tokens = preprocess(lexical_query)
+                text_tokens = preprocess(str(meta.get("texte", "")))
+                if query_tokens and text_tokens:
+                    text_set = set(text_tokens)
+                    overlap = len(set(query_tokens) & text_set) / len(set(query_tokens))
+                    text_joined = " ".join(text_tokens)
+                    bonus = min(0.08, overlap * 0.08)
+                    ngrams = [
+                        " ".join(query_tokens[i:i + 2])
+                        for i in range(max(0, len(query_tokens) - 1))
+                    ]
+                    if any(phrase in text_joined for phrase in ngrams):
+                        bonus += 0.16
+                    score = min(0.99, score + bonus)
 
             articles.append({
                 "id":          rid,
@@ -622,7 +642,7 @@ class HybridRetriever:
 
         result = self._finalize(
             valid_ids, ce_raw_scores, id_to_data, rrf_scores,
-            domaine, score_threshold, top_k,
+            domaine, score_threshold, top_k, lexical_query=ce_query,
         )
         self._cache_set(cache_key, result)
         return result
@@ -693,6 +713,7 @@ class HybridRetriever:
                 "rrf_scores": rrf_scores,
                 "id_to_data": id_to_data,
                 "valid_ids":  valid_ids,
+                "ce_query":   ce_query,
                 "slice":      slice(start, start + len(pairs)),
             })
 
@@ -711,7 +732,7 @@ class HybridRetriever:
             scores_slice = ce_raw_scores[q["slice"]]
             result = self._finalize(
                 q["valid_ids"], scores_slice, q["id_to_data"], q["rrf_scores"],
-                domaine, score_threshold, top_k,
+                domaine, score_threshold, top_k, lexical_query=q["ce_query"],
             )
             results[q["index"]] = result
             self._cache_set(cache_keys[q["index"]], result)

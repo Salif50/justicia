@@ -7,16 +7,12 @@
   overflow-x: hidden;
 }
 
-.signup-card { max-width: 500px; }
+.signup-card { max-width: 420px; }
 
 .signup-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ── Modal CGU — langage « Codex vivant » ──────────────────────── */
@@ -74,9 +70,10 @@
   h2 {
     margin: 0;
     flex: 1;
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: 1.45rem;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
     line-height: 1.2;
     letter-spacing: -0.01em;
     color: var(--ink);

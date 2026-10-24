@@ -24,6 +24,7 @@ class Case(Base):
 
     id:          Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id:     Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    client_id:   Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("clients.id", ondelete="SET NULL"), nullable=True, index=True)
     name:        Mapped[str]        = mapped_column(String(200), nullable=False)
     description: Mapped[str]        = mapped_column(Text, nullable=False, default="")
     created_at:  Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=now_utc)
@@ -42,6 +43,7 @@ class Case(Base):
         "CaseMessage", back_populates="case", cascade="all, delete-orphan", order_by="CaseMessage.created_at"
     )
     user = relationship("User", back_populates="cases")
+    client = relationship("Client", back_populates="cases")
 
 
 class CaseDocument(Base):

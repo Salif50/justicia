@@ -203,7 +203,7 @@ export class AdminProcedures implements OnInit {
 
   private _emptyForm() {
     return {
-      slug: '', titre: '', categorie: CATEGORIES[0], icon: '📋',
+      slug: '', titre: '', categorie: CATEGORIES[0], icon: 'DOC',
       description: '', duree_totale: '', cout_estime: '',
       difficulte: 'Moyen', urgence: false,
       conseil: '', base_legale: '', ordre: 0, actif: true,

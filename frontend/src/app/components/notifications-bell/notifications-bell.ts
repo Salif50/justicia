@@ -4,12 +4,12 @@ import { RouterLink } from '@angular/router';
 import { NotificationService, AppNotification } from '../../services/notification.service';
 
 const TYPE_META: Record<string, { icon: string; color: string }> = {
-  info:         { icon: 'ℹ️',  color: '#3b82f6' },
-  success:      { icon: '✅',  color: '#22c55e' },
-  warning:      { icon: '⚠️', color: '#f59e0b' },
-  case:         { icon: '⚖️', color: '#8b5cf6' },
-  conversation: { icon: '💬', color: '#0ea5e9' },
-  system:       { icon: '🔔', color: '#64748b' },
+  info:         { icon: 'i', color: '#3b82f6' },
+  success:      { icon: 'OK', color: '#22c55e' },
+  warning:      { icon: '!', color: '#f59e0b' },
+  case:         { icon: 'D', color: '#8b5cf6' },
+  conversation: { icon: 'C', color: '#0ea5e9' },
+  system:       { icon: 'S', color: '#64748b' },
 };
 
 @Component({

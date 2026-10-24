@@ -68,7 +68,7 @@
                     <div class="adm-cell-slug">{{ p.slug }}</div>
                   </div>
                   @if (p.urgence) {
-                    <span class="adm-urgence-dot" title="Urgent">⚡</span>
+                    <span class="adm-urgence-dot" title="Urgent">!</span>
                   }
                 </td>
                 <td><span class="adm-badge adm-badge--cat">{{ p.categorie }}</span></td>
@@ -82,8 +82,8 @@
                   </button>
                 </td>
                 <td class="adm-cell-actions">
-                  <button class="adm-btn-icon" title="Modifier" (click)="openEdit(p)">✏️</button>
-                  <button class="adm-btn-icon adm-btn-icon--del" title="Supprimer" (click)="delete(p)">🗑️</button>
+                  <button class="adm-btn-icon" title="Modifier" (click)="openEdit(p)">Modifier</button>
+                  <button class="adm-btn-icon adm-btn-icon--del" title="Supprimer" (click)="delete(p)">Suppr.</button>
                 </td>
               </tr>
             }
@@ -114,7 +114,7 @@
           </div>
           <div class="adm-field">
             <label>Icône</label>
-            <input [(ngModel)]="form.icon" placeholder="📋" class="adm-input adm-input--icon" />
+            <input [(ngModel)]="form.icon" placeholder="DOC" class="adm-input adm-input--icon" />
           </div>
         </div>
         <div class="adm-field">
@@ -189,7 +189,7 @@
           @for (doc of formDocs; track $index) {
             <div class="adm-dynamic-row">
               <input [(ngModel)]="formDocs[$index]" placeholder="Document requis…" class="adm-input" />
-              <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeDoc($index)" title="Supprimer">✕</button>
+                  <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeDoc($index)" title="Supprimer">Suppr.</button>
             </div>
           }
           @if (formDocs.length === 0) {
@@ -212,7 +212,7 @@
                 <div class="adm-etape-actions">
                   <button type="button" class="adm-btn-icon" (click)="moveEtape($index, -1)" [disabled]="$index === 0" title="Monter">↑</button>
                   <button type="button" class="adm-btn-icon" (click)="moveEtape($index, 1)" [disabled]="$index === formEtapes.length - 1" title="Descendre">↓</button>
-                  <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeEtape($index)" title="Supprimer">✕</button>
+                  <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeEtape($index)" title="Supprimer">Suppr.</button>
                 </div>
               </div>
               <div class="adm-field">
@@ -259,7 +259,7 @@
           @for (q of formQuestions; track $index) {
             <div class="adm-dynamic-row">
               <input [(ngModel)]="formQuestions[$index]" placeholder="Question suggérée pour l'IA…" class="adm-input" />
-              <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeQuestion($index)" title="Supprimer">✕</button>
+              <button type="button" class="adm-btn-icon adm-btn-icon--del" (click)="removeQuestion($index)" title="Supprimer">Suppr.</button>
             </div>
           }
           @if (formQuestions.length === 0) {

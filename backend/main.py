@@ -15,13 +15,15 @@ from app.database import Base, engine, AsyncSessionLocal
 from app.models import content  # noqa: F401 — enregistre les modèles dans Base.metadata
 from app.models import custom_agent  # noqa: F401
 from app.models import case  # noqa: F401
+from app.models import client  # noqa: F401
+from app.models import firm  # noqa: F401
 from app.models import notification  # noqa: F401
 from app.models import archive  # noqa: F401
 from app.models import agenda  # noqa: F401
 from app.models import generation as generation_model  # noqa: F401
 from app.models import procedure as procedure_model  # noqa: F401
 from app.models import moderation as moderation_model  # noqa: F401
-from app.routers import admin, admin_users, agenda, agents, auth, billing, cases, comparison, contact, conversation, encyclopedia, generation, notifications, procedures, public, resume, search, subscription, translation, user
+from app.routers import admin, admin_users, agenda, agents, auth, billing, cases, clients, comparison, contact, conversation, encyclopedia, firm, generation, notifications, procedures, public, resume, search, subscription, translation, user
 from app.seed import seed_content
 
 
@@ -56,6 +58,12 @@ async def _run_migrations(conn) -> None:
         "ALTER TABLE pricing_plans ADD COLUMN IF NOT EXISTS feature_flags TEXT DEFAULT '[]'",
         # custom_agents : prompt système par agent
         "ALTER TABLE custom_agents ADD COLUMN IF NOT EXISTS system_prompt TEXT DEFAULT ''",
+        # cases : association facultative avec le carnet clients
+        "ALTER TABLE cases ADD COLUMN IF NOT EXISTS client_id UUID REFERENCES clients(id) ON DELETE SET NULL",
+        "CREATE INDEX IF NOT EXISTS ix_cases_client_id ON cases (client_id)",
+        "ALTER TABLE firm_invitations ADD COLUMN IF NOT EXISTS token VARCHAR(80)",
+        "ALTER TABLE firm_invitations ADD COLUMN IF NOT EXISTS accepted_by_id UUID REFERENCES users(id) ON DELETE SET NULL",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_firm_invitations_token ON firm_invitations (token)",
         # builtin_agent_configs : table pour prompts admin des agents intégrés
         """CREATE TABLE IF NOT EXISTS builtin_agent_configs (
             agent_id    VARCHAR(80) PRIMARY KEY,
@@ -156,6 +164,8 @@ app.include_router(billing.router,      prefix=PREFIX)
 app.include_router(billing.webhook_router, prefix=PREFIX)
 app.include_router(agents.router,       prefix=PREFIX)
 app.include_router(cases.router,        prefix=PREFIX)
+app.include_router(clients.router,      prefix=PREFIX)
+app.include_router(firm.router,         prefix=PREFIX)
 app.include_router(contact.router,       prefix=PREFIX)
 app.include_router(search.router,        prefix=PREFIX)
 app.include_router(notifications.router, prefix=PREFIX)

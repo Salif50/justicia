@@ -8,7 +8,7 @@ const META_COLORS = { light: '#FFFFFF', dark: '#0F0F0E' } as const;
 /**
  * Thème clair / nuit.
  * - `mode` : préférence de l'utilisateur ('light' | 'dark' | 'auto'), persistée.
- * - 'auto' (défaut) suit `prefers-color-scheme` du système et réagit à ses changements.
+ * - Le mode nuit est le mode par défaut ; l'utilisateur peut choisir clair ou automatique.
  * - Applique `data-theme="light|dark"` sur <html> (le script de index.html l'a déjà
  *   posé avant le premier rendu pour éviter tout flash).
  */
@@ -51,5 +51,5 @@ export class ThemeService {
 
 function readStoredMode(): ThemeMode {
   const v = localStorage.getItem(STORAGE_KEY);
-  return v === 'light' || v === 'dark' || v === 'auto' ? v : 'auto';
+  return v === 'light' || v === 'dark' || v === 'auto' ? v : 'dark';
 }

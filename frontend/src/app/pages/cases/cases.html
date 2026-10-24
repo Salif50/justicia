@@ -34,6 +34,7 @@
             <span class="app-tag">{{ case_.document_count }} pièce{{ case_.document_count !== 1 ? 's' : '' }}</span>
           </span>
           <span class="case-name">{{ case_.name }}</span>
+          @if (case_.client_name) { <span class="case-client">Client · {{ case_.client_name }}</span> }
           <span class="case-desc" [class.is-empty]="!case_.description">{{ case_.description || 'Aucune description' }}</span>
           <span class="case-foot">
             <span>Modifié {{ formatDate(case_.updated_at) }}</span>
@@ -67,6 +68,13 @@
           <input id="case-name" class="app-input" type="text"
             [value]="newName()" (input)="newName.set($any($event.target).value)"
             placeholder="Ex. Affaire Camara c/ Diallo 2024" />
+        </div>
+        <div class="app-field">
+          <label for="case-client">Client associé</label>
+          <select id="case-client" class="app-input" [value]="newClientId()" (change)="newClientId.set($any($event.target).value)">
+            <option value="">Aucun client pour le moment</option>
+            @for (client of clients(); track client.id) { <option [value]="client.id">{{ client.name }}</option> }
+          </select>
         </div>
         <div class="app-field">
           <label for="case-desc">Description</label>

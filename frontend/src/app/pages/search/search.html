@@ -1,0 +1,30 @@
+<div class="app-page search-page">
+  <header class="app-head">
+    <p class="app-eyebrow">Retrouver rapidement</p>
+    <h1 class="app-title">Recherche globale</h1>
+    <p class="app-sub">Recherchez dans vos consultations, dossiers, documents et notes.</p>
+  </header>
+
+  <label class="search-box">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <input #searchInput [ngModel]="search.query()" (ngModelChange)="setQuery($event)" placeholder="Ex. contrat de travail, dossier Camara…" autofocus />
+    @if (search.loading()) { <span class="search-spinner"></span> }
+  </label>
+
+  <nav class="search-tabs" aria-label="Types de résultats">
+    @for (category of categories(); track category.id) { <button [class.active]="active === category.id" (click)="active = category.id">{{ category.label }} <span>{{ category.count }}</span></button> }
+  </nav>
+
+  @if (search.query().trim().length < 2) {
+    <div class="search-empty"><div class="search-empty-icon">⌕</div><h2>Que cherchez-vous ?</h2><p>Saisissez au moins deux caractères pour lancer la recherche.</p></div>
+  } @else if (!search.loading() && search.totalResults === 0) {
+    <div class="search-empty"><h2>Aucun résultat</h2><p>Essayez un autre mot-clé ou une formulation plus courte.</p></div>
+  } @else {
+    <div class="results-panel">
+      @if (active === 'all' || active === 'conversations') { @for (item of search.results().conversations; track item.id) { <article class="result-row" (click)="open(item.link)"><span class="result-icon">◌</span><div><strong>{{ item.title || 'Consultation sans titre' }}</strong><p>Consultation · {{ date(item.updated_at) }}</p></div><span class="result-arrow">→</span></article> } }
+      @if (active === 'all' || active === 'cases') { @for (item of search.results().cases; track item.id) { <article class="result-row" (click)="open(item.link)"><span class="result-icon">⚖</span><div><strong>{{ item.name }}</strong><p>Dossier · {{ item.status }} · {{ date(item.created_at) }}</p>@if (item.description) {<small>{{ item.description }}</small>}</div><span class="result-arrow">→</span></article> } }
+      @if (active === 'all' || active === 'documents') { @for (item of search.results().documents; track item.id) { <article class="result-row" (click)="open(item.link)"><span class="result-icon">▤</span><div><strong>{{ item.name }}</strong><p>Document{{ item.doc_type ? ' · ' + item.doc_type : '' }} · {{ date(item.uploaded_at) }}</p></div><span class="result-arrow">→</span></article> } }
+      @if (active === 'all' || active === 'notes') { @for (item of search.results().notes; track item.id) { <article class="result-row" (click)="open(item.link)"><span class="result-icon">✎</span><div><strong>{{ item.note_type || 'Note' }}</strong><p>{{ item.author }} · {{ date(item.declared_at) }}</p><small>{{ item.excerpt }}</small></div><span class="result-arrow">→</span></article> } }
+    </div>
+  }
+</div>
