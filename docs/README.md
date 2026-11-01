@@ -4,6 +4,7 @@ Les guides d'installation et de déploiement sont à côté du code :
 [README racine](../README.md) · [deploy/](../deploy/README.md) · [model/](../model/README.md) · [frontend/](../frontend/README.md)
 
 ## Produit
+- [PITCH.md](../PITCH.md) — pitch investisseurs / concours
 - [ROADMAP.md](ROADMAP.md) — feuille de route et recommandations produit
 - [PROCHAINES_ETAPES_JUSTICIA.md](PROCHAINES_ETAPES_JUSTICIA.md) — état du projet
 - [paiement.md](paiement.md) — intégration Mosagix Pay

@@ -1,3 +1,4 @@
+import time
 import uuid
 import logging
 from datetime import date, datetime, timezone
@@ -15,7 +16,7 @@ from app.models.subscription import Subscription
 from app.models.user import UserPreferences, UserStats
 from app.schemas.conversation import (ConversationOut, ConversationSummary,
                                        SendMessageRequest, SendMessageResponse)
-from app.services import assistant
+from app.services import assistant, progress
 from app.services.assistant import Kind
 from app.services.quota import resolve_quota
 from app.services.rag_service import (AGENT_DOMAIN_MAP, AGENT_NAMES,
@@ -87,6 +88,11 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
 
     # ── Vérification quota journalier (tous les messages) ────────────────────
     await _check_daily_limit(current_user, db)
+
+    # ── Réflexion en direct : étapes réelles, lues par le client pendant l'attente ─
+    started = time.perf_counter()
+    prog = progress.tracker(body.client_request_id, current_user.id)
+    prog.emit("analyse", "Lecture du message" if kind in Kind.CONVERSATIONAL else "Analyse de la question")
 
     # ── Vérifier le mode éphémère ────────────────────────────────────────────
     prefs_result = await db.execute(
@@ -179,9 +185,19 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
         triage = await assistant.triage(body.message, rag_history)
         if triage and triage.kind != Kind.LEGAL:
             kind = triage.kind
+        if kind == Kind.LEGAL and triage and triage.search_query:
+            prog.emit("analyse", "Analyse de la question", "done",
+                      f"Notions juridiques : {triage.search_query}")
+        elif kind == Kind.CLARIFY:
+            prog.emit("analyse", "Analyse de la question", "done", "Le sujet doit être précisé avant toute recherche")
+        else:
+            prog.emit("analyse", "Analyse de la question", "done")
+    else:
+        prog.emit("analyse", "Lecture du message", "done")
 
     if kind in Kind.CONVERSATIONAL:
         # ── Accueil : salutation, remerciement, question sur JusticIA, hors sujet ─
+        prog.emit("reponse", "Rédaction de la réponse")
         response_text = await assistant.reply(
             kind, body.message, streak, db, current_user.name, conversation_history,
         )
@@ -201,6 +217,7 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
                 system_prompt = agent_system_prompt,
                 request_id    = request_id,
                 search_hint   = triage.search_query if triage else None,
+                progress      = prog.callback,
             )
             sources = format_sources(articles)
         except Exception as e:
@@ -214,6 +231,9 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
 
         if is_no_source_answer(response_text) or is_unverified_answer(response_text):
             # Aucun article ne confirme la réponse : accompagnement humain plutôt qu'un refus sec
+            prog.emit("orientation", "Aucun article ne répond avec certitude", "done",
+                      "Je n'avance rien sans texte : préparation d'une orientation")
+            prog.emit("reponse", "Rédaction d'une orientation")
             response_text = await assistant.support_reply(body.message, triage, rag_history)
             sources = []
         elif triage and triage.sensitive and sources and not technical_error:
@@ -222,6 +242,8 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
 
     # Tout message consomme le quota (anti-gaspillage), sauf une erreur technique de notre côté
     counted = not technical_error
+    steps = prog.finish()
+    thinking_ms = int((time.perf_counter() - started) * 1000)
     logger.info("chat_turn request_id=%s kind=%s streak=%s counted=%s", request_id, kind, streak, counted)
 
     if is_ephemeral:
@@ -242,6 +264,8 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
             ephemeral=True,
             kind=kind,
             counted=counted,
+            steps=steps,
+            thinking_ms=thinking_ms,
         )
 
     # ── Mode normal : sauvegarde en BDD ──────────────────────────────────────
@@ -303,7 +327,18 @@ async def send_message(body: SendMessageRequest, current_user: CurrentUser, db: 
         ephemeral=False,
         kind=kind,
         counted=counted,
+        steps=steps,
+        thinking_ms=thinking_ms,
     )
+
+
+@router.get("/progress/{request_key}")
+async def get_progress(request_key: str, current_user: CurrentUser):
+    """Étapes de réflexion en cours pour une question envoyée par cet utilisateur."""
+    if not progress.valid_key(request_key):
+        raise HTTPException(status_code=400, detail="Identifiant invalide.")
+    data = progress.read(request_key, current_user.id)
+    return data or {"steps": [], "elapsed_ms": 0, "done": False}
 
 
 @router.get("/history", response_model=list[ConversationSummary])

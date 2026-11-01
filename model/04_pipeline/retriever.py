@@ -52,6 +52,23 @@ def _active_index_config() -> tuple[str, Path, str]:
         raise RuntimeError(f"Index BM25 actif absent : {bm25_path}")
     return collection, bm25_path, version
 
+def is_incomplete(meta: dict) -> bool:
+    """Article signalé « texte incomplet à la source » lors de l'import."""
+    return str(meta.get("note") or "").startswith("Texte incomplet")
+
+
+def _active_juris_config() -> Optional[tuple[str, Path]]:
+    """Index de jurisprudence de la version active (None si absent)."""
+    if not INDEX_MANIFEST.is_file():
+        return None
+    manifest = json.loads(INDEX_MANIFEST.read_text(encoding="utf-8"))
+    name = str(manifest.get("jurisprudence_collection", "")).strip()
+    bm25 = str(manifest.get("jurisprudence_bm25_path", "")).strip()
+    if not name or not bm25 or not (VECTORSTORE_DIR / bm25).is_file():
+        return None
+    return name, VECTORSTORE_DIR / bm25
+
+
 # ── Cache retrieval ────────────────────────────────────────────────────────────
 # Une question identique (ou quasi — FAQ, tests, utilisateur qui reformule puis
 # revient) resservie dans la fenêtre de TTL saute tout le recalcul (embedding +
@@ -290,6 +307,22 @@ class HybridRetriever:
         self._log("Chargement du cross-encoder...")
         self.cross_encoder = CrossEncoder(CROSS_ENCODER_MODEL)
 
+        # Jurisprudence : index séparé, facultatif (n'influence pas le classement des articles)
+        self.juris_collection = None
+        self.juris_bm25 = None
+        self.juris_bm25_ids: list = []
+        juris = _active_juris_config()
+        if juris:
+            try:
+                self.juris_collection = client.get_collection(juris[0])
+                with open(juris[1], "rb") as f:
+                    jdata = pickle.load(f)
+                self.juris_bm25, self.juris_bm25_ids = jdata["bm25"], jdata["ids"]
+                self._log(f"Jurisprudence : {self.juris_collection.count()} passages indexés.")
+            except Exception as exc:  # index absent : on répond sans jurisprudence
+                self._log(f"Jurisprudence indisponible : {exc}")
+                self.juris_collection = None
+
         self._log(f"✅ Retriever prêt — {vector_count} articles indexés et synchronisés.")
         self._cache_namespace = (
             f"{BI_ENCODER_MODEL}|{CROSS_ENCODER_MODEL}|{vector_count}|"
@@ -515,6 +548,10 @@ class HybridRetriever:
         articles = []
         for rid, raw_score in zip(valid_ids, ce_raw_scores):
             meta  = id_to_data[rid]["meta"]
+            # Seuls les textes complets servent à répondre : un article coupé à la
+            # source reste lisible dans la bibliothèque, jamais cité par l'assistant.
+            if is_incomplete(meta):
+                continue
             score = sigmoid(float(raw_score))  # normalisation → [0, 1]
             # Le cross-encoder mmarco sous-note parfois une expression juridique
             # française pourtant présente mot pour mot dans l'article (ex. « légitime
@@ -574,6 +611,8 @@ class HybridRetriever:
                 "source_url":  meta.get("source_url", ""),
                 "source_file": meta.get("source_file", ""),
                 "source_status": meta.get("source_status", "inconnu"),
+                "note":        meta.get("note", ""),
+                "doc_id":      meta.get("doc_id", ""),
                 "page":        meta.get("page", ""),
                 "score":       round(score, 4),
                 "rrf_score":   round(rrf_scores.get(rid, 0.0), 6),
@@ -685,6 +724,74 @@ class HybridRetriever:
             domaine, score_threshold, top_k, lexical_query=ce_query,
         )
         self._cache_set(cache_key, result)
+        return result
+
+    # ── Jurisprudence ────────────────────────────────────────────────────────
+    def has_jurisprudence(self) -> bool:
+        return self.juris_collection is not None
+
+    def retrieve_decisions(
+        self,
+        question: str,
+        top_k: int = 3,
+        n_candidates: int = 40,
+        min_score: float = 0.20,
+    ) -> list[dict]:
+        """Décisions de justice les plus proches de la question.
+
+        Recherche hybride sur les passages (sémantique + BM25 → RRF), regroupement
+        par décision (meilleur passage), puis reranking cross-encoder. Une décision
+        n'est retenue que si son meilleur passage dépasse ``min_score`` : mieux vaut
+        aucune jurisprudence qu'une décision hors sujet.
+        """
+        if not self.has_jurisprudence():
+            return []
+        key = ("__juris__", question.strip().lower(), top_k, n_candidates, min_score, self._cache_namespace)
+        cached = self._cache_get(key)
+        if cached is not None:
+            return cached
+        emb = self.bi_encoder.encode(f"query: {question}", normalize_embeddings=True).tolist()
+        sem = self.juris_collection.query(
+            query_embeddings=[emb], n_results=min(n_candidates, self.juris_collection.count()), include=[],
+        )["ids"][0]
+        rankings = [sem]
+        tokens = preprocess(question)
+        if tokens and self.juris_bm25 is not None:
+            scores = self.juris_bm25.get_scores(tokens)
+            top = np.argsort(scores)[::-1][:n_candidates]
+            rankings.append([self.juris_bm25_ids[i] for i in top if scores[i] > 0])
+        rrf = reciprocal_rank_fusion(rankings)
+        cands = sorted(rrf, key=rrf.get, reverse=True)[:n_candidates]
+        if not cands:
+            self._cache_set(key, [])
+            return []
+        got = self.juris_collection.get(ids=cands, include=["metadatas"])
+        metas = dict(zip(got["ids"], got["metadatas"]))
+        pairs, pids = [], []
+        for cid in cands:
+            m = metas.get(cid)
+            if not m:
+                continue
+            pairs.append([question, _extract_best_passage(question, m.get("texte", ""), n_sentences=4, max_chars=700)])
+            pids.append(cid)
+        raw = self.cross_encoder.predict(pairs) if pairs else []
+        best: dict[str, dict] = {}
+        for cid, r, (_, passage) in zip(pids, raw, pairs):
+            m = metas[cid]
+            sc = sigmoid(float(r))
+            did = m["decision_id"]
+            if did not in best or sc > best[did]["score"]:
+                best[did] = {
+                    "decision_id": did, "score": round(sc, 4), "part": m.get("part", ""),
+                    "passage": m.get("texte", ""), "extrait": passage,
+                    "juridiction": m.get("juridiction", ""), "chambre": m.get("chambre", ""),
+                    "date": m.get("date", ""), "numero": m.get("numero", ""),
+                    "titre": m.get("titre", ""), "matiere": m.get("matiere", ""),
+                    "source_url": m.get("source_url", ""),
+                }
+        result = sorted((d for d in best.values() if d["score"] >= min_score),
+                        key=lambda d: d["score"], reverse=True)[:top_k]
+        self._cache_set(key, result)
         return result
 
     def retrieve_multi(

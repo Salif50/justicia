@@ -9,6 +9,9 @@ class SendMessageRequest(BaseModel):
     message: str
     agent_id: str = "jurisprudence"
     conversation_id: Optional[str] = None
+    # Identifiant choisi par le client pour suivre la réflexion en direct
+    # (GET /conversation/progress/{client_request_id}).
+    client_request_id: Optional[str] = None
 
 
 class MessageOut(BaseModel):
@@ -75,3 +78,6 @@ class SendMessageResponse(BaseModel):
     kind: str = "legal"
     # La question a-t-elle été décomptée du quota journalier ?
     counted: bool = True
+    # Étapes de réflexion réellement parcourues (affichées repliées sous « Réflexion »)
+    steps: list = []
+    thinking_ms: int = 0

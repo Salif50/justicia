@@ -123,6 +123,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     content={"detail": SENSITIVE_PATHS[path], "code": "RATE_LIMIT_FORM"},
                 )
 
+        # Suivi de la réflexion : lecture authentifiée et légère, interrogée pendant l'attente
+        elif path.startswith("/api/conversation/progress/") and request.method == "GET":
+            pass
+
         # Rate limiting général sur toute l'API
         elif path.startswith("/api/"):
             if not api_limiter.is_allowed(f"api:{client_ip}"):

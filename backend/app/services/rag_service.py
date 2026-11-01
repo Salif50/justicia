@@ -58,30 +58,17 @@ Dans un domaine juridique, une réponse fausse est plus dangereuse que l'absence
 
 1. **FRANÇAIS EXCLUSIVEMENT** — toute phrase dans une autre langue est une faute grave.
 2. **Les articles fournis sont LA LOI** — base TOUTE ta réponse sur les textes du contexte.
-3. **Citations utiles** — recopie mot pour mot uniquement les passages nécessaires pour répondre ; évite les longs blocs qui rendent la réponse difficile à lire.
-4. **Citations inline** — après chaque argument, ajoute le marqueur contrôlé du contexte, par exemple 【S1】. Ne fabrique jamais un marqueur.
+3. **Citations exactes** — quand tu cites le texte, recopie-le mot pour mot entre « » ; une citation inexacte est une faute grave.
+4. **Marqueurs de source** — après chaque point, ajoute le marqueur contrôlé du contexte, par exemple 【S1】. Ne fabrique jamais un marqueur.
 5. **Jamais d'invention** — ne cite JAMAIS un article dont le numéro n'apparaît pas dans la liste RÉFÉRENCES AUTORISÉES.
 6. **Structure unique** — produis la réponse UNE SEULE FOIS, sans répéter les sections.
 
-## Format de réponse (simple et lisible)
+## Présentation
 
-### Textes de loi applicables
-> [Nom du texte] — [article]
-> « [court extrait exact utile à la réponse] »
-Commentaire juridique : [Interprétation strictement tirée des articles du contexte.]
-
----
-
-### Analyse juridique
-1. **[Titre du point]** — [Explication précise, 2-3 phrases]. *(Nom du Code, Art. X)*
-2. [Titre du point] — [Explication précise].
-3. [Titre du point] — [Explication précise].
-
-### Observations pratiques
-- **[Intitulé]** : [Conseil concret, délai légal ou démarche à suivre].
-
-### Documents consultés
-- **[Nom complet du texte de loi]** — Articles [liste des numéros effectivement cités]"""
+La structure de la réponse est imposée par les instructions jointes à chaque question
+(réponse courte, ce que dit la loi, en pratique) : suis-la exactement.
+Le texte intégral des articles cités est affiché par l'application sous ta réponse :
+ne recopie pas les articles en entier, ne dresse pas de liste des documents consultés."""
 
 AGENT_DEFAULT_PROMPTS: dict[str, str] = {
     "jurisprudence": _BASE_RULES + """
@@ -264,6 +251,7 @@ def _run_rag_sync(
     system_prompt:  Optional[str]        = None,
     request_id:     Optional[str]        = None,
     search_hint:    Optional[str]        = None,
+    progress=None,
 ) -> tuple[str, list[dict]]:
     """Exécution synchrone du pipeline RAG (appelé depuis thread pool)."""
     pipeline = _load_pipeline()
@@ -281,6 +269,7 @@ def _run_rag_sync(
         system_prompt = system_prompt,
         request_id    = request_id,
         search_hint   = search_hint,
+        progress      = progress,
     )
 
 
@@ -293,9 +282,11 @@ async def ask_rag(
     system_prompt:  Optional[str]        = None,
     request_id:     Optional[str]        = None,
     search_hint:    Optional[str]        = None,
+    progress=None,
 ) -> tuple[str, list[dict]]:
     """
     Appel asynchrone au pipeline RAG.
+    - progress : rappel emit(step_id, label, status, detail) pour la réflexion en direct
     - agents intégrés    : filtre par AGENT_DOMAIN_MAP[agent_id]
     - agents personnalisés : custom_domains liste de domaines
     - system_prompt      : prompt système de l'agent (surcharge le défaut)
@@ -305,15 +296,31 @@ async def ask_rag(
     loop = asyncio.get_event_loop()
     future = loop.run_in_executor(
         _executor, _run_rag_sync, question, agent_id, top_k, custom_domains, history, system_prompt, request_id,
-        search_hint,
+        search_hint, progress,
     )
     return await asyncio.wait_for(future, timeout=settings.RAG_REQUEST_TIMEOUT_SECONDS)
 
 
+# Longueur maximale du texte d'article renvoyé : intégral pour les articles cités
+# (affichés mot pour mot sous la réponse), extrait pour les autres.
+_CITED_TEXT_MAX = 6000
+_OTHER_TEXT_MAX = 300
+
+
 def format_sources(articles: list[dict]) -> list[dict]:
-    """Formate les sources pour la réponse API."""
-    return [
+    """Formate les sources pour la réponse API.
+
+    `cite_no` : numéro [n] utilisé dans la réponse (None si l'article a seulement été
+    consulté). Le texte des articles cités est celui de la base, jamais réécrit.
+    """
+    decisions = [a for a in articles if a.get("kind") == "decision"]
+    articles = [a for a in articles if a.get("kind") != "decision"]
+    out = [
         {
+            "kind":        "article",
+            "doc_id":      art.get("doc_id", ""),
+            "note":        art.get("note", ""),
+            "cite_no":     art.get("_cite_no"),
             "source_id":   art.get("_source_id", f"S{i}"),
             "article_ref": art.get("article_ref", ""),
             "nom_doc":     art.get("nom_doc", ""),
@@ -326,7 +333,31 @@ def format_sources(articles: list[dict]) -> list[dict]:
             "source_url":  art.get("source_url", ""),
             "source_file": art.get("source_file", ""),
             "source_status": art.get("source_status", "inconnu"),
-            "texte":       art.get("texte", "")[:300],
+            "texte":       (art.get("texte") or "")[: _CITED_TEXT_MAX if art.get("_cite_no") else _OTHER_TEXT_MAX],
         }
         for i, art in enumerate(articles, 1)
     ]
+    # Articles cités d'abord, dans l'ordre de leur numéro
+    out.sort(key=lambda s: (s["cite_no"] is None, s["cite_no"] or 0))
+    # Décisions de justice : extrait tel qu'indexé (jamais réécrit), après les articles
+    juris = [
+        {
+            "kind":        "decision",
+            "decision_id": d.get("decision_id", ""),
+            "cite_no":     d.get("_cite_no"),
+            "article_ref": d.get("article_ref", ""),
+            "nom_doc":     "Jurisprudence",
+            "juridiction": d.get("juridiction", ""),
+            "chambre":     d.get("chambre", ""),
+            "date":        d.get("date", ""),
+            "numero":      d.get("numero", ""),
+            "matiere":     d.get("matiere", ""),
+            "part":        d.get("part", ""),
+            "score":       d.get("score", 0),
+            "source_url":  d.get("source_url", ""),
+            "texte":       (d.get("texte") or "")[:_CITED_TEXT_MAX],
+        }
+        for d in decisions
+    ]
+    juris.sort(key=lambda s: (s["cite_no"] is None, s["cite_no"] or 0))
+    return out + juris

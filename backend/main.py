@@ -23,7 +23,7 @@ from app.models import agenda  # noqa: F401
 from app.models import generation as generation_model  # noqa: F401
 from app.models import procedure as procedure_model  # noqa: F401
 from app.models import moderation as moderation_model  # noqa: F401
-from app.routers import admin, admin_users, agenda, agents, auth, billing, cases, clients, comparison, contact, conversation, encyclopedia, firm, generation, notifications, procedures, public, resume, search, subscription, translation, user
+from app.routers import admin, admin_users, agenda, agents, auth, billing, cases, clients, comparison, contact, conversation, encyclopedia, firm, generation, library, notifications, procedures, public, resume, search, subscription, translation, user
 from app.seed import seed_content
 
 
@@ -123,6 +123,11 @@ async def lifespan(app: FastAPI):
             from app.services.rag_service import warmup_pipeline
             app.state.rag_warmup = asyncio.create_task(warmup_pipeline())
 
+    # Bibliothèque juridique : prépare l'index plein texte en arrière-plan (~1 s)
+    import asyncio as _asyncio
+    from app.services.legal_library import warmup as _library_warmup
+    _asyncio.get_running_loop().run_in_executor(None, _library_warmup)
+
     print(f"✅ JusticIA backend démarré — {settings.APP_ENV}")
     yield
     await engine.dispose()
@@ -179,6 +184,7 @@ app.include_router(admin.router,         prefix=PREFIX)
 app.include_router(admin_users.router,   prefix=PREFIX)
 app.include_router(public.router,        prefix=PREFIX)
 app.include_router(procedures.router,    prefix=PREFIX)
+app.include_router(library.router,       prefix=PREFIX)
 
 
 @app.get("/", tags=["Health"])
