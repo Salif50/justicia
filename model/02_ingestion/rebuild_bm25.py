@@ -128,6 +128,9 @@ def rebuild_bm25():
     for data_file in data_files:
         doc_id  = data_file.stem
         meta    = metadata_map.get(doc_id, {})
+        # Même règle qu'ingest.py : abrogés, projets, historiques et doublons ne sont pas indexés
+        if meta.get("statut") in {"abroge", "projet", "historique", "doublon"}:
+            continue
         domaine = meta.get("domaine", "")
         try:
             with open(data_file, encoding="utf-8") as f:

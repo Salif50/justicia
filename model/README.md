@@ -11,9 +11,14 @@ model/
 ├── corpus/            Source de vérité : textes de loi guinéens
 │   ├── pdfs/          PDF officiels (non envoyés en production)
 │   ├── articles/      un JSON par texte, découpé article par article
-│   ├── corpus.jsonl   corpus complet
-│   └── metadata.json  catalogue des textes (nom, numéro, date, domaine)
-├── 02_ingestion/      corpus → index : ingest.py (complet), reingest_doc.py (un texte),
+│   ├── metadata.json  catalogue des textes (nom, numéro, date, domaine, statut, source)
+│   ├── jurisprudence/ decisions.json : décisions structurées (Cour suprême, CCJA, CA, TPI)
+│   ├── guides/        creation_entreprise.json (guichet unique APIP/GDB)
+│   ├── sources/       identifiants stables des textes collectés
+│   ├── reports/       rapport d'harmonisation (à faire relire par un juriste)
+│   └── corpus.jsonl   ancien export (non utilisé par l'ingestion)
+├── 02_ingestion/      corpus → index : ingest.py (complet + jurisprudence), reingest_doc.py (un texte),
+│                      import_droitguineen.py (intègre la collecte data/droitguineen),
 │                      rebuild_bm25.py, audit_corpus.py, extract_ocr_articles.py
 ├── 03_vectorstore/    index générés : ChromaDB (sémantique) + BM25 (mots-clés)
 ├── 04_pipeline/       moteur de réponse
@@ -55,6 +60,31 @@ et redémarrer le backend.
    ../../backend/env/bin/python -m unittest test_guards.py
    ```
 4. Redémarrer l'API (en Docker : `docker compose restart api`).
+
+## Collecte droitguineen.com
+
+La collecte brute vit dans `data/droitguineen/` (non versionnée). Pour l'intégrer :
+
+```bash
+backend/env/bin/python model/02_ingestion/import_droitguineen.py --report-only   # rapport seul
+backend/env/bin/python model/02_ingestion/import_droitguineen.py                 # écrit le corpus
+backend/env/bin/python model/02_ingestion/ingest.py --version <id>               # staging (GPU si dispo)
+# tests (test_exactitude, test_guards) contre le staging, puis :
+backend/env/bin/python model/02_ingestion/ingest.py --activate-version <id>
+```
+
+Le script repart toujours du corpus validé (`BASELINE_REF`) et ne rédige rien :
+- même loi déjà présente → nos articles sont gardés ; on ajoute les manquants, on retire
+  le bruit de mise en page (en-têtes du JO), on corrige l'OCR seulement si la version
+  collectée a moins de mots anormaux et n'est pas plus courte ;
+- textes abrogés (preuve : disposition abrogatoire citée), projets, versions historiques
+  et doublons restent dans le catalogue avec leur statut mais **ne sont plus indexés** ;
+- chaque écart non résolu est listé dans `corpus/reports/harmonisation_droitguineen.md`.
+
+La jurisprudence a son propre index (`justicia_jurisprudence_<version>`) : elle ne modifie
+jamais le classement des articles. Dans une réponse, la section « Jurisprudence » est
+contrôlée à part (décision fournie, citation exacte, aucun numéro d'article absent du
+passage) et retirée au moindre doute ; les extraits restent affichés tels quels.
 
 ## Règle d'or
 

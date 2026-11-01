@@ -120,6 +120,10 @@ def reingest_doc(
     nom  = meta.get("nom", "?")
     print(f"\n{'─'*60}")
     print(f"  Document : {doc_id} — {nom[:55]}")
+    if meta.get("statut") in {"abroge", "projet", "historique", "doublon"}:
+        # Texte retiré des réponses : ses anciens articles sont supprimés, rien n'est réindexé
+        print(f"  ⏭ statut « {meta['statut']} » : retiré de l'index")
+    retire = meta.get("statut") in {"abroge", "projet", "historique", "doublon"}
 
     # 1. Supprimer les anciens articles de ce doc dans ChromaDB
     try:
@@ -135,7 +139,7 @@ def reingest_doc(
 
     # 2. Charger les articles propres depuis JSON
     with open(json_path, encoding="utf-8") as f:
-        articles = json.load(f)
+        articles = [] if retire else json.load(f)
 
     print(f"  → JSON source : {len(articles)} articles")
 
@@ -169,7 +173,9 @@ def reingest_doc(
             "numero":      meta.get("numero", ""),
             "date":        meta.get("date_promulgation", ""),
             "source":      meta.get("source_officielle", ""),
-            "source_url":  meta.get("url_source", ""),
+            "source_url":  article.get("source_url") or meta.get("url_source", ""),
+            "statut":      meta.get("statut", "en_vigueur"),
+            "note":        article.get("note", ""),
             "source_file": meta.get("source_pdf", ""),
             "source_status": meta.get("verification_status") or (
                 "projet" if "projet" in (

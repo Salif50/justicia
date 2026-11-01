@@ -32,6 +32,11 @@ INDEX_MANIFEST  = VECTORSTORE_DIR / "active_index.json"
 EMBEDDING_MODEL = "OrdalieTech/Solon-embeddings-large-0.1"
 COLLECTION_NAME = "justicia_guinee"
 BATCH_SIZE      = 128   # 1024 dims → batches plus petits qu'avec mpnet (768 dims)
+ENCODE_BATCH    = 32    # lot envoyé au modèle (×7 plus rapide que 128 sur Apple M-series)
+# Textes conservés dans le catalogue mais exclus des réponses (voir metadata.json)
+NOT_INDEXED_STATUSES = {"abroge", "projet", "historique", "doublon"}
+JURIS_FILE      = CORPUS_DIR / "jurisprudence" / "decisions.json"
+JURIS_COLLECTION = "justicia_jurisprudence"
 # Un article court peut porter une information décisive (ex. « Abrogé »).
 # Seuls les textes réellement vides sont exclus.
 MIN_TEXT_LEN    = 1
@@ -94,6 +99,19 @@ def build_embed_context(article: dict, meta: dict | None = None) -> str:
     return " | ".join(parts)
 
 
+def _device() -> str:
+    """GPU si disponible (Apple MPS ou CUDA) : l'indexation complète passe de ~3 h à ~20 min."""
+    try:
+        import torch
+        if torch.cuda.is_available():
+            return "cuda"
+        if torch.backends.mps.is_available():
+            return "mps"
+    except Exception:
+        pass
+    return "cpu"
+
+
 def _embed_batch(model: SentenceTransformer, texts: list[str]) -> list[list[float]]:
     """Encode un batch avec le préfixe E5 'passage:' et normalisation cosine."""
     prefixed = [f"passage: {t}" for t in texts]
@@ -101,7 +119,7 @@ def _embed_batch(model: SentenceTransformer, texts: list[str]) -> list[list[floa
         prefixed,
         show_progress_bar=False,
         normalize_embeddings=True,   # indispensable pour cosine similarity correcte
-        batch_size=BATCH_SIZE,
+        batch_size=ENCODE_BATCH,     # petits lots : la mémoire GPU (MPS) sature avec 128 textes longs
     ).tolist()
 
 
@@ -122,6 +140,9 @@ def process_doc(
     for i, article in enumerate(articles):
         texte = article.get("texte", "").strip()
         if not texte:
+            continue
+        # Texte coupé à la source : consultable dans la bibliothèque, pas utilisé pour répondre
+        if str(article.get("note") or "").startswith("Texte incomplet"):
             continue
 
         # Utilise le champ 'id' du JSONL quand disponible, sinon génère
@@ -144,7 +165,10 @@ def process_doc(
             "numero":      meta.get("numero", ""),
             "date":        meta.get("date_promulgation", ""),
             "source":      meta.get("source_officielle", ""),
-            "source_url":  meta.get("url_source", ""),
+            # Lien direct vers l'article quand la source le permet (droitguineen.com)
+            "source_url":  article.get("source_url") or meta.get("url_source", ""),
+            "statut":      meta.get("statut", "en_vigueur"),
+            "note":        article.get("note", ""),
             "source_file": meta.get("source_pdf", ""),
             "source_status": meta.get("verification_status") or (
                 "projet" if "projet" in (
@@ -180,14 +204,97 @@ def process_doc(
     return len(ids)
 
 
+# ── Jurisprudence ────────────────────────────────────────────────────────────
+
+def decision_chunks(dec: dict, max_chars: int = 1400, overlap: int = 200) -> list[dict]:
+    """Découpe une décision en passages : en-tête, sommaire, motifs (fenêtres), dispositif."""
+    head = " — ".join(filter(None, [dec.get("juridiction"), dec.get("chambre"), dec.get("date"), dec.get("numero")]))
+    parties = dec.get("parties") or {}
+    entete = ". ".join(filter(None, [
+        dec.get("titre"),
+        f"Parties : {parties.get('demandeur')} contre {parties.get('defendeur')}" if parties.get("demandeur") else "",
+        f"Objet : {dec['objet']}" if dec.get("objet") else "",
+    ]))
+    chunks = [{"part": "En-tête", "texte": entete}]
+    if dec.get("sommaire"):
+        chunks.append({"part": "Sommaire", "texte": dec["sommaire"]})
+    body = dec.get("texte", "")
+    paras = [p.strip() for p in body.split("\n") if p.strip()]
+    buf = ""
+    n = 0
+    for p in paras:
+        while len(p) > max_chars:                       # paragraphe géant (texte sur une ligne)
+            cut = p.rfind(" ", 0, max_chars)
+            cut = cut if cut > max_chars // 2 else max_chars
+            if buf:
+                n += 1
+                chunks.append({"part": f"Motifs {n}", "texte": buf})
+                buf = ""
+            n += 1
+            chunks.append({"part": f"Motifs {n}", "texte": p[:cut]})
+            p = p[max(0, cut - overlap):]
+        if len(buf) + len(p) + 1 > max_chars and buf:
+            n += 1
+            chunks.append({"part": f"Motifs {n}", "texte": buf})
+            buf = buf[-overlap:] + " " + p if overlap else p
+        else:
+            buf = f"{buf} {p}".strip()
+    if buf:
+        n += 1
+        chunks.append({"part": f"Motifs {n}", "texte": buf})
+    if dec.get("dispositif"):
+        chunks.append({"part": "Dispositif", "texte": "PAR CES MOTIFS " + dec["dispositif"]})
+    for c in chunks:
+        c["embed"] = f"{head} | {dec.get('objet') or dec.get('titre')} | {c['part']} | {c['texte']}"
+    return chunks
+
+
+def ingest_jurisprudence(client, model: SentenceTransformer, version: str) -> dict:
+    """Index séparé pour les décisions de justice (ne change rien au classement des articles)."""
+    if not JURIS_FILE.is_file():
+        print("Pas de jurisprudence à indexer.")
+        return {}
+    decisions = json.loads(JURIS_FILE.read_text(encoding="utf-8"))
+    name = f"{JURIS_COLLECTION}_{version}"
+    coll = client.create_collection(name=name, metadata={"hnsw:space": "cosine"})
+    ids, embeds, metas, bm25_corpus = [], [], [], []
+    for dec in decisions:
+        for i, c in enumerate(decision_chunks(dec)):
+            if not c["texte"].strip():
+                continue
+            ids.append(f"{dec['id']}#{i}")
+            embeds.append(c["embed"])
+            bm25_corpus.append(preprocess_text(c["embed"]))
+            metas.append({
+                "decision_id": dec["id"], "part": c["part"], "texte": c["texte"],
+                "juridiction": dec.get("juridiction", ""), "chambre": dec.get("chambre", ""),
+                "date": dec.get("date", ""), "numero": dec.get("numero", ""),
+                "titre": dec.get("titre", ""), "matiere": dec.get("matiere", ""),
+                "source_url": dec.get("source_url", ""),
+            })
+    print(f"\nJurisprudence : {len(decisions)} décisions → {len(ids)} passages à encoder…", flush=True)
+    for start in range(0, len(ids), BATCH_SIZE):
+        end = start + BATCH_SIZE
+        coll.add(ids=ids[start:end], embeddings=_embed_batch(model, embeds[start:end]),
+                 metadatas=metas[start:end], documents=embeds[start:end])
+        print(f"  [{min(end, len(ids))}/{len(ids)}]", end=" ", flush=True)
+    bm25_path = VECTORSTORE_DIR / f"bm25_juris_{version}.pkl"
+    with open(bm25_path, "wb") as f:
+        pickle.dump({"bm25": BM25Okapi(bm25_corpus), "ids": ids}, f)
+    print(f"\n  ✅ {coll.count()} passages de jurisprudence indexés.")
+    return {"jurisprudence_collection": name, "jurisprudence_bm25_path": bm25_path.name,
+            "jurisprudence_count": coll.count(), "decision_count": len(decisions)}
+
+
 def ingest(activate: bool = False, version: str | None = None):
     VECTORSTORE_DIR.mkdir(parents=True, exist_ok=True)
     version = version or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     staging_collection_name = f"{COLLECTION_NAME}_staging_{version}"
     staging_bm25_path = VECTORSTORE_DIR / f"bm25_index_{version}.pkl"
 
-    print(f"Chargement du modèle d'embedding : {EMBEDDING_MODEL}")
-    model = SentenceTransformer(EMBEDDING_MODEL)
+    device = _device()
+    print(f"Chargement du modèle d'embedding : {EMBEDDING_MODEL} ({device})")
+    model = SentenceTransformer(EMBEDDING_MODEL, device=device)
 
     print("Connexion à ChromaDB...")
     client = chromadb.PersistentClient(path=str(VECTORSTORE_DIR))
@@ -211,7 +318,7 @@ def ingest(activate: bool = False, version: str | None = None):
     bm25_domains: dict = {}
     total              = 0
 
-    # ── Corpus : corpus/articles/ (32 fichiers JSON, source de vérité) ──────────
+    # ── Corpus : corpus/articles/ (un JSON par texte, source de vérité) ─────────
     print(f"\nLecture du corpus : {ARTICLES_DIR}")
     data_files = sorted(ARTICLES_DIR.glob("doc_*.json"))
     print(f"  {len(data_files)} fichiers trouvés")
@@ -227,16 +334,25 @@ def ingest(activate: bool = False, version: str | None = None):
             f"articles sans métadonnées: {missing_metadata or 'aucun'}."
         )
 
+    # Un texte issu d'une source web (droitguineen.com) n'a pas de PDF local :
+    # seule son URL source fait foi. Les autres doivent avoir leur PDF.
     missing_pdfs = sorted(
         doc_id for doc_id, meta in metadata_map.items()
-        if not (CORPUS_DIR / "pdfs" / meta.get("source_pdf", "")).is_file()
+        if meta.get("source_pdf") and not (CORPUS_DIR / "pdfs" / meta["source_pdf"]).is_file()
     )
-    if missing_pdfs:
-        raise RuntimeError(f"PDF sources absents pour: {missing_pdfs}")
+    missing_source = sorted(
+        doc_id for doc_id, meta in metadata_map.items()
+        if not meta.get("source_pdf") and not meta.get("url_source")
+    )
+    if missing_pdfs or missing_source:
+        raise RuntimeError(f"Sources absentes — PDF: {missing_pdfs}; ni PDF ni URL: {missing_source}")
 
     for data_file in data_files:
         doc_id = data_file.stem
         meta   = metadata_map.get(doc_id, {})
+        if meta.get("statut") in NOT_INDEXED_STATUSES:
+            print(f"  ⏭ {doc_id} : {meta.get('nom', '?')[:55]} — {meta['statut']}, non indexé")
+            continue
         print(f"  → {doc_id} : {meta.get('nom', '?')[:55]}")
         try:
             with open(data_file, encoding="utf-8") as f:
@@ -268,11 +384,14 @@ def ingest(activate: bool = False, version: str | None = None):
             f"BM25 seulement={len(set(bm25_ids) - collection_ids)}"
         )
 
+    juris = ingest_jurisprudence(client, model, version)
+
     manifest = {
         "version": version,
         "collection": staging_collection_name,
         "bm25_path": staging_bm25_path.name,
         "article_count": collection.count(),
+        **juris,
         "embedding_model": EMBEDDING_MODEL,
         "metric": "cosine",
         "created_at": datetime.now(timezone.utc).isoformat(),

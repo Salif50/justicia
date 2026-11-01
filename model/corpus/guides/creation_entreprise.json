@@ -1,0 +1,151 @@
+{
+  "id": "creer-une-entreprise",
+  "titre": "Créer une entreprise en Guinée",
+  "mise_a_jour_source": "15 octobre 2026",
+  "sources": "Fiches du guichet unique de création d'entreprise (APIP / Guinea Development Board, 2026) et droit OHADA, d'après droitguineen.com",
+  "source_url": "https://droitguineen.com/creation-entreprise",
+  "collecte_le": "2026-11-01",
+  "formes": [
+    {
+      "forme": "Entreprise individuelle",
+      "frais_guichet": "212 500 GNF",
+      "precision": "Timbre fiscal compris",
+      "notaire": "Non",
+      "resume": "Simplicité de création, gestion libre. Une seule EI par personne (art. 49 AUDCG)."
+    },
+    {
+      "forme": "SARL / SARLU",
+      "frais_guichet": "530 000 GNF",
+      "precision": "Statuts sous seing privé",
+      "notaire": "Non exigé",
+      "resume": "Forme la plus courante, souplesse de gestion, notaire non exigé"
+    },
+    {
+      "forme": "SAS / SASU",
+      "frais_guichet": "550 000 GNF",
+      "precision": "Hors frais de notaire",
+      "notaire": "Oui (acte de dépôt des statuts)",
+      "resume": "Grande liberté statutaire ; dépôt des statuts chez le notaire"
+    },
+    {
+      "forme": "Société anonyme (SA)",
+      "frais_guichet": "550 000 GNF",
+      "precision": "Hors frais de notaire",
+      "notaire": "Oui",
+      "resume": "Adaptée aux grands projets ; notaire et commissaire aux comptes obligatoires",
+      "capital_minimum": "140 000 000 GNF (contre-valeur des 10 000 000 FCFA, art. 387 AUSCGIE)"
+    },
+    {
+      "forme": "GIE",
+      "frais_guichet": "450 000 GNF",
+      "precision": "Hors frais de notaire",
+      "notaire": "Oui",
+      "resume": "Mise en commun de moyens entre entreprises ; dépôt des statuts chez le notaire"
+    },
+    {
+      "forme": "SNC",
+      "frais_guichet": "",
+      "precision": "",
+      "notaire": "",
+      "resume": "Confiance entre associés, pas de capital minimum"
+    }
+  ],
+  "delai": "72 heures à partir du dépôt d'un dossier complet",
+  "etapes": [
+    {
+      "num": 1,
+      "titre": "Choix de la forme juridique",
+      "description": "Déterminez la structure adaptée à votre activité selon le nombre d'associés, le capital et la responsabilité souhaitée."
+    },
+    {
+      "num": 2,
+      "titre": "Statuts et procès-verbal constitutif",
+      "description": "Rédigez les statuts conformément à l'AUSCGIE et le procès-verbal de l'assemblée générale constitutive (sauf EI)."
+    },
+    {
+      "num": 3,
+      "titre": "Dépôt du capital en banque",
+      "description": "Déposez les apports en argent au nom de la société en formation ; la banque remet un bordereau ou une attestation de dépôt."
+    },
+    {
+      "num": 4,
+      "titre": "Notaire (SA, SAS, GIE)",
+      "description": "Pour une SA, une SAS ou un GIE, faites établir l'acte de dépôt des statuts chez un notaire. Non exigé pour une SARL."
+    },
+    {
+      "num": 5,
+      "titre": "Dépôt au guichet unique",
+      "description": "Déposez le dossier complet au guichet unique de création d'entreprise (APIP / Guinea Development Board) et réglez les frais."
+    },
+    {
+      "num": 6,
+      "titre": "RCCM, NIF et publication",
+      "description": "Le guichet unique délivre en une fois l'immatriculation au RCCM, le NIF avec le numéro Etax et la publication en ligne sur SyNERGUI."
+    },
+    {
+      "num": 7,
+      "titre": "Déclaration à la CNSS",
+      "description": "Si vous recrutez, immatriculez l'entreprise à la Caisse Nationale de Sécurité Sociale dès la première embauche."
+    }
+  ],
+  "organismes": [
+    {
+      "nom": "Guichet unique APIP / GDB",
+      "role": "Guichet unique de Guinea Development Board à Kaloum : délivre le RCCM, le NIF (et Etax) et la publication sur SyNERGUI"
+    },
+    {
+      "nom": "Banque",
+      "role": "Reçoit le dépôt du capital et remet le bordereau de versement ou l'attestation de dépôt"
+    },
+    {
+      "nom": "Notaire",
+      "role": "Établit l'acte de dépôt des statuts, exigé pour la SA, la SAS et le GIE"
+    },
+    {
+      "nom": "Tribunal de Commerce",
+      "role": "Tient le RCCM ; reçoit ensuite les modifications et les radiations"
+    },
+    {
+      "nom": "CNSS",
+      "role": "Caisse Nationale de Sécurité Sociale : immatriculation des employeurs et des salariés"
+    }
+  ],
+  "textes": [
+    {
+      "nom": "AUSCGIE — sociétés commerciales et GIE",
+      "slug": "acte-uniforme-societes-commerciales-auscgie"
+    },
+    {
+      "nom": "AUDCG — droit commercial général (RCCM, entreprise individuelle)",
+      "slug": "acte-uniforme-droit-commercial-general-audcg"
+    },
+    {
+      "nom": "AUDCIF — droit comptable",
+      "slug": "acte-uniforme-comptabilite-syscohada-audcif"
+    },
+    {
+      "nom": "Code des investissements",
+      "slug": "code-investissements-2015"
+    }
+  ],
+  "questions_frequentes": [
+    "Le coût de création d'une entreprise en Guinée payé au guichet unique couvre l'immatriculation au RCCM, le NIF, la publication sur SyNERGUI et les frais administratifs. Il ne comprend pas les honoraires du notaire (exigé pour la SA, la SAS et le GIE, facultatif pour la SARL) ni les frais bancaires. Le délai annoncé est de 72 heures pour un dossier complet ; prévoyez en plus le temps de rédiger les statuts, de déposer le capital et, le cas échéant, de passer chez le notaire. Il est aussi possible de créer son entreprise à distance depuis l'étranger, par l'intermédiaire d'un mandataire muni d'un pouvoir. Ces montants peuvent évoluer : vérifiez-les auprès du guichet unique avant le dépôt.",
+    "Les statuts sont l'acte fondateur de la société. Selon l'AUSCGIE, ils indiquent notamment la forme de la société, sa dénomination, son objet, son siège, sa durée, l'identité des associés et leurs apports, le montant du capital et le nombre de parts ou d'actions, ainsi que les règles de fonctionnement : désignation des dirigeants, décisions des associés, cession des titres. Ils sont accompagnés du procès-verbal de l'assemblée générale constitutive, exigé par le guichet unique.",
+    "La République de Guinée présente un cadre attractif pour la création d'entreprise grâce à son intégration dans l'espace OHADA depuis 2000. Le droit guinéen des affaires repose sur les Actes Uniformes OHADA, garantissant aux investisseurs un environnement juridique harmonisé avec 17 autres pays africains. Le pays dispose de ressources naturelles exceptionnelles (premier producteur mondial de bauxite, fer, or, diamant, hydroélectricité, agriculture) et d'un marché en pleine croissance.",
+    "Depuis la mise en place du guichet unique APIP à Conakry, la création d'une entreprise en Guinée s'est considérablement simplifiée : le guichet unique, rattaché à Guinea Development Board, délivre en une fois l'immatriculation au RCCM, le NIF et la publication de l'entreprise, en 72 heures annoncées pour un dossier complet. Le présent guide détaille pas à pas les 7 étapes de création, les formes juridiques disponibles et les organismes compétents en République de Guinée.",
+    "Le droit applicable à la création d'une société en Guinée combine le droit OHADA et la législation nationale guinéenne. L'Acte Uniforme relatif au Droit des Sociétés Commerciales et du Groupement d'Intérêt Économique (AUSCGIE) régit la constitution, le fonctionnement et la dissolution des sociétés commerciales. L'Acte Uniforme sur le Droit Commercial Général (AUDCG) encadre le statut de commerçant, le RCCM et les obligations commerciales. Pour les questions fiscales et sociales, ce sont les codes guinéens (Code général des impôts, Code civil guinéen, Code du travail) qui s'appliquent.",
+    "La création d'une entreprise en Guinée se fait au guichet unique de création d'entreprise de l'APIP, rattaché à Guinea Development Board (GDB), à Conakry. Après avoir choisi la forme juridique, vous rédigez les statuts et le procès-verbal de l'assemblée générale constitutive conformément au droit OHADA (AUSCGIE), vous déposez le capital en banque, puis, pour une SA, une SAS ou un GIE, vous faites établir l'acte de dépôt des statuts chez un notaire. Le dossier complet est ensuite déposé au guichet unique, qui délivre en une seule fois l'immatriculation au RCCM, le NIF avec le numéro Etax et la publication en ligne sur SyNERGUI. Si vous recrutez, il reste à vous déclarer à la CNSS.",
+    "D'après les fiches du guichet unique (2026), le montant payé au guichet unique est de 212 500 GNF pour une entreprise individuelle, 530 000 GNF pour une SARL (statuts sous seing privé), 550 000 GNF pour une SAS ou une SA et 450 000 GNF pour un GIE. Ces montants couvrent l'immatriculation au RCCM, le NIF, la publication sur SyNERGUI et les frais administratifs. Ils ne comprennent pas les honoraires du notaire (acte de dépôt des statuts pour la SA, la SAS et le GIE) ni les frais bancaires. Vérifiez les tarifs auprès du guichet avant le dépôt : ils peuvent évoluer.",
+    "Le guichet unique annonce un délai de 72 heures à partir du dépôt d'un dossier complet. Prévoyez en plus le temps de préparer les statuts et le procès-verbal constitutif, de déposer le capital en banque et, pour une SA, une SAS ou un GIE, de passer chez le notaire.",
+    "Pour une société, le guichet unique demande (fiches 2026) : les statuts et le procès-verbal de l'assemblée générale constitutive ; la copie de la carte d'identité nationale biométrique ou du passeport biométrique des dirigeants et associés ; un certificat de résidence (ou, pour les non-résidents, un extrait d'acte de naissance) ; deux photos d'identité récentes ; le bordereau de versement ou l'attestation de dépôt du capital ; l'agrément ou l'autorisation si l'activité est réglementée (santé, sécurité privée…). Pour une SA, une SAS ou un GIE, il faut aussi l'acte de dépôt des statuts établi chez le notaire, et pour une SA ou une SAS un extrait de casier judiciaire de moins de trois mois ou une déclaration sur l'honneur des dirigeants et actionnaires. Pour une entreprise individuelle : pièce d'identité, deux photos, certificat de résidence ou extrait d'acte de naissance et, le cas échéant, l'agrément.",
+    "La SARL compte un ou plusieurs associés, dont la responsabilité est limitée aux apports ; son capital est librement fixé par les associés, elle est dirigée par un ou plusieurs gérants et ses statuts peuvent être établis sous seing privé, sans notaire. C'est la forme la plus courante pour les PME. La SA convient aux projets plus importants : capital minimum de 140 000 000 GNF (contre-valeur des 10 000 000 FCFA de l'AUSCGIE), direction par un conseil d'administration ou un administrateur général, commissaire aux comptes obligatoire et acte de dépôt des statuts chez un notaire.",
+    "Le capital d'une SARL est librement fixé par les associés : le guichet unique n'exige pas de minimum (fiches 2026). Les apports en argent doivent être libérés de la moitié au moins à la souscription, le solde dans les deux ans suivant l'immatriculation (article 311-1 de l'AUSCGIE). Les fonds sont déposés en banque et le bordereau de versement ou l'attestation de dépôt est remis au guichet unique.",
+    "Oui. Vous pouvez désigner un mandataire, muni d'un pouvoir, qui accomplit les démarches en Guinée : signature, dépôt du capital, passage chez le notaire si la forme l'exige et dépôt du dossier au guichet unique. Les associés et dirigeants non résidents fournissent un extrait d'acte de naissance à la place du certificat de résidence. Les investisseurs étrangers bénéficient en outre des protections du Code des investissements de Guinée.",
+    "La République de Guinée est membre de l'Organisation pour l'Harmonisation en Afrique du Droit des Affaires (OHADA) depuis 2000. À ce titre, le droit des sociétés applicable à la création d'entreprise en Guinée est régi par les Actes Uniformes OHADA, communs à 17 États membres, notamment l'AUSCGIE (sociétés commerciales et GIE) et l'AUDCG (droit commercial général et RCCM). Ces textes garantissent aux investisseurs un cadre juridique harmonisé et sécurisé à travers toute l'Afrique de l'Ouest et centrale.",
+    "L'APIP (Agence de Promotion des Investissements Privés) accompagne les investisseurs et les entrepreneurs. Son guichet unique de création d'entreprise, rattaché à Guinea Development Board (GDB) et situé à Kaloum (Conakry), reçoit les dossiers de création et délivre en une fois l'immatriculation au RCCM, le Numéro d'Identification Fiscale (NIF) avec le numéro Etax et la publication de l'entreprise sur le site SyNERGUI.",
+    "Le NIF (Numéro d'Identification Fiscale) et le numéro Etax sont attribués par le guichet unique de création d'entreprise en même temps que l'immatriculation au RCCM : il n'y a pas de démarche séparée à faire auprès des impôts lors de la création. Son coût est compris dans le montant payé au guichet unique.",
+    "Le RCCM (Registre du Commerce et du Crédit Mobilier) est le registre public où sont inscrites les entreprises commerciales ; il est tenu par le greffe du tribunal de commerce. L'immatriculation est obligatoire pour exercer une activité commerciale et donne à la société la personnalité juridique. À la création, elle se fait au guichet unique de l'APIP / GDB, qui transmet le dossier et délivre l'immatriculation. Les modifications et la radiation se font ensuite au tribunal de commerce.",
+    "Toute entreprise qui emploie des salariés en Guinée doit s'immatriculer à la Caisse Nationale de Sécurité Sociale (CNSS) dès l'embauche du premier salarié, puis déclarer les salaires et verser les cotisations sociales selon la réglementation en vigueur. Le Code du travail guinéen encadre par ailleurs le contrat de travail et les obligations de l'employeur.",
+    "Le choix dépend du nombre d'associés, du capital disponible, de la responsabilité acceptée et des perspectives de croissance. L'entreprise individuelle convient aux activités modestes exercées seul (une même personne ne peut en avoir qu'une seule, article 49 de l'AUDCG). La SARL, au capital librement fixé, est la forme la plus courante pour les PME, avec un ou plusieurs associés. La SAS offre une grande liberté statutaire, utile pour accueillir des investisseurs. La SA, avec un capital minimum de 140 000 000 GNF, est adaptée aux grands projets. Le GIE permet à plusieurs entreprises de mettre des moyens en commun."
+  ]
+}
