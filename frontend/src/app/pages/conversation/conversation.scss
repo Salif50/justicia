@@ -753,3 +753,345 @@
 @media (pointer: coarse) {
   .message-input { font-size: 16px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Réflexion (étapes réelles du pipeline), renvois [n] et articles cités
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Réflexion ── */
+.thinking {
+  margin: 0 0 .9rem;
+  font-size: .86rem;
+  color: var(--text-muted);
+}
+
+.thinking-head {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin: 0 0 .6rem;
+}
+
+.thinking-now {
+  font-weight: 500;
+  color: var(--text-primary);
+  background: linear-gradient(90deg, var(--text-muted) 0%, var(--text-primary) 40%, var(--text-muted) 80%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: think-shimmer 1.8s linear infinite;
+}
+
+.thinking-time {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-size: .78rem;
+}
+
+.thinking-spinner {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--divider);
+  border-top-color: var(--brand-orange);
+  animation: think-spin .8s linear infinite;
+}
+
+.thinking-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .3rem .1rem;
+  border: 0;
+  background: none;
+  font: 500 .84rem var(--chat-font);
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: 2px solid var(--brand-orange); outline-offset: 2px; border-radius: 4px; }
+  &[aria-expanded="true"] .thinking-chev { transform: rotate(180deg); }
+}
+
+.thinking-chev { transition: transform .2s ease; }
+
+.thinking-steps {
+  position: relative;
+  margin: .35rem 0 0;
+  padding: 0 0 0 .2rem;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: flex;
+    gap: .7rem;
+    padding: 0 0 .7rem;
+    animation: think-in .35s ease both;
+
+    // Fil vertical entre les étapes
+    &:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 14px;
+      bottom: 0;
+      width: 1px;
+      background: var(--divider);
+    }
+  }
+}
+
+.ts-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-top: .33rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  background: var(--page-bg);
+
+  .is-done > & { border-color: var(--text-muted); background: var(--text-muted); }
+  .is-active > & { border-color: var(--brand-orange); background: var(--brand-orange); animation: think-pulse 1.2s ease-in-out infinite; }
+}
+
+.ts-body {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  min-width: 0;
+
+  b { font-weight: 500; color: var(--text-secondary); }
+  .is-active & b { color: var(--text-primary); }
+  small { font-size: .8rem; line-height: 1.45; color: var(--text-muted); overflow-wrap: anywhere; }
+}
+
+.thinking.is-done .thinking-steps { padding-top: .2rem; }
+
+@keyframes think-shimmer { to { background-position: -120% 0; } }
+@keyframes think-spin { to { transform: rotate(360deg); } }
+@keyframes think-pulse { 50% { box-shadow: 0 0 0 4px rgba(255, 138, 0, .18); } }
+@keyframes think-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+
+/* ── Renvois [n] dans la réponse ── */
+:host ::ng-deep .markdown-body .cite-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  margin: 0 .1rem;
+  padding: .05rem .45rem .05rem .2rem;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  background: var(--card-bg-solid);
+  font: 500 .74rem/1.5 var(--chat-font);
+  color: var(--text-secondary);
+  vertical-align: .08em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .15s, color .15s;
+
+  .cite-no {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 999px;
+    background: var(--text-primary);
+    color: var(--page-bg);
+    font-size: .66rem;
+    font-weight: 600;
+  }
+
+  &:hover { border-color: var(--brand-orange); color: var(--text-primary); }
+  &:focus-visible { outline: 2px solid var(--brand-orange); outline-offset: 2px; }
+}
+
+/* ── Articles cités (texte officiel, tiré de la base) ── */
+.cited {
+  display: grid;
+  gap: .5rem;
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--divider);
+}
+
+.cited-label {
+  margin: 0 0 .15rem;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+
+  span {
+    margin-left: .4rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+.cited-art {
+  border: 1px solid var(--divider);
+  border-radius: .7rem;
+  background: var(--card-bg-solid);
+  overflow: hidden;
+  scroll-margin: 1rem;
+  transition: border-color .3s;
+
+  &.is-flash { border-color: var(--brand-orange); }
+}
+
+.cited-head {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+  padding: .65rem .85rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+
+  &:focus-visible { outline: 2px solid var(--brand-orange); outline-offset: -2px; }
+}
+
+.cited-no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: var(--page-bg);
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+.cited-ref { flex: none; font-size: .88rem; font-weight: 600; }
+
+.cited-doc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .82rem;
+  color: var(--text-muted);
+}
+
+.cited-chev {
+  flex: none;
+  margin-left: auto;
+  color: var(--text-muted);
+  transition: transform .2s ease;
+  .is-open & { transform: rotate(180deg); }
+}
+
+.cited-text {
+  margin: 0 .95rem .85rem 2.8rem;
+  padding: 0;
+  font-size: .92rem;
+  line-height: 1.62;
+  color: var(--text-secondary);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  &::before { content: '« '; color: var(--text-muted); }
+  &::after { content: ' »'; color: var(--text-muted); }
+
+  .is-open & { display: block; -webkit-line-clamp: unset; }
+}
+
+.cited-more {
+  margin: -.35rem 0 .7rem 2.8rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 500 .8rem var(--chat-font);
+  color: var(--brand-orange);
+  cursor: pointer;
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+.cited-status {
+  margin: -.3rem .95rem .75rem 2.8rem;
+  font-size: .76rem;
+  color: var(--text-muted);
+}
+
+/* ── Jurisprudence jointe à la réponse (extrait tel qu'indexé) ── */
+:host ::ng-deep .markdown-body .cite-ref--juris .cite-no {
+  min-width: 1.35rem;
+  padding: 0 .25rem;
+  background: transparent;
+  border: 1px solid var(--text-primary);
+  color: var(--text-primary);
+}
+
+.juris {
+  display: grid;
+  gap: .5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--divider);
+}
+
+.juris-card {
+  padding: .75rem .9rem .8rem;
+  border: 1px solid var(--divider);
+  border-radius: .7rem;
+  background: var(--card-bg-solid);
+  scroll-margin: 1rem;
+  transition: border-color .3s;
+  &.is-flash { border-color: var(--brand-orange); }
+}
+
+.juris-head { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .6rem; }
+.juris-no { width: auto; min-width: 1.6rem; padding: 0 .3rem; border-radius: 999px; background: transparent; border: 1px solid var(--text-primary); color: var(--text-primary); }
+.juris-ref { font-size: .86rem; font-weight: 600; color: var(--text-primary); }
+.juris-tag { padding: .05rem .45rem; border-radius: 4px; background: var(--tag-bg); font-size: .7rem; font-weight: 600; color: var(--text-muted); }
+
+.juris-text {
+  margin: .55rem 0 0;
+  padding: 0 0 0 .75rem;
+  border-left: 2px solid var(--divider);
+  font-size: .88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  &::before { content: '… '; color: var(--text-muted); }   /* extrait pris dans le corps de la décision */
+}
+
+.juris-link {
+  display: inline-block;
+  margin-top: .55rem;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--brand-orange);
+  text-decoration: none;
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+@media (max-width: 600px) {
+  .cited-head { flex-wrap: wrap; row-gap: .15rem; }
+  .cited-doc { flex-basis: calc(100% - 2rem); order: 3; margin-left: 1.95rem; white-space: normal; }
+  .cited-text, .cited-more, .cited-status { margin-left: .95rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-now, .thinking-spinner, .ts-dot, .thinking-steps li { animation: none !important; }
+  .thinking-now { -webkit-text-fill-color: currentColor; background: none; }
+}

@@ -58,7 +58,7 @@ export class DashboardLayout implements OnInit, OnDestroy {
     'comparison':         'Comparaison de textes',
     'translation':        'Traduction juridique',
     // Ressources
-    'encyclopedia':       'Encyclopédie juridique',
+    'encyclopedia':       'Bibliothèque juridique',
     'case-law':           'Jurisprudence nationale',
     'glossary':           'Glossaire juridique',
     'procedures':         'Guide des démarches',

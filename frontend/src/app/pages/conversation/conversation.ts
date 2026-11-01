@@ -5,8 +5,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { ConversationHistoryService, UsageInfo } from '../../services/conversation-history';
-import { MarkdownPipe } from '../../pipes/markdown.pipe';
+import { ConversationHistoryService, UsageInfo, ThinkingStep } from '../../services/conversation-history';
+import { MarkdownPipe, docLabel, shortRef } from '../../pipes/markdown.pipe';
 
 export interface Message {
   id: string;
@@ -14,7 +14,13 @@ export interface Message {
   sender: 'user' | 'bot';
   timestamp: Date;
   sources?: any[];
+  /** Étapes de réflexion parcourues (messages de la session en cours) */
+  steps?: ThinkingStep[];
+  thinkingMs?: number;
 }
+
+/** Étape affichée immédiatement, avant la première réponse du suivi. */
+const FIRST_STEP: ThinkingStep = { id: 'analyse', label: 'Analyse de la question', status: 'active' };
 
 export interface GroupedSource {
   nom_doc: string;
@@ -39,6 +45,16 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
   currentConversationId = signal<string | null>(null);
   errorMessage          = signal('');
   copiedMessageId       = signal<string | null>(null);
+
+  /** Réflexion en direct (pendant l'attente) */
+  thinkingSteps   = signal<ThinkingStep[]>([]);
+  thinkingSeconds = signal(0);
+  /** Réflexions dépliées (après réponse) et articles dépliés, par clé */
+  openThinking = signal<Set<string>>(new Set());
+  openArticles = signal<Set<string>>(new Set());
+  private progressTimer: any;
+  private clockTimer: any;
+  private thinkingStartedAt = 0;
 
   readonly suggestedQuestions = [
     { domain: 'Droit du travail', text: 'Quels sont mes droits en cas de licenciement sans motif valable ?' },
@@ -82,6 +98,14 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
         this.loadConversationFromHistory(id);
       }
     });
+
+    // Question préparée depuis une autre page (article, décision, démarche) :
+    // pré-remplie dans le champ, jamais envoyée sans l'accord de l'utilisateur.
+    const q = this.route.snapshot.queryParamMap.get('q');
+    if (q && !this.route.snapshot.params['id']) {
+      this.inputMessage.set(q.slice(0, 2000));
+      this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+    }
   }
 
   ngAfterViewChecked() {
@@ -94,6 +118,7 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
   ngOnDestroy() {
     if (this.historyCountInterval) clearInterval(this.historyCountInterval);
     if (this.usageInterval)        clearInterval(this.usageInterval);
+    this.stopThinking();
   }
 
   private loadUsage() {
@@ -152,9 +177,11 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
     this.messages.update(msgs => [...msgs, userMsg]);
     this.shouldScrollToBottom = true;
     this.isLoading.set(true);
+    const requestId = newRequestId();
+    this.startThinking(requestId);
 
     this.historyService
-      .sendMessage(content, this.currentAgentId(), this.currentConversationId())
+      .sendMessage(content, this.currentAgentId(), this.currentConversationId(), requestId)
       .subscribe({
         next: (resp: any) => {
           if (resp.conversation_id) {
@@ -167,7 +194,11 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
             sender: 'bot',
             timestamp: new Date(resp.created_at || Date.now()),
             sources: resp.sources || [],
+            steps: (resp.steps && resp.steps.length ? resp.steps : this.thinkingSteps())
+              .map((st: ThinkingStep) => ({ ...st, status: 'done' as const })),
+            thinkingMs: resp.thinking_ms || Date.now() - this.thinkingStartedAt,
           };
+          this.stopThinking();
           this.messages.update(msgs => [...msgs, botMsg]);
           this.isLoading.set(false);
           this.shouldScrollToBottom = true;
@@ -178,6 +209,7 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
         },
         error: (err) => {
           this.isLoading.set(false);
+          this.stopThinking();
 
           // Retirer le message utilisateur de l'affichage si limite atteinte
           const detail = err.error?.detail;
@@ -199,6 +231,91 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
         },
       });
   }
+
+  // ── Réflexion en direct ───────────────────────────────────────────────────
+  private startThinking(requestId: string) {
+    this.stopThinking();
+    this.thinkingStartedAt = Date.now();
+    this.thinkingSeconds.set(0);
+    this.thinkingSteps.set([FIRST_STEP]);
+    this.clockTimer = setInterval(
+      () => this.thinkingSeconds.set(Math.floor((Date.now() - this.thinkingStartedAt) / 1000)), 250);
+    const poll = () => {
+      this.historyService.getProgress(requestId).subscribe(p => {
+        if (!this.isLoading()) return;
+        if (p?.steps?.length) {
+          this.thinkingSteps.set(p.steps);
+          this.shouldScrollToBottom = true;
+        }
+        this.progressTimer = setTimeout(poll, 650);
+      });
+    };
+    this.progressTimer = setTimeout(poll, 350);
+  }
+
+  private stopThinking() {
+    clearTimeout(this.progressTimer);
+    clearInterval(this.clockTimer);
+    this.progressTimer = this.clockTimer = undefined;
+  }
+
+  thinkingLabel(message: Message): string {
+    const s = Math.max(1, Math.round((message.thinkingMs || 0) / 1000));
+    return `Réflexion terminée en ${s} s`;
+  }
+
+  toggleSet(sig: typeof this.openThinking, key: string) {
+    sig.update(set => {
+      const next = new Set(set);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
+
+  // ── Articles cités ────────────────────────────────────────────────────────
+  citedSources(message: Message): any[] {
+    return (message.sources || []).filter(s => s?.cite_no && s.kind !== 'decision').sort((a, b) => a.cite_no - b.cite_no);
+  }
+
+  otherSources(message: Message): any[] {
+    const articles = (message.sources || []).filter(s => s?.kind !== 'decision');
+    if (!this.citedSources(message).length) return articles;
+    return articles.filter(s => !s?.cite_no);
+  }
+
+  /** Décisions de justice jointes à la réponse : citées d'abord ([J1]…), puis consultées. */
+  decisionSources(message: Message): any[] {
+    return (message.sources || []).filter(s => s?.kind === 'decision')
+      .sort((a, b) => (a.cite_no ?? 99) - (b.cite_no ?? 99));
+  }
+
+  articleKey(message: Message, n: number) { return `${message.id}:${n}`; }
+
+  /** Clic sur un renvoi [n] dans la réponse : ouvre l'article et le fait défiler à l'écran. */
+  onAnswerClick(event: Event, message: Message) {
+    const juris = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-juris]');
+    if (juris) {
+      const el = document.getElementById(`dec-${message.id}-${juris.dataset['juris']}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el?.classList.add('is-flash');
+      setTimeout(() => el?.classList.remove('is-flash'), 1200);
+      return;
+    }
+    const btn = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-cite]');
+    if (!btn) return;
+    const n = Number(btn.dataset['cite']);
+    const key = this.articleKey(message, n);
+    this.openArticles.update(set => new Set(set).add(key));
+    setTimeout(() => {
+      const el = document.getElementById('art-' + key.replace(':', '-'));
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el?.classList.add('is-flash');
+      setTimeout(() => el?.classList.remove('is-flash'), 1200);
+    }, 30);
+  }
+
+  readonly docLabel = docLabel;
+  readonly shortRef = shortRef;
 
   goToAbonnement() {
     this.showLimitModal.set(false);
@@ -264,7 +381,7 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
     if (!sources?.length) return [];
     const byDoc = new Map<string, string[]>();
     for (const s of sources) {
-      const doc = s.nom_doc || s.article_ref || 'Source';
+      const doc = docLabel(s.nom_doc) || s.article_ref || 'Source';
       const ref = s.article_ref || s.numero || '';
       const refs = byDoc.get(doc) ?? byDoc.set(doc, []).get(doc)!;
       if (ref && !refs.includes(ref)) refs.push(ref);
@@ -277,9 +394,19 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   async copyMessage(message: Message) {
-    const text = message.sender === 'bot'
+    let text = message.sender === 'bot'
       ? message.content.replace(/<[^>]+>/g, '').trim()
       : message.content;
+    const cited = message.sender === 'bot' ? this.citedSources(message) : [];
+    if (cited.length) {
+      text += '\n\nArticles cités\n' + cited
+        .map(s => `[${s.cite_no}] ${docLabel(s.nom_doc)} — ${s.article_ref}\n« ${String(s.texte || '').trim()} »`)
+        .join('\n\n');
+    }
+    const decs = message.sender === 'bot' ? this.decisionSources(message).filter(d => d.cite_no) : [];
+    if (decs.length) {
+      text += '\n\nJurisprudence\n' + decs.map(d => `[J${d.cite_no}] ${d.article_ref}${d.source_url ? ' — ' + d.source_url : ''}`).join('\n');
+    }
     try {
       await navigator.clipboard.writeText(text);
       this.copiedMessageId.set(message.id);
@@ -295,4 +422,11 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
       setTimeout(() => this.copiedMessageId.set(null), 2000);
     }
   }
+}
+
+/** Identifiant de suivi de la réflexion (envoyé avec la question). */
+function newRequestId(): string {
+  const c: any = globalThis.crypto;
+  if (c?.randomUUID) return c.randomUUID().replace(/-/g, '');
+  return Array.from({ length: 24 }, () => Math.floor(Math.random() * 36).toString(36)).join('');
 }

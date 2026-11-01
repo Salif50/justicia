@@ -160,6 +160,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/encyclopedia/encyclopedia').then(m => m.Encyclopedia),
       },
       {
+        path: 'encyclopedia/:docId',
+        loadComponent: () => import('./pages/encyclopedia/encyclopedia').then(m => m.Encyclopedia),
+      },
+      {
         path: 'glossary',
         loadComponent: () => import('./pages/glossary/glossary').then(m => m.Glossary),
       },
@@ -178,6 +182,10 @@ export const routes: Routes = [
       },
       {
         path: 'case-law',
+        loadComponent: () => import('./pages/case-law/case-law').then(m => m.CaseLaw),
+      },
+      {
+        path: 'case-law/:id',
         loadComponent: () => import('./pages/case-law/case-law').then(m => m.CaseLaw),
       },
 

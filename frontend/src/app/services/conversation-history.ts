@@ -86,6 +86,19 @@ export interface MosagixConfirmation {
   message: string;
 }
 
+export interface ThinkingStep {
+  id: string;
+  label: string;
+  status: 'active' | 'done';
+  detail?: string;
+}
+
+export interface ThinkingProgress {
+  steps: ThinkingStep[];
+  elapsed_ms: number;
+  done: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ConversationHistoryService {
   private readonly api = environment.apiUrl;
@@ -109,10 +122,18 @@ export class ConversationHistoryService {
     );
   }
 
-  sendMessage(message: string, agentId: string, conversationId?: string | null): Observable<any> {
+  sendMessage(message: string, agentId: string, conversationId?: string | null, clientRequestId?: string): Observable<any> {
     const body: any = { message, agent_id: agentId };
     if (conversationId) body['conversation_id'] = conversationId;
+    if (clientRequestId) body['client_request_id'] = clientRequestId;
     return this.http.post<any>(`${this.api}/conversation/send`, body);
+  }
+
+  /** Étapes de réflexion en cours (lecture pendant l'attente d'une réponse). */
+  getProgress(clientRequestId: string): Observable<ThinkingProgress | null> {
+    return this.http.get<ThinkingProgress>(`${this.api}/conversation/progress/${clientRequestId}`).pipe(
+      catchError(() => of(null))
+    );
   }
 
   // ── Abonnement & Quota ────────────────────────────────────────────────────

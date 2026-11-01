@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { EncyclopediaService, AskCodeResponse } from '../../services/encyclopedia.service';
 import { ProcedureService } from '../../services/procedure.service';
 import { UiIcon } from '../../components/ui-icon/ui-icon';
+import { CompanyGuideCard } from './company-guide/company-guide';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type AskStage  = 'idle' | 'loading' | 'done' | 'error';
@@ -322,7 +323,7 @@ const THINKING_STEPS = [
 
 @Component({
   selector:    'app-demarches',
-  imports:     [CommonModule, UiIcon],
+  imports:     [CommonModule, UiIcon, CompanyGuideCard],
   templateUrl: './procedures.html',
   styleUrl:    './procedures.scss',
 })

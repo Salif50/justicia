@@ -1,0 +1,92 @@
+@if (guide(); as g) {
+<section class="cg app-panel" aria-labelledby="cg-title">
+  <div class="cg-head">
+    <div>
+      <p class="cg-kicker">Guide pratique · guichet unique APIP / GDB</p>
+      <h2 id="cg-title" class="cg-title">{{ g.titre }}</h2>
+      <p class="cg-lead">
+        Formes juridiques OHADA, montants payés au guichet unique, pièces à fournir et étapes,
+        de la rédaction des statuts à l’immatriculation au RCCM — délai annoncé : <strong>{{ g.delai }}</strong>.
+      </p>
+    </div>
+    <div class="cg-head-actions">
+      <button class="app-btn app-btn--sm" (click)="ask()">Quelle forme choisir ?</button>
+      <button class="app-btn app-btn--quiet app-btn--sm" (click)="open.set(!open())" [attr.aria-expanded]="open()">
+        {{ open() ? 'Réduire le guide' : 'Ouvrir le guide complet' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Coûts par forme : toujours visibles -->
+  <div class="cg-table-wrap">
+    <table class="cg-table">
+      <caption class="sr-only">Montants payés au guichet unique selon la forme juridique</caption>
+      <thead><tr><th scope="col">Forme</th><th scope="col">Payé au guichet unique</th><th scope="col">Notaire</th><th scope="col"></th></tr></thead>
+      <tbody>
+        @for (f of g.formes; track f.forme) {
+          <tr>
+            <th scope="row">
+              {{ f.forme }}
+              <span class="cg-sub">{{ f.resume }}</span>
+              @if (f.capital_minimum) { <span class="cg-sub">Capital minimum : {{ f.capital_minimum }}</span> }
+            </th>
+            <td class="cg-amount">
+              @if (f.frais_guichet) { {{ f.frais_guichet }} <span class="cg-sub">{{ f.precision }}</span> } @else { <span class="cg-sub">Non communiqué</span> }
+            </td>
+            <td>{{ f.notaire || '—' }}</td>
+            <td class="cg-ask"><button (click)="ask(f.forme)">Demander à l’IA</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (open()) {
+    <div class="cg-body">
+      <div class="cg-col">
+        <h3>Les étapes</h3>
+        <ol class="cg-steps">
+          @for (e of g.etapes; track e.num) {
+            <li><span class="cg-step-n">{{ e.num }}</span>
+              <div><strong>{{ e.titre }}</strong><p>{{ e.description }}</p></div></li>
+          }
+        </ol>
+      </div>
+      <div class="cg-col">
+        <h3>Les organismes</h3>
+        <dl class="cg-orgs">
+          @for (o of g.organismes; track o.nom) {
+            <div><dt>{{ o.nom }}</dt><dd>{{ o.role }}</dd></div>
+          }
+        </dl>
+        <h3>Les textes applicables</h3>
+        <ul class="cg-texts">
+          @for (t of g.textes; track t.slug) {
+            <li>@if (t.doc_id) { <a [routerLink]="['/dashboard/encyclopedia', t.doc_id]">{{ t.nom }} →</a> } @else { {{ t.nom }} }</li>
+          }
+        </ul>
+      </div>
+    </div>
+
+    @if (g.questions_frequentes.length) {
+      <div class="cg-faq">
+        <h3>Questions fréquentes</h3>
+        @for (q of g.questions_frequentes; track $index) {
+          <div class="cg-faq-item">
+            <button (click)="faqOpen.set(faqOpen() === $index ? null : $index)" [attr.aria-expanded]="faqOpen() === $index">
+              {{ faqTitle(q) }} <span aria-hidden="true">{{ faqOpen() === $index ? '−' : '+' }}</span>
+            </button>
+            @if (faqOpen() === $index) { <p>{{ q }}</p> }
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <p class="cg-source">
+    Source : {{ g.sources }}@if (g.mise_a_jour_source) {, mis à jour le {{ g.mise_a_jour_source }}}.
+    Les montants peuvent évoluer : vérifiez-les auprès du guichet unique avant le dépôt.
+    @if (g.source_url) { <a [href]="g.source_url" target="_blank" rel="noopener">Voir la source ↗</a> }
+  </p>
+</section>
+}

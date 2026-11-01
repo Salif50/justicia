@@ -87,18 +87,82 @@
                 <span class="bot-name">{{ aiName() }}</span>
               </div>
             }
+            @if (message.sender === 'bot' && message.steps?.length) {
+              <div class="thinking is-done">
+                <button type="button" class="thinking-toggle" (click)="toggleSet(openThinking, message.id)"
+                        [attr.aria-expanded]="openThinking().has(message.id)">
+                  <svg class="thinking-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>
+                  <span>{{ thinkingLabel(message) }}</span>
+                  <svg class="thinking-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                @if (openThinking().has(message.id)) {
+                  <ol class="thinking-steps">
+                    @for (st of message.steps; track st.id) {
+                      <li class="is-done">
+                        <span class="ts-dot" aria-hidden="true"></span>
+                        <span class="ts-body"><b>{{ st.label }}</b>@if (st.detail) {<small>{{ st.detail }}</small>}</span>
+                      </li>
+                    }
+                  </ol>
+                }
+              </div>
+            }
+
             <div class="message-content" [class.bot-formatted]="message.sender === 'bot'">
               @if (message.sender === 'bot') {
-                <div class="markdown-body" [innerHTML]="message.content | markdown"></div>
+                <div class="markdown-body" [innerHTML]="message.content | markdown: message.sources"
+                     (click)="onAnswerClick($event, message)"></div>
               } @else {
                 <p>{{ message.content }}</p>
               }
             </div>
 
-            @if (message.sources && message.sources.length > 0) {
+            @if (citedSources(message).length > 0) {
+              <section class="cited" aria-label="Articles cités">
+                <p class="cited-label">Articles cités <span>texte officiel</span></p>
+                @for (src of citedSources(message); track src.cite_no) {
+                  @let key = articleKey(message, src.cite_no);
+                  <article class="cited-art" [class.is-open]="openArticles().has(key)" [id]="'art-' + message.id + '-' + src.cite_no">
+                    <button type="button" class="cited-head" (click)="toggleSet(openArticles, key)"
+                            [attr.aria-expanded]="openArticles().has(key)">
+                      <span class="cited-no">{{ src.cite_no }}</span>
+                      <span class="cited-ref">{{ src.article_ref }}</span>
+                      <span class="cited-doc">{{ docLabel(src.nom_doc) }}</span>
+                      <svg class="cited-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <blockquote class="cited-text">{{ src.texte }}</blockquote>
+                    @if (!openArticles().has(key) && (src.texte?.length || 0) > 380) {
+                      <button type="button" class="cited-more" (click)="toggleSet(openArticles, key)">Lire l’article en entier</button>
+                    }
+                    @if (src.source_status && src.source_status !== 'publie' && src.source_status !== 'inconnu') {
+                      <p class="cited-status">Statut du texte : {{ src.source_status }}</p>
+                    }
+                  </article>
+                }
+              </section>
+            }
+
+            @if (decisionSources(message).length > 0) {
+              <section class="juris" aria-label="Jurisprudence">
+                <p class="cited-label">Jurisprudence <span>extrait de la décision</span></p>
+                @for (d of decisionSources(message); track d.decision_id) {
+                  <article class="juris-card" [id]="'dec-' + message.id + '-' + d.cite_no">
+                    <div class="juris-head">
+                      @if (d.cite_no) { <span class="cited-no juris-no">J{{ d.cite_no }}</span> }
+                      <span class="juris-ref">{{ d.article_ref }}</span>
+                      @if (d.matiere) { <span class="juris-tag">{{ d.matiere }}</span> }
+                    </div>
+                    <blockquote class="juris-text">{{ d.texte }}</blockquote>
+                    <a class="juris-link" [routerLink]="['/dashboard/case-law', d.decision_id]">Lire la décision complète →</a>
+                  </article>
+                }
+              </section>
+            }
+
+            @if (otherSources(message).length > 0) {
               <div class="message-sources">
-                <span class="sources-label">Sources consultées</span>
-                @for (src of groupSources(message.sources); track src.nom_doc) {
+                <span class="sources-label">{{ citedSources(message).length ? 'Autres textes consultés' : 'Sources consultées' }}</span>
+                @for (src of groupSources(otherSources(message)); track src.nom_doc) {
                   <details class="source-group">
                     <summary class="source-chip">
                       <span class="source-doc-name">{{ src.nom_doc }}</span>
@@ -131,9 +195,20 @@
               <span class="bot-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
               <span class="bot-name">{{ aiName() }}</span>
             </div>
-            <div class="typing">
-              <span class="typing-indicator"><span></span><span></span><span></span></span>
-              <span class="typing-text">Recherche dans les textes de loi…</span>
+            <div class="thinking is-live" role="status" aria-live="polite">
+              <p class="thinking-head">
+                <span class="thinking-spinner" aria-hidden="true"></span>
+                <span class="thinking-now">Réflexion en cours</span>
+                <span class="thinking-time">{{ thinkingSeconds() }} s</span>
+              </p>
+              <ol class="thinking-steps">
+                @for (st of thinkingSteps(); track st.id) {
+                  <li [class.is-done]="st.status === 'done'" [class.is-active]="st.status === 'active'">
+                    <span class="ts-dot" aria-hidden="true"></span>
+                    <span class="ts-body"><b>{{ st.label }}</b>@if (st.detail) {<small>{{ st.detail }}</small>}</span>
+                  </li>
+                }
+              </ol>
             </div>
           </div>
         }
