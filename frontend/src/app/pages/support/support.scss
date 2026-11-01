@@ -38,7 +38,7 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 18px;
-  box-shadow: 0 24px 48px -28px rgba(var(--ink-rgb), 0.3);
+  box-shadow: none;
 
   h2 {
     margin: 0 0 8px;
@@ -255,7 +255,7 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--white);
   color: var(--ink);
   border: 1px solid var(--line);
-  box-shadow: var(--shadow-float);
+  box-shadow: none;
   animation: spRise 0.35s $ease both;
 
   p { margin: 0; font-size: 14px; line-height: 1.5; }

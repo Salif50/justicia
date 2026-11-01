@@ -1,18 +1,19 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
-import { Header } from '../../components/header/header';
 
 /** Ouverte depuis le lien reçu par e-mail : confirme l'adresse du compte. */
 @Component({
   selector: 'app-verify-email',
-  imports: [RouterLink, Header],
+  imports: [RouterLink],
   styleUrl: './account.scss',
   template: `
-<app-header />
 <section class="auth-page" id="contenu" tabindex="-1">
   <div class="auth-layout">
     <main class="auth-form-panel">
+      <a routerLink="/" class="auth-logo" aria-label="JusticIA — retour à l’accueil">
+        <img src="/brand/jia-mark@2x.webp" srcset="/brand/jia-mark@2x.webp 1x, /brand/jia-mark@4x.webp 2x" alt="" width="227" height="128" decoding="async" />
+      </a>
       <div class="auth-card">
         <div class="verify-panel" role="status" aria-live="polite">
           @switch (state()) {

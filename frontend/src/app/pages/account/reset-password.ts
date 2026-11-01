@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
-import { Header } from '../../components/header/header';
 
 const RULES: { label: string; test: (p: string) => boolean }[] = [
   { label: '8 caractères minimum', test: (p) => p.length >= 8 },
@@ -13,13 +12,15 @@ const RULES: { label: string; test: (p: string) => boolean }[] = [
 /** Ouverte depuis le lien reçu par e-mail : choix d'un nouveau mot de passe. */
 @Component({
   selector: 'app-reset-password',
-  imports: [RouterLink, Header],
+  imports: [RouterLink],
   styleUrl: './account.scss',
   template: `
-<app-header />
 <section class="auth-page" id="contenu" tabindex="-1">
   <div class="auth-layout">
     <main class="auth-form-panel">
+      <a routerLink="/" class="auth-logo" aria-label="JusticIA — retour à l’accueil">
+        <img src="/brand/jia-mark@2x.webp" srcset="/brand/jia-mark@2x.webp 1x, /brand/jia-mark@4x.webp 2x" alt="" width="227" height="128" decoding="async" />
+      </a>
       <div class="auth-card">
         <div class="auth-header">
           <h1>Nouveau mot de passe</h1>

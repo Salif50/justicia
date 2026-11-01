@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Auth, isSignupPending } from '../../services/auth';
-import { Header } from '../../components/header/header';
 import { Captcha } from '../../components/captcha/captcha';
 import { environment } from '../../../environments/environment';
 
@@ -17,7 +16,7 @@ const PASSWORD_RULES: { label: string; test: (p: string) => boolean }[] = [
 
 @Component({
   selector: 'app-inscription',
-  imports: [CommonModule, FormsModule, RouterLink, Header, Captcha],
+  imports: [CommonModule, FormsModule, RouterLink, Captcha],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
 })

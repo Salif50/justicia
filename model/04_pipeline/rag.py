@@ -513,49 +513,38 @@ Dans un domaine juridique, une réponse fausse est plus dangereuse que l'absence
 1. **FRANÇAIS EXCLUSIVEMENT** — toute phrase dans une autre langue est une faute grave.
 2. **Les articles fournis sont LA LOI** — base TOUTE ta réponse sur les textes du contexte.
 3. **Citations utiles** — recopie mot pour mot uniquement les passages nécessaires pour répondre ; évite les longs blocs qui rendent la réponse difficile à lire.
-4. **Citations inline** — après chaque argument, ajoute le marqueur de source contrôlé du contexte, par exemple 【S1】. Ne fabrique jamais un marqueur.
+4. **Citations inline** — ajoute le marqueur de source contrôlé à la fin du paragraphe ou du point qu'il justifie, par exemple 【S1】. Une source ne doit pas être répétée plusieurs fois dans le même paragraphe.
 5. **Jamais d'invention** — ne cite JAMAIS un article dont le numéro n'apparaît pas dans la liste "RÉFÉRENCES AUTORISÉES" du contexte.
 6. **Structure unique** — produis la réponse UNE SEULE FOIS, sans répéter les sections.
 7. **Vérification finale** — avant de finaliser, relis chaque article cité et confirme qu'il figure dans la liste des articles fournis.
 8. **Hiérarchie des textes** — si la question porte sur ce qui interdit, condamne ou punit un comportement, présente EN PREMIER les articles qui définissent l'infraction et fixent la peine (Code pénal, textes de fond), puis seulement ensuite les articles de procédure qui s'y rapportent.
 
-## Format de réponse (simple et lisible)
+## Format de réponse (style assistant moderne, lisible et direct)
 
-### Textes de loi applicables
+Commence par répondre directement à la question en 1 à 3 phrases sous le titre **Réponse courte**.
+Ensuite, utilise au maximum trois sections, dans cet ordre :
 
-> [Nom du texte] — [article]
-> « [court extrait exact utile à la réponse] »
+### Réponse courte
+[Conclusion claire et nuancée, sans répéter la question. Chaque paragraphe se termine par son marqueur de source.]
 
-**Commentaire juridique :** [2-3 phrases d'interprétation UNIQUEMENT basées sur le texte ci-dessus et les autres articles fournis. N'ajoute aucune information extérieure.]
+### Conditions ou règles applicables
+[2 à 5 points numérotés, uniquement si la question demande des conditions, étapes ou critères. Un point = une idée. Ajoute le marqueur à la fin du point, pas après chaque phrase.]
 
-[1 à 4 sources principales uniquement]
+### À retenir
+[Une courte liste de conséquences pratiques, limites ou éléments à vérifier. N'ajoute aucun conseil qui ne découle pas des textes fournis.]
 
----
-
-### Analyse juridique
-
-1. [Titre du point] — [Explication précise, 2-3 phrases].
-2. [Titre du point] — [Explication précise].
-[2 à 4 points maximum, chacun avec son marqueur de source]
-
-### Observations pratiques
-
-- [Conseil concret, délai légal ou démarche à suivre].
-- [Mise en garde ou procédure pratique].
-
-### Documents consultés
-
-- **[Nom complet du texte de loi]** — Articles [liste des numéros effectivement utilisés]
-[Un document par ligne — uniquement ce qui a réellement été cité]"""
+Ne crée pas de section « Textes de loi applicables », « Documents consultés » ou « Commentaire juridique » : l'interface affiche déjà les sources séparément.
+Ne recopie un extrait exact que s'il est indispensable, dans un seul bloc de citation court.
+N'utilise pas de séparateurs `---`, de tableaux larges ou de longs paragraphes. Réponds avec des phrases courtes et des espaces normaux entre les sections."""
 
 # Footer ajouté programmatiquement après la réponse LLM (une seule fois)
-RESPONSE_FOOTER = "\n\n---\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*"
+RESPONSE_FOOTER = "\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*"
 # Titre du refus « aucun texte applicable » : repéré par le backend pour distinguer
 # une question de droit sans réponse d'une demande hors sujet.
 NO_SOURCE_TITLE = "Aucun texte applicable trouvé"
 # Rappel ajouté au prompt lors de la seconde tentative de génération
 STRICT_CITATION_REMINDER = (
-    "\n\nRAPPEL IMPÉRATIF : chaque affirmation juridique doit être suivie de l'identifiant exact de sa "
+    "\n\nRAPPEL IMPÉRATIF : chaque paragraphe ou point juridique doit être suivi de l'identifiant exact de sa "
     "source entre crochets, tel qu'il figure dans le contexte (ex. 【S1】). N'utilise aucun autre "
     "identifiant et ne cite AUCUN numéro d'article qui ne figure pas dans le contexte fourni. "
     "Si un point n'est couvert par aucune source, dis-le simplement sans le développer."
@@ -848,13 +837,13 @@ def build_context_prompt(
     _INTENT_INSTRUCTIONS: dict[str, str] = {
         QueryIntent.CONDITIONS: (
             "5. FORMAT SPÉCIAL — CONDITIONS : présente chaque condition comme un point numéroté "
-            "dans l'Analyse juridique. Ex : '1. **Âge minimum** — ... (Art. X)'. "
+            "dans la section Conditions ou règles applicables. Ex : '1. **Âge minimum** — ... 【S1】'. "
             "Si une condition CUMULATIVE est requise, indique-le explicitement."
         ),
         QueryIntent.PROCEDURE: (
             "5. FORMAT SPÉCIAL — PROCÉDURE : décris les étapes dans l'ordre chronologique, "
-            "numérotées. Indique les délais légaux, les autorités compétentes et les documents requis. "
-            "Ex : 'Étape 1 : Dépôt de la demande (délai : X jours) — (Art. Y)'."
+            "numérotées dans la section Conditions ou règles applicables. Indique les délais légaux, les autorités compétentes et les documents requis. "
+            "Ex : 'Étape 1 : Dépôt de la demande (délai : X jours) — 【S1】'."
         ),
         QueryIntent.SANCTION: (
             "5. FORMAT SPÉCIAL — SANCTION : indique d'abord la qualification juridique (crime/délit/contravention), "

@@ -18,7 +18,7 @@ $warn-bg: var(--danger-bg);
   list-style: none;
   margin: 40px 0 0;
   padding: 24px 0 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-wrap: wrap;
   gap: 12px 40px;
@@ -27,7 +27,7 @@ $warn-bg: var(--danger-bg);
     position: relative;
     padding-left: 18px;
     font-size: 0.92rem;
-    color: var(--on-ink-mut);
+    color: rgba(255, 236, 218, 0.72);
 
     &::before {
       content: '';
@@ -36,8 +36,8 @@ $warn-bg: var(--danger-bg);
       top: 0.62em;
       width: 6px;
       height: 6px;
-      border-radius: 1px;
-      background: var(--ink);
+      border-radius: 50%;
+      background: var(--accent);
     }
   }
 }

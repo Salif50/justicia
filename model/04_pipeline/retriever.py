@@ -109,6 +109,14 @@ _LEGAL_NORM_RULES: list[tuple[str, str]] = [
     ("indemnités",     "indemnité"),
     ("salariés",       "salarié"),
     ("employeurs",     "employeur"),
+    ("employé",        "salarié"),
+    ("employée",       "salarié"),
+    ("employés",       "salarié"),
+    ("donner",         "conclure"),
+    ("donne",          "conclure"),
+    ("donné",          "conclure"),
+    ("donnerait",      "conclure"),
+    ("entreprise",     "employeur"),
     ("contrats",       "contrat"),
     ("licenciements",  "licenciement"),
     ("héritiers",      "héritier"),
@@ -422,6 +430,16 @@ class HybridRetriever:
             effective_domains = DOMAIN_ALIASES.get(domaine, [domaine])
 
         queries = self._expand_queries(question)
+        rerank_query = queries[1] if len(queries) >= 2 else question
+
+        # Les usagers disent souvent « donner un CDI » alors que le Code emploie
+        # « conclure un contrat à durée indéterminée ». Ajouter cette formulation
+        # juridique améliore le rappel sans modifier les textes indexés.
+        if re.search(r"\bCDI\b|durée indéterminée", question, flags=re.IGNORECASE):
+            legal_cdi = "conclure contrat travail durée indéterminée conditions salarié employeur"
+            if legal_cdi not in queries:
+                queries.append(legal_cdi)
+            rerank_query = legal_cdi
 
         if self.verbose:
             print(f"\n  Domaines actifs : {effective_domains or 'tous'}")
@@ -457,7 +475,7 @@ class HybridRetriever:
         # On préfère la variante STATEMENT (queries[1] : sans mots interrogatifs) :
         # elle est plus courte que la question complète ET conserve le sujet juridique
         # clé (ex : "électeur" vs "candidat") que la variante mots-clés peut supprimer.
-        ce_query = queries[1] if len(queries) >= 2 else question
+        ce_query = rerank_query
 
         return candidates, rrf_scores, id_to_data, ce_query
 
@@ -504,7 +522,10 @@ class HybridRetriever:
             # le reranking sémantique.
             if lexical_query:
                 query_tokens = preprocess(lexical_query)
-                text_tokens = preprocess(str(meta.get("texte", "")))
+                searchable = " ".join(str(meta.get(key, "")) for key in (
+                    "texte", "titre", "chapitre", "section", "article_ref", "nom"
+                ))
+                text_tokens = preprocess(searchable)
                 if query_tokens and text_tokens:
                     text_set = set(text_tokens)
                     overlap = len(set(query_tokens) & text_set) / len(set(query_tokens))
@@ -516,6 +537,25 @@ class HybridRetriever:
                     ]
                     if any(phrase in text_joined for phrase in ngrams):
                         bonus += 0.16
+                    # Les locutions juridiques longues portent souvent plus de
+                    # sens que leurs mots isolés (CDI, garde à vue, légitime
+                    # défense, période d'essai). Les récompenser réduit les
+                    # faux positifs issus d'un seul mot commun.
+                    legal_phrases = (
+                        "contrat durée indéterminée", "garde vue", "légitime défense",
+                        "période essai", "motif réel sérieux", "mise demeure",
+                    )
+                    phrase_hits = sum(phrase in text_joined for phrase in legal_phrases if phrase in " ".join(query_tokens))
+                    bonus += min(0.12, phrase_hits * 0.06)
+                    # Pour une demande sur le CDI, les articles qui définissent
+                    # directement le CDI doivent passer avant ceux qui parlent
+                    # seulement de sa rupture ou de sa durée.
+                    query_joined = " ".join(query_tokens)
+                    if "durée indéterminée" in query_joined:
+                        if "conclu sans limitation durée" in text_joined:
+                            bonus += 0.22
+                        elif "doit être considéré comme un contrat à durée indéterminée" in searchable.lower():
+                            bonus += 0.18
                     score = min(0.99, score + bonus)
 
             articles.append({
@@ -595,7 +635,7 @@ class HybridRetriever:
         question:     str,
         domaine:      Optional[str] = None,
         top_k:        int = 10,
-        n_candidates: int = 30,
+        n_candidates: int = 60,
         score_threshold: Optional[float] = None,
     ) -> list[dict]:
         """
@@ -652,7 +692,7 @@ class HybridRetriever:
         questions:    list[str],
         domaine:      Optional[str] = None,
         top_k:        int = 10,
-        n_candidates: int = 30,
+        n_candidates: int = 60,
         score_threshold: Optional[float] = None,
     ) -> list[list[dict]]:
         """

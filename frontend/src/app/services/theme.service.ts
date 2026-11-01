@@ -2,7 +2,8 @@ import { Injectable, signal, computed, effect } from '@angular/core';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
-const STORAGE_KEY = 'theme';
+/** Clé renouvelée : tout le monde repart sur le mode sombre par défaut. */
+const STORAGE_KEY = 'justicia-theme';
 const META_COLORS = { light: '#FFFFFF', dark: '#0F0F0E' } as const;
 
 /**

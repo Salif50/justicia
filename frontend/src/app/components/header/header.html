@@ -5,8 +5,7 @@
     <span class="hd-progress" aria-hidden="true" [style.transform]="'scaleX(' + progress() + ')'"></span>
     <div class="hd-wrap hd-bar-inner">
       <a routerLink="/" class="hd-logo" (click)="closeMenu()" aria-label="JusticIA — accueil">
-        <span class="hd-mark brand-mark" aria-hidden="true"><img src="/brand/jia-mark.webp" srcset="/brand/jia-mark.webp 1x, /brand/jia-mark@2x.webp 2x" alt="" width="114" height="64" decoding="async" /></span>
-        <span class="hd-word">Justic<em>IA</em></span>
+        <img class="hd-logo-img" src="/brand/jia-mark@2x.webp" srcset="/brand/jia-mark@2x.webp 1x, /brand/jia-mark@4x.webp 2x" alt="" width="227" height="128" decoding="async" />
       </a>
 
       <nav class="hd-nav" aria-label="Navigation principale">
@@ -17,6 +16,7 @@
       </nav>
 
       <div class="hd-actions">
+        <div class="hd-tools">
         <button type="button" class="hd-theme" (click)="theme.toggle()"
                 [attr.aria-label]="theme.isDark() ? 'Passer en mode clair' : 'Passer en mode nuit'"
                 [title]="theme.isDark() ? 'Mode clair' : 'Mode nuit'">
@@ -28,14 +28,17 @@
         </button>
         @if (!isAuthenticated()) {
           <a routerLink="/login" class="hd-login">Connexion</a>
+        }
+        </div>
+        @if (!isAuthenticated()) {
           <a routerLink="/signup" class="hd-cta">
             Essayer gratuitement
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            
           </a>
         } @else {
           <a routerLink="/dashboard" class="hd-cta">
             Mon espace
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            
           </a>
         }
         <button type="button" class="hd-burger" (click)="toggleMenu()"

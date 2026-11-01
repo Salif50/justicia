@@ -304,13 +304,13 @@
 :host ::ng-deep .markdown-body {
   font-family: var(--chat-font);
   font-size: 1rem;
-  line-height: 1.7;
+  line-height: 1.62;
   color: var(--text-primary);
 
   > *:first-child { margin-top: 0; }
 
   h1, h2, h3 {
-    margin: 1.6rem 0 .7rem;
+    margin: 1.25rem 0 .55rem;
     font-family: var(--chat-font);
     font-weight: 650;
     line-height: 1.3;
@@ -322,14 +322,14 @@
   h2 { font-size: 1.16rem; }
   h3 { font-size: 1.06rem; }
 
-  h4 { margin: 1.3rem 0 .45rem; font-size: .95rem; font-weight: 600; }
+  h4 { margin: 1rem 0 .35rem; font-size: .95rem; font-weight: 600; }
 
-  p { margin: 0 0 .9rem; }
+  p { margin: 0 0 .65rem; }
 
   strong { font-weight: 600; color: var(--heading-color); }
 
-  ul, ol { margin: 0 0 1rem; padding-left: 1.3rem; }
-  li { margin-bottom: .4rem; }
+  ul, ol { margin: 0 0 .75rem; padding-left: 1.3rem; }
+  li { margin-bottom: .3rem; }
   li::marker { color: var(--text-muted); }
 
   a { color: var(--glow-cyan); text-underline-offset: 3px; }
@@ -350,7 +350,7 @@
     em { font-style: normal; }
   }
 
-  hr { margin: 1.75rem 0; border: none; border-top: 1px solid var(--divider); }
+  hr { margin: 1rem 0; border: none; border-top: 1px solid var(--divider); }
 
   code {
     padding: .1rem .35rem;

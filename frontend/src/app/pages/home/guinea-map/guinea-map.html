@@ -1,0 +1,13 @@
+<div class="gm" #host>
+  <svg class="gm-poster" viewBox="0 0 750 575" aria-hidden="true" focusable="false">
+    <path [attr.d]="silhouette" />
+  </svg>
+
+  <div class="gm-overlay" #overlay aria-hidden="true">
+    @for (c of cities; track c.name; let i = $index) {
+      <span class="gm-city" [class.is-capital]="i === 0" data-city>
+        <i></i><b>{{ c.name }}</b>
+      </span>
+    }
+  </div>
+</div>

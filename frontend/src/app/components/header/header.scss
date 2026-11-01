@@ -334,13 +334,13 @@
   &--line { background: transparent; color: var(--ink); border: 1px solid var(--line); }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1180px) {
   .hd-bar-inner, .is-scrolled .hd-bar-inner { grid-template-columns: 1fr auto; height: 64px; }
   .hd-nav, .hd-login, .hd-theme { display: none; }   // la bascule vit dans le sommaire mobile
   .hd-burger { display: inline-block; }
   .hd-sheet { inset: 64px 0 0; }
   // Sur mobile la barre est toujours lisible (verre), même en haut de l'accueil
-  .hd.is-home:not(.is-scrolled):not(.is-open) .hd-bar { background: var(--glass); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); }
+
 }
 
 @media (max-width: 480px) {
@@ -349,4 +349,98 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hd-sheet, .hd-burger span, .hd-cta svg { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Barre simple : fond de page, filet fin au défilement, liens texte.
+   ═══════════════════════════════════════════════════════════════════ */
+.hd-tools { display: flex; align-items: center; gap: 4px; }
+
+.hd-logo-img {
+  display: block;
+  height: 34px;
+  width: auto;
+  user-select: none;
+}
+
+.hd-cta-arrow { display: none; }
+
+.hd-bar,
+.hd.is-home:not(.is-scrolled):not(.is-open) .hd-bar {
+  background: rgba(var(--paper-rgb), 0.86);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+}
+
+.hd.is-scrolled .hd-bar { border-bottom-color: var(--line); }
+.hd-progress { display: none; }
+
+.hd-wrap { max-width: 1240px; padding: 0 40px; }
+.hd-bar-inner, .is-scrolled .hd-bar-inner { height: 72px; }
+
+.hd-nav {
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+
+  a {
+    position: relative;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--muted);
+
+    &:hover { color: var(--ink); background: none; }
+    &.is-active { color: var(--ink); background: none; }
+    &.is-active::after {
+      content: '';
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 4px;
+      height: 1.5px;
+      background: var(--accent);
+    }
+  }
+}
+
+.hd-theme { width: 38px; height: 38px; border: 1px solid var(--line); background: transparent; &:hover { border-color: var(--line-2); svg { transform: none; } } }
+.hd-login { font-weight: 500; &:hover { text-decoration: none; color: var(--muted); } }
+
+.hd-cta {
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+  &:hover { background: var(--ink-2); transform: none; }
+}
+
+.hd-burger { border-color: var(--line); background: transparent; }
+
+@media (max-width: 1180px) {
+  .hd-wrap { padding: 0 16px; }
+  .hd-bar-inner, .is-scrolled .hd-bar-inner { height: 64px; }
+  .hd-logo-img { height: 30px; }
+  .hd-tools { display: none; }
+}
+
+/* Le logo a un « iA » noir : petite pastille blanche en mode sombre */
+:host-context([data-theme="dark"]) .hd-logo-img {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #fff;
+  box-sizing: content-box;
 }

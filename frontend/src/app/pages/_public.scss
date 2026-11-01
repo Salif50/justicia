@@ -21,23 +21,23 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 // ── Couleurs (mode clair) ────────────────────────────────────────────
-$ink:        #0F0F0E;
-$ink-2:      #262623;
-$paper:      #F6F5F0;
-$paper-2:    #ECEBE5;
-$paper-3:    #F0EFEA;
-$white:      #FFFDF8;
-$line:       #E7E7E3;
-$line-2:     #D4D4CF;
-$text:       #1E1E1C;
-$muted:      #6A6A64;
+$ink:        #0A0A0A;
+$ink-2:      #222222;
+$paper:      #FFFFFF;
+$paper-2:    #F6F6F6;
+$paper-3:    #FAFAFA;
+$white:      #FFFFFF;
+$line:       #EAEAEA;
+$line-2:     #D6D6D6;
+$text:       #1A1A1A;
+$muted:      #666666;
 $on-ink:     #F7F7F4;
 $on-ink-mut: #A6A6A0;
 $accent:     #E8650A;   // orange de la marque (boutons, cartes d'appel)
 $accent-2:   #F58A2E;   // orange clair (hover, accent sur fond sombre)
 $accent-ink: #F08A3C;
 $accent-txt: #BE4D08;   // orange lisible en texte sur fond clair
-$accent-bg:  #FFF1E6;   // teinte orange très claire (surfaces)
+$accent-bg:  #FFF4EC;   // teinte orange très claire (surfaces)
 $seal:       #1F6B4A;
 $seal-bg:    #E6F2EB;
 
@@ -45,6 +45,8 @@ $seal-bg:    #E6F2EB;
 $display:    'Newsreader', Georgia, 'Times New Roman', serif;
 $sans:       'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 $mono:       'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+$grot:       'Bricolage Grotesque', 'Inter', -apple-system, sans-serif;
+$night:      #110F0D;
 $ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
 $ease-io:    cubic-bezier(0.65, 0, 0.35, 1);
 
@@ -60,7 +62,7 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   --accent-rgb: 232, 101, 10;
   --accent-deep: #D4580A;
   // Carte d'appel orange : texte encre dessus (6,1:1 → 4,7:1)
-  --accent-grad: linear-gradient(160deg, #F27A1F 0%, #E8650A 45%, #D4580A 100%);
+  --accent-grad: #{$accent};
   --on-accent: #0F0F0E;
   --on-accent-mut: rgba(15, 15, 14, 0.72);
   --on-accent-line: rgba(15, 15, 14, 0.22);
@@ -70,6 +72,7 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   --serif: #{$display};
   --sans: #{$sans};
   --mono: #{$mono};
+  --grot: #{$grot};
   --ease-out: #{$ease-out};
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -84,9 +87,9 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   color-scheme: light;
   --ink: #{$ink};
   --ink-2: #{$ink-2};
-  --ink-rgb: 15, 15, 14;
+  --ink-rgb: 10, 10, 10;
   --paper: #{$paper};
-  --paper-rgb: 246, 245, 240;
+  --paper-rgb: 255, 255, 255;
   --paper-2: #{$paper-2};
   --paper-3: #{$paper-3};
   --white: #{$white};
@@ -103,7 +106,7 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   --seal-bg: #{$seal-bg};
   --danger-txt: #8E1B25;
   --danger-bg: #FBEFEF;
-  --shadow-card: #{$shadow-card};
+  --shadow-card: none;
   --shadow-float: #{$shadow-float};
   --shadow-hover: #{$shadow-hover};
   --glass: rgba(255, 255, 255, 0.78);
@@ -143,18 +146,18 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
 /* Mode nuit : « encre » devient la couleur claire, le papier devient sombre */
 @mixin tokens-dark {
   color-scheme: dark;
-  --ink: #F4F4F0;
-  --ink-2: #DADAD5;
-  --ink-rgb: 244, 244, 240;
-  --paper: #0F0F0E;
-  --paper-rgb: 15, 15, 14;
-  --paper-2: #171716;
-  --paper-3: #131312;
-  --white: #1C1C1B;
-  --line: #2B2B29;
-  --line-2: #3B3B38;
-  --text: #E6E6E1;
-  --muted: #A3A39D;
+  --ink: #F5F5F5;
+  --ink-2: #DCDCDC;
+  --ink-rgb: 245, 245, 245;
+  --paper: #0A0A0A;
+  --paper-rgb: 10, 10, 10;
+  --paper-2: #121212;
+  --paper-3: #0E0E0E;
+  --white: #121212;
+  --line: #232323;
+  --line-2: #333333;
+  --text: #E6E6E6;
+  --muted: #9C9C9C;
   --on-ink: #0F0F0E;
   --on-ink-mut: #5E5E59;
   --accent-ink: #E8650A;
@@ -164,7 +167,7 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   --seal-bg: #16301F;
   --danger-txt: #F08A8F;
   --danger-bg: #2E1517;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 40px -28px rgba(0, 0, 0, 0.6);
+  --shadow-card: none;
   --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.35), 0 32px 64px -32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
   --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 28px 56px -28px rgba(0, 0, 0, 0.7);
   --glass: rgba(15, 15, 14, 0.74);
@@ -216,37 +219,10 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
 }
 
 /* Lumière neutre : deux nappes très discrètes qui dérivent lentement. */
-@mixin aurora($opacity: 1) {
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -20% -10%;
-    z-index: 0;
-    pointer-events: none;
-    opacity: $opacity;
-    background:
-      radial-gradient(46% 50% at 20% 10%, rgba(var(--ink-rgb), 0.05), transparent 70%),
-      radial-gradient(40% 44% at 86% 24%, rgba(var(--accent-rgb), 0.06), transparent 70%);
-    filter: blur(36px);
-    animation: pubAurora 26s ease-in-out infinite alternate;
-  }
-}
-
-/* Trame de points très discrète (papier quadrillé) */
-@mixin dotgrid($color: rgba(var(--ink-rgb), 0.08), $size: 28px) {
-  background-image: radial-gradient($color 1px, transparent 1.2px);
-  background-size: $size $size;
-  -webkit-mask-image: radial-gradient(70% 70% at 50% 40%, #000 30%, transparent 100%);
-  mask-image: radial-gradient(70% 70% at 50% 40%, #000 30%, transparent 100%);
-}
-
-/* Quadrillage de lignes fines (papier technique) */
-@mixin linegrid($color: rgba(var(--ink-rgb), 0.06), $size: 72px) {
-  background-image:
-    linear-gradient(to right, $color 1px, transparent 1px),
-    linear-gradient(to bottom, $color 1px, transparent 1px);
-  background-size: $size $size;
-}
+/* Décors désactivés : le site public reste sobre (fonds unis, sans dégradé). */
+@mixin aurora($opacity: 1) {}
+@mixin dotgrid($color: null, $size: null) {}
+@mixin linegrid($color: null, $size: null) {}
 
 @mixin primitives {
   @keyframes pubAurora {
@@ -264,75 +240,74 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
     @media (max-width: 480px) { padding: 0 16px; }
   }
 
-  /* En-tête de page intérieure : même calme que l'accueil */
+  /* En-tête de page intérieure : sobre, sur le fond de page */
   .pub-hero {
     position: relative;
+    padding: 156px 0 72px;
     background: var(--paper);
     color: var(--text);
-    padding: 128px 0 56px;
     border-bottom: 1px solid var(--line);
 
-    @media (max-width: 720px) { padding: 108px 0 40px; }
+    @media (max-width: 720px) { padding: 116px 0 48px; }
   }
 
   .pub-hero-title {
-    font-family: $sans;
+    font-family: $grot;
     font-weight: 600;
-    font-size: clamp(2rem, 4vw, 2.75rem);
-    line-height: 1.15;
-    letter-spacing: -0.03em;
+    font-size: clamp(2.4rem, 5.2vw, 4.6rem);
+    line-height: 1;
+    letter-spacing: -0.045em;
     color: var(--ink);
-    margin: 0 0 16px;
-    max-width: 28ch;
+    margin: 0 0 24px;
+    max-width: 18ch;
     text-wrap: balance;
 
-    em { font-style: normal; font-weight: 600; color: inherit; }
+    em { font-style: normal; font-weight: 600; color: var(--muted); }
   }
 
   .pub-hero-lead {
-    font-size: 1.125rem;
-    line-height: 1.7;
+    font-size: clamp(1.05rem, 1.3vw, 1.2rem);
+    line-height: 1.6;
     color: var(--muted);
-    max-width: 620px;
+    max-width: 600px;
     margin: 0;
   }
 
-  /* Étiquette mono façon référence d'article : « § 02 — TARIFS » */
+  /* Repère discret : point orange + libellé */
   .pub-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    margin: 0 0 20px;
     font-family: $sans;
     font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
     color: var(--muted);
-    margin: 0 0 12px;
 
-    // Conservé pour compatibilité : sur fond clair, même rendu
-    &--light { color: var(--muted); }
-    // Pastille (sur les héros)
-    &--pill {
-      padding: 7px 14px 7px 12px;
-      border-radius: 999px;
-      background: var(--white);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow-card);
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
     }
+
+    &--light, &--pill { color: var(--muted); }
   }
 
   .pub-title {
-    font-family: $sans;
+    font-family: $grot;
     font-weight: 600;
-    font-size: clamp(1.75rem, 2.6vw, 2.125rem);
-    line-height: 1.2;
-    letter-spacing: -0.03em;
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
     color: var(--ink);
-    margin: 0 0 12px;
+    margin: 0 0 16px;
     text-wrap: balance;
 
-    em { font-style: normal; font-weight: 600; color: inherit; }
+    em { font-style: normal; font-weight: 600; color: var(--muted); }
   }
 
   .pub-lead {
@@ -364,16 +339,15 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
                 transform 0.3s $ease-out, box-shadow 0.3s $ease-out;
 
     svg { transition: transform 0.3s $ease-out; }
-    &:hover { transform: translateY(-2px); svg { transform: translateX(3px); } }
+    &:hover { svg { transform: translateX(3px); } }
     &:active { transform: translateY(0) scale(0.98); }
     &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
     // Action principale : orange de la marque, texte encre (6,1:1)
     &--accent, &--dark {
-      background: var(--accent);
-      color: #0F0F0E;
-      box-shadow: 0 10px 24px -14px rgba(var(--accent-rgb), 0.6);
-      &:hover { background: var(--accent-2); box-shadow: 0 16px 32px -16px rgba(var(--accent-rgb), 0.65); }
+      background: var(--ink);
+      color: var(--paper);
+      &:hover { background: var(--ink-2); }
     }
     // Action secondaire : encre pleine
     &--ink {
@@ -410,15 +384,11 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
   .pub-card {
     background: var(--white);
     border: 1px solid var(--line);
-    border-radius: 20px;
+    border-radius: 16px;
     box-shadow: var(--shadow-card);
     transition: transform 0.35s $ease-out, box-shadow 0.35s $ease-out, border-color 0.25s;
 
-    &--hover:hover {
-      transform: translateY(-4px);
-      border-color: rgba(var(--ink-rgb), 0.14);
-      box-shadow: var(--shadow-hover);
-    }
+    &--hover:hover { border-color: var(--line-2); }
   }
 
   /* Surface « feuille » : bande qui se superpose à la précédente avec de grands arrondis */
@@ -428,8 +398,8 @@ $shadow-hover: 0 2px 4px rgba(15, 15, 14, 0.05), 0 28px 56px -28px rgba(15, 15, 
     margin-top: -44px;
     @media (max-width: 720px) { border-radius: 28px 28px 0 0; margin-top: -28px; }
 
-    &--sand    { background: var(--paper-2); }
-    &--apricot { background: linear-gradient(180deg, var(--accent-bg) 0%, var(--paper) 100%); }
+    &--sand    { background: var(--paper); border-top: 1px solid var(--line); }
+    &--apricot { background: var(--paper); }
     &--cream   { background: var(--paper); }
   }
 

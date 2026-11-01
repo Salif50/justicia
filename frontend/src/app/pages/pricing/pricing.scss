@@ -33,19 +33,17 @@
   padding: 44px 36px 36px;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 24px 48px -28px rgba(var(--ink-rgb), 0.3);
+  border-radius: 16px;
 
   &.featured {
-    background: var(--accent-grad);
-    border-color: var(--accent-deep);
-    color: var(--on-accent);
-    box-shadow: 0 32px 64px -32px rgba(var(--accent-rgb), 0.55);
+    background: var(--white);
+    border-color: var(--ink);
+    color: var(--text);
 
-    .plan-name, .amount, .currency { color: var(--on-accent); }
-    .plan-description, .price-period { color: var(--on-accent-mut); }
-    .card-price { border-color: var(--on-accent-line); }
-    .features-list li { color: var(--on-accent); svg { color: var(--on-accent); } }
+    .plan-name, .amount, .currency { color: var(--ink); }
+    .plan-description, .price-period { color: var(--muted); }
+    .card-price { border-color: var(--line); }
+    .features-list li { color: var(--text); svg { color: var(--accent); } }
   }
 
   @media (max-width: 720px) { padding: 40px 24px 28px; }
@@ -61,9 +59,9 @@
   gap: 6px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: #0F0F0E;
-  color: #F7F7F4;
-  border: 1px solid #0F0F0E;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 500;
@@ -172,10 +170,10 @@
   &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
   &.btn-featured {
-    background: #0F0F0E;
-    border-color: #0F0F0E;
-    color: #F7F7F4;
-    &:hover { background: #262623; color: #F7F7F4; }
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+    &:hover { background: var(--ink-2); color: var(--paper); }
   }
 }
 
@@ -233,7 +231,7 @@
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--white);
-  box-shadow: 0 24px 48px -28px rgba(var(--ink-rgb), 0.3);
+  box-shadow: none;
   text-align: center;
 
   @media (max-width: 720px) { padding: 32px 22px; }
@@ -306,3 +304,6 @@
   .btn-pricing svg { transition: none; }
   .pricing-card.is-skeleton .sk { animation: none; }
 }
+
+/* Les cartes chevauchent l’en-tête : pas de filet sous le héros sur cette page */
+.pub-hero { border-bottom: 0; }

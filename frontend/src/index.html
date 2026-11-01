@@ -11,7 +11,7 @@
     /* Thème avant le premier rendu : la préférence stockée, sinon le mode nuit. */
     (function () {
       try {
-        var m = localStorage.getItem('theme');
+        var m = localStorage.getItem('justicia-theme');
         var dark = m !== 'light';
         var t = dark ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', t);
@@ -31,33 +31,78 @@
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
-    /* Sceau de démarrage : remplacé par l'application dès qu'elle démarre */
-    .boot{position:fixed;inset:0;display:grid;place-items:center;background:#FFFFFF}
-    [data-theme="dark"] .boot{background:#0F0F0E}
-    [data-theme="dark"] .boot-track{stroke:rgba(244,244,240,.12)}
-    [data-theme="dark"] .boot-tile{background:#1C1C1B;box-shadow:inset 0 0 0 1px rgba(244,244,240,.08),0 18px 36px -18px rgba(0,0,0,.8)}
+    html,body{margin:0;background:#F6F5F0}
+    html[data-theme="dark"],html[data-theme="dark"] body{background:#0F0F0E}
+    .boot{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:24px;background:#F6F5F0;color:#0F0F0E;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+    html[data-theme="dark"] .boot{background:#0F0F0E;color:#F4F4F0}
+    .boot-bar{position:absolute;top:0;left:0;right:0;height:2px;background:rgba(15,15,14,.06)}
+    html[data-theme="dark"] .boot-bar{background:rgba(244,244,240,.08)}
+    .boot-bar i{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,#E8650A,#FFB066);animation:boot-bar 6s cubic-bezier(.08,.7,.2,1) forwards}
+    .boot-stage{display:flex;flex-direction:column;align-items:center;gap:18px;animation:boot-in .5s cubic-bezier(.22,1,.36,1) both}
     .boot-seal{position:relative;width:132px;height:132px;display:grid;place-items:center}
-    .boot-seal svg{position:absolute;inset:0;width:100%;height:100%}
+    .boot-seal svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
     .boot-seal circle{fill:none}
-    .boot-track{stroke:rgba(20,18,16,.08);stroke-width:1.5}
-    .boot-arc{stroke:#E8650A;stroke-width:3;stroke-linecap:round;stroke-dasharray:60 280;transform-origin:center;animation:boot-spin 1.4s linear infinite}
-    .boot-tile{width:84px;height:84px;border-radius:22px;background:#FFFFFF;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(20,18,16,.07),0 18px 36px -18px rgba(20,18,16,.45)}
-    .boot-tile img{width:78%;height:auto;display:block}
+    .boot-track{stroke:rgba(15,15,14,.08);stroke-width:1.5}
+    .boot-ticks{stroke:rgba(15,15,14,.18);stroke-width:5;stroke-dasharray:1 13.137;transform-origin:center;transform:scale(.86);animation:boot-ticks 28s linear infinite}
+    .boot-arc{stroke:#E8650A;stroke-width:2.5;stroke-linecap:round;stroke-dasharray:52 288;transform-origin:center;filter:drop-shadow(0 0 4px rgba(232,101,10,.4));animation:boot-spin 1.35s linear infinite,boot-sweep 2.6s ease-in-out infinite}
+    html[data-theme="dark"] .boot-track{stroke:rgba(244,244,240,.1)}
+    html[data-theme="dark"] .boot-ticks{stroke:rgba(244,244,240,.22)}
+    .boot-tile{width:80px;height:80px;border-radius:22px;background:#FFFDF8;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(15,15,14,.07),0 18px 36px -18px rgba(15,15,14,.4);animation:boot-breathe 2.8s ease-in-out infinite}
+    html[data-theme="dark"] .boot-tile{background:#1C1C1B;box-shadow:inset 0 0 0 1px rgba(244,244,240,.08),0 18px 36px -18px rgba(0,0,0,.75)}
+    .boot-tile img{width:76%;height:auto;display:block}
+    .boot-word{margin:2px 0 0;font-size:1.5rem;font-weight:600;letter-spacing:-.03em;line-height:1}
+    .boot-word em{font-style:normal;color:#BE4D08}
+    html[data-theme="dark"] .boot-word em{color:#F58A2E}
+    .boot-kicker{margin:0;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6A6A64}
+    html[data-theme="dark"] .boot-kicker{color:#A3A39D}
+    .boot-status{position:relative;margin:2px 0 0;height:1.35em;width:22ch;overflow:hidden;font-size:13px;color:#6A6A64;text-align:center}
+    html[data-theme="dark"] .boot-status{color:#A3A39D}
+    .boot-status span{position:absolute;inset:0;opacity:0;animation:boot-msg 4.8s both infinite}
+    .boot-status span:nth-child(2){animation-delay:1.6s}
+    .boot-status span:nth-child(3){animation-delay:3.2s}
+    .boot-meter{width:120px;height:1px;background:rgba(15,15,14,.1);overflow:hidden}
+    html[data-theme="dark"] .boot-meter{background:rgba(244,244,240,.12)}
+    .boot-meter i{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:#E8650A;animation:boot-bar 6s cubic-bezier(.08,.7,.2,1) forwards}
+    @keyframes boot-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
     @keyframes boot-spin{to{transform:rotate(360deg)}}
-    @media (prefers-reduced-motion:reduce){.boot-arc{animation:none;stroke-dasharray:90 250}}
+    @keyframes boot-ticks{to{transform:scale(.86) rotate(360deg)}}
+    @keyframes boot-sweep{0%,100%{stroke-dasharray:28 312}50%{stroke-dasharray:140 200}}
+    @keyframes boot-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+    @keyframes boot-bar{0%{transform:scaleX(0)}18%{transform:scaleX(.38)}52%{transform:scaleX(.7)}100%{transform:scaleX(.9)}}
+    @keyframes boot-msg{0%,6%{opacity:0;transform:translateY(7px)}12%,28%{opacity:1;transform:none}34%,100%{opacity:0;transform:translateY(-7px)}}
+    @media (prefers-reduced-motion:reduce){
+      .boot-stage{animation:none}
+      .boot-arc{animation:none;stroke-dasharray:90 250;transform:rotate(-90deg)}
+      .boot-ticks,.boot-tile{animation:none}
+      .boot-bar i,.boot-meter i{animation:none;transform:scaleX(.55)}
+      .boot-status span{animation:none;opacity:0}
+      .boot-status span:first-child{opacity:1;transform:none}
+    }
   </style>
 </head>
 <body>
   <app-root>
     <div class="boot" role="status" aria-label="Chargement de JusticIA">
-      <div class="boot-seal">
-        <svg viewBox="0 0 120 120" aria-hidden="true">
-          <circle class="boot-track" cx="60" cy="60" r="54" />
-          <circle class="boot-arc" cx="60" cy="60" r="54" />
-        </svg>
-        <span class="boot-tile">
-          <img src="/brand/jia-mark@2x.webp" srcset="/brand/jia-mark@2x.webp 1x, /brand/jia-mark@4x.webp 2x" alt="" width="227" height="128" />
-        </span>
+      <div class="boot-bar" aria-hidden="true"><i></i></div>
+      <div class="boot-stage">
+        <div class="boot-seal" aria-hidden="true">
+          <svg viewBox="0 0 120 120">
+            <circle class="boot-track" cx="60" cy="60" r="54" />
+            <circle class="boot-ticks" cx="60" cy="60" r="54" />
+            <circle class="boot-arc" cx="60" cy="60" r="54" />
+          </svg>
+          <span class="boot-tile">
+            <img src="/brand/jia-mark@2x.webp" srcset="/brand/jia-mark@2x.webp 1x, /brand/jia-mark@4x.webp 2x" alt="" width="227" height="128" />
+          </span>
+        </div>
+        <p class="boot-word">Justic<em>IA</em></p>
+        <p class="boot-kicker">République de Guinée · 33 textes</p>
+        <p class="boot-status" aria-hidden="true">
+          <span>Ouverture du corpus officiel</span>
+          <span>Lecture des articles indexés</span>
+          <span>Préparation de la session</span>
+        </p>
+        <div class="boot-meter" aria-hidden="true"><i></i></div>
       </div>
     </div>
   </app-root>

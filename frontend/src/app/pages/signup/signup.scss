@@ -198,7 +198,7 @@
   bottom: -28px;                   // colle au bas de la zone scrollable (compense le padding)
   margin: 20px -28px -28px;
   padding: 16px 28px 24px;
-  background: linear-gradient(180deg, rgba(var(--paper-rgb), 0) 0%, var(--white) 32%);
+  background: var(--white);
   text-align: center;
 
   @media (max-width: 600px) {
@@ -215,8 +215,8 @@
   gap: 10px;
   min-height: 48px;
   padding: 0 28px;
-  background: var(--accent);
-  color: #0F0F0E;
+  background: var(--ink);
+  color: var(--paper);
   border: none;
   border-radius: 999px;
   font-family: inherit;
@@ -225,7 +225,7 @@
   cursor: pointer;
   transition: background 0.2s;
 
-  &:hover { background: var(--accent-2); }
+  &:hover { background: var(--ink-2); }
   &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
   @media (max-width: 600px) { width: 100%; }

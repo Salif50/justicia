@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
-import { Header } from '../../components/header/header';
 
 @Component({
   selector: 'app-connexion',
-  imports: [CommonModule, FormsModule, RouterLink, Header],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -7,6 +7,7 @@ import { Footer } from '../../components/footer/footer';
 import { ContentService, Testimonial, Partner, SiteConfig } from '../../services/content';
 import { environment } from '../../../environments/environment';
 import { Reveal } from '../../core/reveal.directive';
+import { GuineaMap } from './guinea-map/guinea-map';
 
 const LEDGER = [
   { label: 'Textes officiels', value: 33 },
@@ -66,6 +67,18 @@ const AUDIENCES = [
   { title: 'Institutions', text: 'Des réponses homogènes et traçables pour les agents.' },
 ];
 
+/** Textes affichés en orbite autour de la question. */
+const ORBIT = [
+  { abbr: 'CP',  label: 'Code pénal' },
+  { abbr: 'CC',  label: 'Code civil' },
+  { abbr: 'CT',  label: 'Code du travail' },
+  { abbr: 'Cst', label: 'Constitution' },
+  { abbr: 'CPP', label: 'Procédure pénale' },
+  { abbr: 'CM',  label: 'Code minier' },
+  { abbr: 'CGI', label: 'Impôts' },
+  { abbr: 'CF',  label: 'Foncier' },
+];
+
 /** Sommaire du corpus (nombre d’articles par texte, tel qu’affiché dans l’Encyclopédie). */
 const CORPUS = [
   { titre: 'Code des activités économiques', annee: 1994, articles: 2010 },
@@ -80,9 +93,11 @@ const CORPUS = [
   { titre: 'Constitution de la République', annee: 2025, articles: 201 },
 ];
 
+function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
+
 @Component({
   selector: 'app-accueil',
-  imports: [RouterLink, Header, Footer, FormsModule, Reveal],
+  imports: [RouterLink, Header, Footer, FormsModule, Reveal, GuineaMap],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -92,6 +107,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   readonly tools = TOOLS;
   readonly audiences = AUDIENCES;
   readonly corpus = CORPUS;
+  readonly corpusMax = Math.max(...CORPUS.map((c) => c.articles));
+  readonly orbitTiles = ORBIT;
+
+  @ViewChild('map') private map?: GuineaMap;
+  @ViewChild('hx') private hxRef?: ElementRef<HTMLElement>;
+  @ViewChild('orbit') private orbitRef?: ElementRef<HTMLElement>;
+  private scrollRaf = 0;
   readonly flowCodes = FLOW_CODES;
   readonly flowStep = signal(0);
   readonly flowQuestion = signal(FLOW_QUESTION);
@@ -132,7 +154,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     if (typeof window === 'undefined') return;
+    this.zone.runOutsideAngular(() => {
+      window.addEventListener('scroll', this.onScroll, { passive: true });
+      window.addEventListener('resize', this.onScroll, { passive: true });
+    });
+    this.applyScroll();
     if (!this.motionOk) {
+
       this.watchLive();
       return;
     }
@@ -148,8 +176,38 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.toastTimer) clearTimeout(this.toastTimer);
+    cancelAnimationFrame(this.scrollRaf);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.onScroll);
+      window.removeEventListener('resize', this.onScroll);
+    }
     this.stopFlow();
     this.stopLive();
+  }
+
+  /* ── Défilement : héros piloté + orbite ─────────────────────────── */
+  private onScroll = () => {
+    if (this.scrollRaf) return;
+    this.scrollRaf = requestAnimationFrame(() => {
+      this.scrollRaf = 0;
+      this.applyScroll();
+    });
+  };
+
+  private applyScroll() {
+    const vh = window.innerHeight;
+    // Héros : la carte s'incline doucement à mesure qu'on le quitte.
+    const hx = this.hxRef?.nativeElement;
+    if (hx) {
+      const r = hx.getBoundingClientRect();
+      this.map?.setProgress(clamp01(-r.top / Math.max(1, r.height)));
+    }
+    const orbit = this.orbitRef?.nativeElement;
+    if (orbit) {
+      const r = orbit.getBoundingClientRect();
+      const q = (vh - r.top) / (vh + r.height);
+      orbit.style.setProperty('--spin', `${(q * 140).toFixed(2)}deg`);
+    }
   }
 
   pauseFlow() { this.flowPaused = true; }
