@@ -75,6 +75,7 @@ _LEGAL_STEMS = (
     "garde a vue", "police", "gendarm", "arrest", "detention", "vol ", "escroquer", "fraude",
     "harcel", "violence", "viol", "agression", "diffamation", "corruption",
     "societe", "sarl", "entreprise", "commerc", "faillite", "creance", "dette", "creancier",
+    "facture", "impaye", "rembours", "recouvr", "debiteur", "redevance", "journal officiel", "arrete ",
     "cheque", "impot", "fiscal", "taxe", "douane", "minier", "mines", "permis minier",
     "responsabilit", "dommage", "prejudice", "assurance", "accident",
     "administrati", "fonctionnaire", "election", "obligation", "mes droits", "est ce legal",
@@ -110,7 +111,10 @@ _ABOUT = re.compile(
     r"a quoi (tu sers|sert justicia|servez vous)|tu es une ia|es tu (une ia|un robot|humain)|tu es un robot|"
     r"quel(le)?s? (sont )?(tes|vos) (capacites|fonctions|competences|limites)|"
     r"(tarif|tarifs|prix|abonnement|abonnements|formule|formules|plan pro|offre|offres|gratuit|payant|"
-    r"combien (ca coute|coute)|moyen de paiement|orange money|payer)|"
+    r"combien (ca coute|coute)|moyen de paiement|orange money|"
+    # « payer » seul désignait aussi une dette (« un client refuse de payer ma facture ») :
+    # seuls les paiements de la plateforme relèvent de cette catégorie.
+    r"payer (mon |l |votre |le |son )?(abonnement|forfait|plan|justicia)|payer (en ligne|par carte|par orange|par mobile))|"
     r"(qui (t a|vous a) (cree|developpe|concu))|tes sources|vos sources|d ou viennent)"
 )
 
@@ -351,6 +355,8 @@ type :
   Ne demande jamais « de quel pays » : il s'agit toujours du droit guinéen.
 - "about" : question sur JusticIA, ses fonctions ou ses tarifs.  "greeting" : pure politesse.
 - "offtopic" : rien à voir avec le droit (cuisine, sport, code informatique, santé, devoirs…).
+  Une question sur un texte guinéen (loi, décret, arrêté, Journal officiel), une taxe, une redevance, une
+  institution ou une procédure est TOUJOURS "legal", même si le texte est très récent.
 
 search_query (si legal) : 6 à 20 mots-clés pour un moteur de recherche dans les codes guinéens.
 TRADUIS le langage courant dans le VOCABULAIRE DES TEXTES DE LOI et ajoute les notions juridiques voisines
@@ -360,6 +366,8 @@ Exemples :
 - « mon patron m'a renvoyé sans raison » → « licenciement abusif motif légitime indemnité préavis employeur travailleur »
 - « mon mari veut prendre une 2e femme sans mon accord » → « polygamie consentement épouse mariage option monogamie »
 - « mon frère refuse de partager l'héritage » → « succession partage héritiers indivision part réservataire »
+- « quel capital pour créer une SA ? » → « capital social minimum société anonyme actions libération apports actionnaires »
+- « un client ne me paie pas sa facture » → « recouvrement créance injonction de payer opposition saisie débiteur créancier »
 Tiens compte de l'historique pour les questions de suivi. Corrige les fautes de frappe.
 N'invente JAMAIS de numéro d'article, de peine ou de montant.
 topic : le sujet en 2 à 6 mots.
@@ -373,11 +381,21 @@ du type « avez-vous besoin d'aide juridique ? ».
 """
 
 
+def _today_context() -> str:
+    """Le modèle léger croit souvent que 2026 est « dans le futur » : on lui donne la date du jour."""
+    from datetime import date
+    mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre",
+            "octobre", "novembre", "décembre"]
+    d = date.today()
+    return (f"Date du jour : {d.day} {mois[d.month - 1]} {d.year}. Les textes publiés jusqu'à cette date "
+            "(lois, décrets, arrêtés, Journal officiel) sont du droit en vigueur, pas des textes « futurs ».\n\n")
+
+
 async def triage(message: str, history: list[dict] | None = None) -> Triage | None:
     """Analyse rapide (modèle léger). None si indisponible : on garde alors les règles."""
-    recent = ""
+    recent = _today_context()
     if history:
-        recent = "Historique récent :\n" + "\n".join(
+        recent += "Historique récent :\n" + "\n".join(
             f"{'Utilisateur' if h['role'] == 'user' else 'JusticIA'} : {h['content'][:300]}" for h in history[-4:]
         ) + "\n\n"
     try:
@@ -408,7 +426,10 @@ async def triage(message: str, history: list[dict] | None = None) -> Triage | No
 
 _STRONG_LEGAL = re.compile(
     r"\b(lois?|legal|legale|legaux|illegal\w*|juridiques?|legislation|reglementation|droit guineen|"
-    r"tribunal|juge|avocat|plainte|code (?:penal|civil|du travail|de travail|minier|foncier|electoral|de l enfant))\b"
+    r"tribunal|juge|avocat|plainte|code (?:penal|civil|du travail|de travail|minier|foncier|electoral|de l enfant)|"
+    # Textes et prélèvements publics : toujours du droit, même s'ils sont récents
+    r"decrets?|arretes?|ordonnances?|journal officiel|redevances?|taxes?|impots?|droits de douane|ohada|"
+    r"acte uniforme|jurisprudence|cour supreme|ccja)\b"
 )
 _ARTICLE_REF = re.compile(r"\bart(?:icle)?s?\.?\s*(?:premier|\d)", re.I)
 _TEXT_NAMES = re.compile(

@@ -293,6 +293,8 @@ _LEGAL_SYNONYMS: dict[str, list[str]] = {
     "contrat":         ["convention", "accord", "engagement", "obligation"],
     "terrain":         ["fonds", "parcelle", "propriété foncière", "immeuble"],
     "societe":         ["entreprise", "personne morale", "SARL", "SA", "SNC"],
+    # Vocabulaire des Actes uniformes : « capital social », « capital social minimum »
+    "capital":         ["capital social", "apports"],
     "fonctionnaire":   ["agent public", "agent de l'État", "employé public"],
     "salaire":         ["rémunération", "traitement", "appointements", "SMIG"],
 }
@@ -1576,6 +1578,7 @@ class JusticIAPipeline:
                         retrieval_question, "procedure") or _keyword_in(retrieval_question, "porter plainte")
                     if not asks_procedure:
                         articles.sort(key=lambda a: "PROCEDURE" in _normalize_for_keywords(a.get("nom_doc", "")).upper())
+                    articles = _apply_ohada_precedence(articles)
                     for rank, art in enumerate(articles):
                         art["_rank"] = rank
                     if self.verbose:
@@ -1714,6 +1717,29 @@ class JusticIAPipeline:
             reponse += confidence_note
 
         return reponse.rstrip() + RESPONSE_FOOTER, articles + [decision_source(d) for d in decisions]
+
+
+# ── Primauté du droit OHADA ───────────────────────────────────────────────────
+# « Les actes uniformes sont directement applicables et obligatoires dans les Etats Parties,
+# nonobstant toute disposition contraire de droit interne, antérieure ou postérieure. »
+# (art. 10 du Traité OHADA de Port-Louis, doc_2862). Quand le contrôle de pertinence retient à la
+# fois des Actes uniformes et le Code des activités économiques de 1992 (antérieur à l'adhésion
+# de la Guinée), la question relève du droit OHADA : le Code de 1992 n'est pas cité.
+SUPERSEDED_BY_OHADA = {"doc_001"}
+
+
+def _is_uniform_act(article: dict) -> bool:
+    return "ACTE UNIFORME" in (article.get("type_doc") or "").upper() or \
+        "Acte uniforme OHADA" in (article.get("nom_doc") or "")
+
+
+def _apply_ohada_precedence(articles: list[dict]) -> list[dict]:
+    if not any(_is_uniform_act(a) for a in articles):
+        return articles
+    kept = [a for a in articles if a.get("doc_id") not in SUPERSEDED_BY_OHADA or a.get("_exact")]
+    if len(kept) != len(articles):
+        _LOGGER.info("ohada_precedence dropped=%s", len(articles) - len(kept))
+    return kept
 
 
 # ── Jurisprudence ─────────────────────────────────────────────────────────────

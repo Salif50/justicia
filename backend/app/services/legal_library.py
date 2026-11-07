@@ -112,7 +112,7 @@ def metadata() -> list[dict]:
 
 
 def articles_of(doc_id: str) -> list[dict]:
-    if not re.fullmatch(r"doc_\d{3}", doc_id or ""):
+    if not re.fullmatch(r"doc_\d{3,4}", doc_id or ""):
         return []
     return _load(_corpus() / "articles" / f"{doc_id}.json", [])
 
@@ -155,53 +155,154 @@ def _citations_index() -> dict[str, Counter]:
     return idx
 
 
-def catalog() -> dict:
+FAMILY_LABELS = {
+    "code": "Codes et lois",
+    "loi": "Lois et ordonnances",
+    "constitution": "Constitution",
+    "traite": "Traités et règlements",
+    "convention": "Conventions internationales",
+    "reglementaire": "Décrets et arrêtés réglementaires",
+    "organisation": "Organisation de l'administration",
+    "ratification": "Ratifications d'accords",
+    "promulgation": "Décrets de promulgation",
+    "individuel": "Actes individuels",
+}
+# Familles affichées dans l'onglet principal (le reste : onglet « Décrets et arrêtés »)
+MAIN_FAMILIES = {"code", "loi", "constitution", "traite", "convention"}
+ACT_FAMILIES = ["reglementaire", "organisation", "individuel", "ratification", "promulgation"]
+QUALITY_LABELS = {
+    "incoherent": "Le corps du texte ne correspond pas à son titre sur la source",
+    "debut_manquant": "Le début du texte manque sur la source",
+    "vide": "Texte vide sur la source",
+}
+
+
+def _item(m: dict, by_id: dict, cites: dict, n_articles: int) -> dict:
+    statut = m.get("statut", "en_vigueur")
+    repl = by_id.get(m.get("remplace_par") or "")
+    famille = m.get("famille") or "code"
+    typ = (m.get("type") or "")
+    if "OHADA" in typ or (famille == "traite" and "OHADA" in (m.get("nom") or "") + (m.get("titre_court") or "")) \
+            or "CCJA" in (m.get("nom") or ""):
+        categorie = "Droit OHADA"
+    elif "GUIDE" in typ:
+        categorie = "Guides pratiques"
+    elif famille != "code":
+        categorie = FAMILY_LABELS.get(famille, "Autres textes")
+    else:
+        categorie = CATEGORY_BY_DOMAIN.get(m.get("domaine", ""), "Autres textes")
+    indexe = m.get("indexe", True) is not False and statut == "en_vigueur"
+    return {
+        "doc_id": m["doc_id"],
+        "nom": _clean_name(m.get("nom", "")),
+        "type": (m.get("nature") or typ).replace("DECRETS", "DÉCRET").replace("DECRET", "DÉCRET"),
+        "famille": famille,
+        "famille_label": FAMILY_LABELS.get(famille, ""),
+        "numero": (m.get("numero") or "").strip(),
+        "emetteur": m.get("emetteur", ""),
+        "annee": _year(m),
+        "date": m.get("date_promulgation") or "",
+        "domaine": m.get("domaine", ""),
+        "categorie": categorie,
+        "articles": n_articles,
+        "statut": statut,
+        "statut_label": STATUS_LABELS.get(statut, statut),
+        "statut_source": m.get("statut_source", ""),
+        "remplace_par": {"doc_id": repl["doc_id"], "nom": _clean_name(repl.get("nom", ""))} if repl else None,
+        "source": m.get("source_officielle", ""),
+        "source_url": m.get("url_source") or m.get("url_droitguineen") or "",
+        "note": m.get("note", ""),
+        "indexe": indexe,
+        "qualite": [QUALITY_LABELS.get(q, q) for q in (m.get("qualite") or [])],
+        "journal_officiel": m.get("journal_officiel") or [],
+        "decisions_citant": sum(cites.get(m["doc_id"], Counter()).values()),
+    }
+
+
+def _items() -> list[dict]:
+    """Fiches de tous les textes (calculées une fois par version du catalogue)."""
     metas = metadata()
+    hit = _cache.get("__items__")
+    if hit and hit[0] == id(metas):
+        return hit[1]
     cites = _citations_index()
     by_id = {m["doc_id"]: m for m in metas}
-    items = []
-    for m in metas:
-        arts = articles_of(m["doc_id"])
-        statut = m.get("statut", "en_vigueur")
-        repl = by_id.get(m.get("remplace_par") or "")
-        items.append({
-            "doc_id": m["doc_id"],
-            "nom": _clean_name(m.get("nom", "")),
-            "type": (m.get("type") or "").replace("DECRETS", "DÉCRET").replace("DECRET", "DÉCRET"),
-            "numero": (m.get("numero") or "").strip(),
-            "annee": _year(m),
-            "date": m.get("date_promulgation") or "",
-            "domaine": m.get("domaine", ""),
-            "categorie": "Droit OHADA" if "OHADA" in (m.get("type") or "") else
-                         ("Guides pratiques" if "GUIDE" in (m.get("type") or "") else
-                          CATEGORY_BY_DOMAIN.get(m.get("domaine", ""), "Autres textes")),
-            "articles": len(arts),
-            "statut": statut,
-            "statut_label": STATUS_LABELS.get(statut, statut),
-            "statut_source": m.get("statut_source", ""),
-            "remplace_par": {"doc_id": repl["doc_id"], "nom": _clean_name(repl.get("nom", ""))} if repl else None,
-            "source": m.get("source_officielle", ""),
-            "source_url": m.get("url_source") or m.get("url_droitguineen") or "",
-            "note": m.get("note", ""),
-            "decisions_citant": sum(cites.get(m["doc_id"], Counter()).values()),
-        })
+    items = [_item(m, by_id, cites, len(articles_of(m["doc_id"]))) for m in metas]
+    with _lock:
+        _cache["__items__"] = (id(metas), items)
+    return items
+
+
+def item(doc_id: str) -> Optional[dict]:
+    return next((i for i in _items() if i["doc_id"] == doc_id), None)
+
+
+def catalog() -> dict:
+    items = [i for i in _items() if i["famille"] in MAIN_FAMILIES]
     order = {"en_vigueur": 0, "historique": 1, "projet": 2, "abroge": 3, "doublon": 4}
     items.sort(key=lambda x: (order.get(x["statut"], 9), x["categorie"], x["nom"].lower()))
+    all_items = _items()
+    counts = Counter(i["famille"] for i in all_items)
     return {
         "documents": items,
-        "total_articles": sum(i["articles"] for i in items if i["statut"] == "en_vigueur"),
-        "total_documents": sum(1 for i in items if i["statut"] == "en_vigueur"),
+        "total_articles": sum(i["articles"] for i in all_items if i["indexe"]),
+        "total_documents": sum(1 for i in all_items if i["indexe"]),
+        "total_textes": len(all_items),
         "total_decisions": len(decisions()),
+        "familles": [{"famille": f, "label": FAMILY_LABELS[f], "count": counts.get(f, 0)} for f in ACT_FAMILIES],
         "categories": sorted({i["categorie"] for i in items}),
     }
 
 
+def acts(q: str = "", famille: str = "", annee: Optional[int] = None, emetteur: str = "",
+         sort: str = "recent", offset: int = 0, limit: int = 30) -> dict:
+    """Décrets, arrêtés, décisions… : recherche paginée avec filtres."""
+    pool = [i for i in _items() if i["famille"] in ACT_FAMILIES]
+    facets = {
+        "familles": [{"famille": f, "label": FAMILY_LABELS[f], "count": sum(1 for i in pool if i["famille"] == f)}
+                     for f in ACT_FAMILIES],
+        "annees": sorted({i["annee"] for i in pool if i["annee"]}, reverse=True),
+        "emetteurs": Counter(i["emetteur"] for i in pool if i["emetteur"]).most_common(40),
+    }
+    items = pool
+    if famille:
+        items = [i for i in items if i["famille"] == famille]
+    if annee:
+        items = [i for i in items if i["annee"] == annee]
+    if emetteur:
+        items = [i for i in items if i["emetteur"] == emetteur]
+    if q:
+        terms = [t for t in _norm(q).split() if len(t) > 1]
+        items = [i for i in items if all(t in _norm(f"{i['nom']} {i['numero']} {i['type']}") for t in terms)]
+    key = (lambda i: i["date"] or "")
+    items = sorted(items, key=key, reverse=(sort != "ancien"))
+    return {"total": len(items), "offset": offset, "limit": limit, "items": items[offset: offset + limit],
+            "facets": facets}
+
+
+def relations(doc_id: str) -> dict:
+    rel = _load(_corpus() / "relations.json", {}).get(doc_id) or {"cite": [], "cite_par": []}
+    names = {i["doc_id"]: i for i in _items()}
+
+    def expand(lst):
+        out, seen = [], set()
+        for r in lst:
+            t = names.get(r["doc_id"])
+            if not t or (r["doc_id"], r["type"]) in seen:
+                continue
+            seen.add((r["doc_id"], r["type"]))
+            out.append({"doc_id": r["doc_id"], "type": r["type"], "article": r.get("article", ""),
+                        "nom": t["nom"], "nature": t["type"], "date": t["date"], "numero": t["numero"]})
+        return out[:40]
+    return {"cite": expand(rel.get("cite", [])), "cite_par": expand(rel.get("cite_par", []))}
+
+
 def _heading(a: dict) -> list[str]:
-    return [a[k].strip() for k in ("livre", "partie", "titre", "chapitre", "section") if (a.get(k) or "").strip()]
+    return [a[k].strip() for k in ("division", "livre", "partie", "titre", "chapitre", "section") if (a.get(k) or "").strip()]
 
 
 def document(doc_id: str) -> Optional[dict]:
-    meta = next((m for m in catalog()["documents"] if m["doc_id"] == doc_id), None)
+    meta = item(doc_id)
     if not meta:
         return None
     arts = articles_of(doc_id)
@@ -218,7 +319,7 @@ def document(doc_id: str) -> Optional[dict]:
                 toc.append({"titre": h[level], "niveau": level, "index": i,
                             "article_ref": a.get("article_ref", "")})
             last = h
-    return {**meta, "sommaire": toc[:600]}
+    return {**meta, "sommaire": toc[:600], "relations": relations(doc_id)}
 
 
 def _article_out(doc_id: str, i: int, a: dict, cites: Counter) -> dict:
@@ -266,23 +367,23 @@ def search_articles(q: str, limit: int = 30, doc_id: str = "") -> dict:
     terms = [t for t in nq.split() if len(t) > 1]
     if not terms:
         return {"query": q, "total": 0, "results": []}
-    metas = {m["doc_id"]: m for m in catalog()["documents"]}
+    metas = {m["doc_id"]: m for m in _items()}
     results = []
-    total = 0
+    phrase = " ".join(terms)
     for did, meta in metas.items():
         if doc_id and did != doc_id:
             continue
-        if not doc_id and meta["statut"] != "en_vigueur":
-            continue
+        if not doc_id and not meta["indexe"]:
+            continue        # recherche globale : textes en vigueur, généraux et complets
         arts = articles_of(did)
+        boost = 3 if meta["famille"] in MAIN_FAMILIES else 0
         for i, hay in enumerate(_normed_texts(did)):
-            a = arts[i]
             if all(t in hay for t in terms):
-                total += 1
-                if len(results) < limit * 4:
-                    phrase = " ".join(terms)
-                    score = hay.count(terms[0]) + (5 if phrase in hay else 0)
-                    results.append((score, did, i, a))
+                # Expression exacte répétée > mots épars ; à score égal, l'article le plus ciblé (court) d'abord
+                score = sum(min(hay.count(t), 5) for t in terms) + 6 * min(hay.count(phrase), 4) + boost \
+                    - min(len(hay) / 4000, 2)
+                results.append((score, did, i, arts[i]))
+    total = len(results)
     results.sort(key=lambda r: -r[0])
     out = []
     for score, did, i, a in results[:limit]:
@@ -395,8 +496,120 @@ def company_guide() -> Optional[dict]:
 def warmup() -> None:
     """Charge le catalogue et normalise les textes une fois (premières recherches instantanées)."""
     try:
-        for m in metadata():
-            _normed_texts(m["doc_id"])
+        _items()
+        for i in _items():
+            if i["indexe"]:
+                _normed_texts(i["doc_id"])
         catalog()
     except Exception:  # noqa: BLE001 — un échec ici ne doit pas empêcher le démarrage
         pass
+
+
+# ── Journal officiel ─────────────────────────────────────────────────────────
+
+def journal() -> list[dict]:
+    return _load(_corpus() / "journal_officiel" / "numeros.json", [])
+
+
+def journal_list(annee: Optional[int] = None, q: str = "", offset: int = 0, limit: int = 24) -> dict:
+    nums = journal()
+    years = sorted({int(n["date"][:4]) for n in nums if n.get("date")}, reverse=True)
+    items = nums
+    if annee:
+        items = [n for n in items if (n.get("date") or "").startswith(str(annee))]
+    if q:
+        terms = [t for t in _norm(q).split() if len(t) > 1]
+        items = [n for n in items if all(t in _norm(" ".join(e["intitule"] for e in n["entrees"]) + " " + n["titre"])
+                                         for t in terms)]
+    out = []
+    for n in items[offset: offset + limit]:
+        natures = Counter(e.get("nature") or "Autre" for e in n["entrees"])
+        out.append({k: n[k] for k in ("id", "numero", "special", "date", "titre", "theme", "source_url")} | {
+            "nb_textes": len(n["entrees"]),
+            "nb_relies": sum(1 for e in n["entrees"] if e.get("doc_id")),
+            "natures": natures.most_common(),
+            "apercu": [e["intitule"] for e in n["entrees"][:3]],
+        })
+    return {"total": len(items), "offset": offset, "limit": limit, "annees": years, "numeros": out}
+
+
+def journal_issue(issue_id: str) -> Optional[dict]:
+    n = next((x for x in journal() if x["id"] == issue_id), None)
+    if not n:
+        return None
+    names = {i["doc_id"]: i for i in _items()}
+    entries = []
+    for e in n["entrees"]:
+        t = names.get(e.get("doc_id") or "")
+        entries.append({**e, "famille": t["famille"] if t else "", "famille_label": t["famille_label"] if t else "",
+                        "indexe": t["indexe"] if t else False})
+    return {**n, "entrees": entries}
+
+
+# ── Droit OHADA ──────────────────────────────────────────────────────────────
+
+def ohada_hub() -> dict:
+    items = [i for i in _items() if i["categorie"] == "Droit OHADA"]
+    actes = [i for i in items if "ACTE UNIFORME" in (i["type"] or "").upper() and i["statut"] == "en_vigueur"]
+    textes = [i for i in items if i not in actes]
+    ccja = [d for d in decisions() if d.get("juridiction", "").startswith("CCJA")]
+    ccja.sort(key=lambda d: d.get("date") or "", reverse=True)
+    return {
+        "actes": sorted(actes, key=lambda i: -i["articles"]),
+        "textes": sorted(textes, key=lambda i: (i["statut"] != "en_vigueur", i["nom"])),
+        "decisions_ccja": [_decision_summary(d) for d in ccja[:12]],
+        "total_ccja": len(ccja),
+        "total_articles": sum(i["articles"] for i in actes),
+    }
+
+
+# ── Tableau de bord et chiffres ──────────────────────────────────────────────
+
+def stats() -> dict:
+    items = _items()
+    indexed = [i for i in items if i["indexe"]]
+    recent = sorted((i for i in items if i["famille"] not in ("individuel", "promulgation") and i["date"]),
+                    key=lambda i: i["date"], reverse=True)[:8]
+    decs = sorted(decisions(), key=lambda d: d.get("date") or "", reverse=True)[:5]
+    jo = journal()[:4]
+    return {
+        "textes_en_vigueur": len(indexed),
+        "articles": sum(i["articles"] for i in indexed),
+        "textes_total": len(items),
+        "codes_et_lois": sum(1 for i in items if i["famille"] in MAIN_FAMILIES and i["indexe"]
+                             and "GUIDE" not in i["type"].upper()),
+        "actes_uniformes": sum(1 for i in items if "ACTE UNIFORME" in i["type"].upper() and i["statut"] == "en_vigueur"),
+        "decisions": len(decisions()),
+        "numeros_jo": len(journal()),
+        "derniers_textes": recent,
+        "dernieres_decisions": [_decision_summary(d) for d in decs],
+        "derniers_jo": [{k: n[k] for k in ("id", "numero", "special", "date", "titre", "theme")} | {"nb_textes": len(n["entrees"])}
+                        for n in jo],
+    }
+
+
+def public_figures() -> dict:
+    """Chiffres publics (page d'accueil) : uniquement des comptes, aucun contenu."""
+    s = stats()
+    main = sorted((i for i in _items() if i["indexe"] and i["famille"] in MAIN_FAMILIES and "GUIDE" not in i["type"].upper()),
+                  key=lambda i: -i["articles"])[:10]
+    return {k: s[k] for k in ("textes_en_vigueur", "articles", "textes_total", "codes_et_lois", "actes_uniformes",
+                              "decisions", "numeros_jo")} | {
+        "principaux_textes": [{"titre": i["nom"], "annee": i["annee"], "articles": i["articles"]} for i in main],
+    }
+
+
+def quick_search(q: str) -> dict:
+    """Recherche éclair (palette ⌘K) : textes par titre, articles par contenu, décisions."""
+    terms = [t for t in _norm(q).split() if len(t) > 1]
+    if not terms:
+        return {"textes": [], "articles": [], "decisions": []}
+    textes = [i for i in _items() if all(t in _norm(f"{i['nom']} {i['numero']}") for t in terms)]
+    textes.sort(key=lambda i: (not i["indexe"], i["famille"] not in MAIN_FAMILIES, -(i["articles"])))
+    arts = search_articles(q, limit=5)["results"]
+    decs = search_decisions(q=q, sort="pertinence", limit=4)["decisions"]
+    return {
+        "textes": [{k: i[k] for k in ("doc_id", "nom", "type", "numero", "annee", "famille_label")} for i in textes[:5]],
+        "articles": arts,
+        "decisions": decs,
+    }

@@ -52,6 +52,18 @@ def _active_index_config() -> tuple[str, Path, str]:
         raise RuntimeError(f"Index BM25 actif absent : {bm25_path}")
     return collection, bm25_path, version
 
+# Priorité entre textes concurrents, fondée sur une règle écrite :
+# les Actes uniformes OHADA « sont directement applicables et obligatoires dans les Etats Parties,
+# nonobstant toute disposition contraire de droit interne, antérieure ou postérieure »
+# (art. 10 du Traité OHADA). Le Code des activités économiques (1992, antérieur à l'adhésion de
+# la Guinée) cède donc le pas aux Actes uniformes sans être écarté pour ce qu'il régit seul.
+# Toute nouvelle entrée doit citer sa base juridique et être validée par test_exactitude.py.
+DOC_PRIORS: dict[str, float] = {"doc_001": 0.85}
+
+# Nombre de résultats sémantiques toujours soumis au cross-encoder (voir _gather_candidates)
+SEMANTIC_SAFETY_NET = 10
+
+
 def is_incomplete(meta: dict) -> bool:
     """Article signalé « texte incomplet à la source » lors de l'import."""
     return str(meta.get("note") or "").startswith("Texte incomplet")
@@ -245,16 +257,18 @@ def sigmoid(x: float) -> float:
     return 1.0 / (1.0 + math.exp(-x))
 
 
-def reciprocal_rank_fusion(rankings: list[list[str]], k: int = 60) -> dict[str, float]:
+def reciprocal_rank_fusion(rankings: list[list[str]], k: int = 60,
+                           weights: Optional[list[float]] = None) -> dict[str, float]:
     """
     RRF : combine plusieurs listes de résultats classés.
-    Score RRF(d) = Σ 1 / (k + rank_i(d))
+    Score RRF(d) = Σ w_i / (k + rank_i(d))
     Plus le score est élevé, plus le document est pertinent.
     """
     scores: dict[str, float] = {}
-    for ranking in rankings:
+    for i, ranking in enumerate(rankings):
+        w = weights[i] if weights else 1.0
         for rank, doc_id in enumerate(ranking):
-            scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (k + rank + 1)
+            scores[doc_id] = scores.get(doc_id, 0.0) + w / (k + rank + 1)
     return scores
 
 
@@ -489,9 +503,18 @@ class HybridRetriever:
             bm25_ids = self._bm25_search(q, n=n_candidates, domains=effective_domains)
             all_rankings.append(bm25_ids)
 
+        # Essai 2026-11-07 : pondérer le sémantique (×3) faisait échouer « taux de la TVA »
+        # (test_exactitude 13/15) — fusion non pondérée conservée.
         rrf_scores = reciprocal_rank_fusion(all_rankings)
         candidates = sorted(rrf_scores, key=lambda x: rrf_scores[x], reverse=True)
         candidates = candidates[:n_candidates]
+        # Filet de sécurité : les 10 meilleurs résultats sémantiques vont toujours au cross-encoder.
+        # Les 3 variantes BM25 votent 3 fois dans la fusion ; un article que le modèle sémantique
+        # place 5e mais que BM25 ignore (AUSCGIE art. 387, « capital social minimum ») sortait des
+        # candidats sans même être évalué. Le cross-encoder reste seul juge du classement final.
+        for rid in sem_ids[:SEMANTIC_SAFETY_NET]:
+            if rid not in candidates:
+                candidates.append(rid)
 
         if self.verbose:
             print(f"  Candidats après RRF : {len(candidates)}")
@@ -529,6 +552,10 @@ class HybridRetriever:
             # Extraction de passage : sélectionner les phrases les plus pertinentes
             # plutôt que de tronquer aveuglément à 600 chars (améliore la précision CE)
             passage = _extract_best_passage(ce_query, texte, n_sentences=4, max_chars=600)
+            # Régime auquel l'article appartient (« Société anonyme (article 385 à 853) ») :
+            # l'article 387 ne dit pas « société anonyme », son régime le dit.
+            if meta.get("division"):
+                passage = f"{meta['division'].split(' (')[0]} — {passage}"
             pairs.append([ce_query, passage])
             valid_ids.append(rid)
         return pairs, valid_ids
@@ -552,6 +579,7 @@ class HybridRetriever:
             # source reste lisible dans la bibliothèque, jamais cité par l'assistant.
             if is_incomplete(meta):
                 continue
+            prior = DOC_PRIORS.get(meta.get("doc_id", ""), 1.0)
             score = sigmoid(float(raw_score))  # normalisation → [0, 1]
             # Le cross-encoder mmarco sous-note parfois une expression juridique
             # française pourtant présente mot pour mot dans l'article (ex. « légitime
@@ -614,7 +642,7 @@ class HybridRetriever:
                 "note":        meta.get("note", ""),
                 "doc_id":      meta.get("doc_id", ""),
                 "page":        meta.get("page", ""),
-                "score":       round(score, 4),
+                "score":       round(score * prior, 4),
                 "rrf_score":   round(rrf_scores.get(rid, 0.0), 6),
             })
 

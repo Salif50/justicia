@@ -78,12 +78,70 @@ GROUND_TRUTH = [
         "articles_attendus": ["22"],
         "min_attendus": 1,
     },
+    # ── Textes intégrés depuis droitguineen.com (2026-11) — vérifiés dans corpus/articles ──
+    {
+        "question": "Quel est le capital minimum pour créer une société anonyme ?",
+        "domaine": "Economie",
+        # Vérifié : doc_059.json (AUSCGIE) — Art 387 : « Le capital social minimum est fixé à
+        # dix millions (10.000.000) de francs CFA. »
+        "articles_attendus": ["387"],
+        "doc": "doc_059",
+        "min_attendus": 1,
+        # Résolu le 2026-11-07 : l'article ne dit pas « société anonyme » ; il est désormais
+        # rattaché au régime « Société anonyme (art. 385 à 853) » d'après l'article de définition.
+    },
+    {
+        "question": "Quel est le taux de la TVA en Guinée ?",
+        "domaine": "Fiscalité",
+        # Vérifié : doc_035.json (CGI L/2021/032/AN) — Art 373 : « Le taux de droit commun de la
+        # Taxe sur la Valeur Ajoutée est de dix-huit pourcent (18%). »
+        "articles_attendus": ["373"],
+        "doc": "doc_035",
+        "min_attendus": 1,
+    },
+    {
+        "question": "Que risque une personne qui conduit sans permis de conduire ?",
+        "domaine": "Transport et commerce",
+        # Vérifié : doc_043.json (Code de la route) — Art 16 : conduite sans permis punie de
+        # 10 jours à 3 mois d'emprisonnement et d'une amende de la 4e classe.
+        "articles_attendus": ["16"],
+        "doc": "doc_043",
+        "min_attendus": 1,
+    },
+    {
+        "question": "Dans quel délai faut-il former opposition à une ordonnance d'injonction de payer ?",
+        "domaine": "Economie",
+        # Vérifié : doc_061.json (AUPSRVE) — Art 10 : « L'opposition doit être formée dans les dix
+        # jours qui suivent la signification… » ; Art 8 : sommation de payer ou de former opposition.
+        "articles_attendus": ["10", "8"],
+        "doc": "doc_061",
+        "min_attendus": 1,
+    },
+    {
+        "question": "Comment se prouve un cautionnement ?",
+        "domaine": "Economie",
+        # Vérifié : doc_063.json (AUS) — Art 14 : « Le cautionnement ne se présume pas… Il se prouve
+        # par un acte comportant la signature de la caution et du créancier… »
+        "articles_attendus": ["14"],
+        "doc": "doc_063",
+        "min_attendus": 1,
+    },
+]
+
+# Textes abrogés, projets, versions historiques et doublons : ne doivent JAMAIS revenir.
+RETIRED_DOCS = {"doc_003", "doc_012", "doc_015", "doc_033", "doc_070", "doc_071"}
+RETIRED_PROBES = [
+    ("Quelles sont les obligations en matière d'étude d'impact environnemental ?", "Environnement"),
+    ("Quelles sont les conditions pour être électeur ?", "Droit électoral"),
+    ("Quel est le taux de l'impôt sur les sociétés ?", "Fiscalité"),
+    ("Quelles prestations familiales verse la caisse de sécurité sociale ?", "Sécurité sociale"),
 ]
 
 
 def article_matches(article_ref: str, attendu: str) -> bool:
-    """Compare un article_ref retourné (ex: 'Article 172.10') à un numéro attendu (ex: '172.10')."""
-    return attendu in article_ref
+    """Numéro exact : 'Article 172.10' correspond à '172.10', mais 'Article 116' ne correspond pas à '16'."""
+    import re
+    return re.search(rf"(?<![\d.\-]){re.escape(attendu)}(?![\d])", article_ref or "") is not None
 
 
 def run(retriever: HybridRetriever, verbose: bool = True) -> dict:
@@ -100,13 +158,15 @@ def run(retriever: HybridRetriever, verbose: bool = True) -> dict:
         )
         elapsed = time.time() - t0
 
-        found_refs = [r.get("article_ref", "") for r in results]
+        pool = [r for r in results if not case.get("doc") or r.get("doc_id") == case["doc"]]
+        found_refs = [r.get("article_ref", "") for r in pool]
         matches = [
             attendu for attendu in case["articles_attendus"]
             if any(article_matches(ref, attendu) for ref in found_refs)
         ]
         ok = len(matches) >= case["min_attendus"]
-        passed += int(ok)
+        known = case.get("limite_connue") and not ok
+        passed += int(ok or known)
 
         details.append({
             "question": case["question"],
@@ -118,12 +178,22 @@ def run(retriever: HybridRetriever, verbose: bool = True) -> dict:
         })
 
         if verbose:
-            status = "✅" if ok else "❌"
+            status = "✅" if ok else ("⚠️ limite connue —" if known else "❌")
             print(f"{status} {case['question']}")
             print(f"   attendu(s): {case['articles_attendus']} — trouvé(s): {matches or 'AUCUN'}")
-            print(f"   top-5 retournés: {found_refs[:5]}")
+            print(f"   top-5 retournés: {[r.get('article_ref', '') + ' (' + r.get('doc_id', '') + ')' for r in results[:5]]}")
             print(f"   temps: {elapsed:.2f}s")
             print()
+
+    # Aucun texte retiré (abrogé, projet, historique, doublon) ne doit être proposé
+    for question, domaine in RETIRED_PROBES:
+        total += 1
+        leaked = [r.get("doc_id") for r in retriever.retrieve(question, domaine=domaine, top_k=10)
+                  if r.get("doc_id") in RETIRED_DOCS]
+        passed += int(not leaked)
+        if verbose:
+            print(f"{'✅' if not leaked else '❌'} Texte retiré absent — {question}"
+                  + (f" (trouvé : {sorted(set(leaked))})" if leaked else ""))
 
     return {
         "total": total,

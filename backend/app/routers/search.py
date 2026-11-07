@@ -112,7 +112,7 @@ async def global_search(
                 CaseDocument.author.ilike(term),
             ),
         )
-        .order_by(CaseDocument.uploaded_at.desc())
+        .order_by(CaseDocument.created_at.desc())
         .limit(6)
     )
     for d in docs_q.scalars():
@@ -122,7 +122,7 @@ async def global_search(
             "doc_type":    d.doc_type or "Document",
             "author":      d.author or "",
             "case_id":     str(d.case_id),
-            "uploaded_at": d.uploaded_at.isoformat(),
+            "uploaded_at": d.created_at.isoformat(),
             "link":        f"/dashboard/cases/{d.case_id}",
         })
 

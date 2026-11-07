@@ -10,6 +10,11 @@ GET /library/{doc_id}/articles/{n}   un article par son numéro
 GET /jurisprudence                   décisions (recherche, filtres, facettes)
 GET /jurisprudence/{id}              décision complète (texte intégral, articles cités)
 
+GET /library/actes                   décrets, arrêtés… (filtres, pagination)
+GET /library/ohada /stats /quick     hub OHADA, tableau de bord, recherche éclair (⌘K)
+GET /journal-officiel(/{id})         numéros du Journal officiel et leur sommaire relié
+GET /public/corpus-figures           chiffres publics (page d'accueil)
+
 GET /guides/creation-entreprise      guide « Créer une entreprise » (guichet unique APIP/GDB)
 """
 from __future__ import annotations
@@ -37,6 +42,61 @@ async def library_search(
     limit: int = Query(30, ge=1, le=60),
 ):
     return lib.search_articles(q, limit=limit, doc_id=doc_id)
+
+
+@router.get("/library/actes")
+async def library_acts(
+    current_user: CurrentUser,
+    q: str = Query("", max_length=200),
+    famille: str = Query("", max_length=30),
+    annee: Optional[int] = Query(None, ge=1900, le=2100),
+    emetteur: str = Query("", max_length=30),
+    sort: str = Query("recent", pattern="^(recent|ancien)$"),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(30, ge=1, le=100),
+):
+    return lib.acts(q=q.strip(), famille=famille, annee=annee, emetteur=emetteur, sort=sort,
+                    offset=offset, limit=limit)
+
+
+@router.get("/library/ohada")
+async def library_ohada(current_user: CurrentUser):
+    return lib.ohada_hub()
+
+
+@router.get("/library/stats")
+async def library_stats(current_user: CurrentUser):
+    return lib.stats()
+
+
+@router.get("/library/quick")
+async def library_quick(current_user: CurrentUser, q: str = Query(..., min_length=2, max_length=120)):
+    return lib.quick_search(q)
+
+
+@router.get("/journal-officiel")
+async def journal_list(
+    current_user: CurrentUser,
+    annee: Optional[int] = Query(None, ge=1900, le=2100),
+    q: str = Query("", max_length=200),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(24, ge=1, le=60),
+):
+    return lib.journal_list(annee=annee, q=q.strip(), offset=offset, limit=limit)
+
+
+@router.get("/journal-officiel/{issue_id}")
+async def journal_issue(issue_id: str, current_user: CurrentUser):
+    n = lib.journal_issue(issue_id)
+    if not n:
+        raise HTTPException(404, "Numéro introuvable.")
+    return n
+
+
+@router.get("/public/corpus-figures")
+async def public_corpus_figures():
+    """Chiffres du corpus pour la page d'accueil (aucun contenu, sans connexion)."""
+    return lib.public_figures()
 
 
 @router.get("/library/{doc_id}")

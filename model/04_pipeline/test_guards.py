@@ -70,3 +70,18 @@ class JurisprudenceGuardTests(unittest.TestCase):
         decs = [dict(d) for d in self.DECS]
         self.assertIn("[J1]", _number_decisions(juris, decs))
         self.assertEqual(decs[0]["_cite_no"], 1)
+
+
+class OhadaPrecedenceTests(unittest.TestCase):
+    """Art. 10 du Traité OHADA : un Acte uniforme retenu écarte le Code des activités économiques de 1992."""
+
+    def test_code_1992_ecarte_si_acte_uniforme(self):
+        from rag import _apply_ohada_precedence
+        arts = [{"doc_id": "doc_001", "article_ref": "Art.834", "type_doc": "LOI"},
+                {"doc_id": "doc_059", "article_ref": "Article 387", "type_doc": "ACTE UNIFORME OHADA"}]
+        self.assertEqual([a["doc_id"] for a in _apply_ohada_precedence(arts)], ["doc_059"])
+
+    def test_code_1992_garde_sans_acte_uniforme(self):
+        from rag import _apply_ohada_precedence
+        arts = [{"doc_id": "doc_001", "article_ref": "Art.12", "type_doc": "LOI"}]
+        self.assertEqual(len(_apply_ohada_precedence(arts)), 1)
