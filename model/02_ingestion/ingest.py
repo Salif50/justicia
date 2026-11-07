@@ -158,6 +158,7 @@ def process_doc(
             "titre":       article.get("titre", ""),
             "chapitre":    article.get("chapitre", ""),
             "section":     article.get("section", ""),
+            "division":    article.get("division", ""),
             "texte":       texte,
             "nom":         meta.get("nom", ""),
             "domaine":     meta.get("domaine", ""),
@@ -168,6 +169,8 @@ def process_doc(
             # Lien direct vers l'article quand la source le permet (droitguineen.com)
             "source_url":  article.get("source_url") or meta.get("url_source", ""),
             "statut":      meta.get("statut", "en_vigueur"),
+            "famille":     meta.get("famille", "code"),
+            "nature":      meta.get("nature", meta.get("type", "")),
             "note":        article.get("note", ""),
             "source_file": meta.get("source_pdf", ""),
             "source_status": meta.get("verification_status") or (
@@ -350,6 +353,8 @@ def ingest(activate: bool = False, version: str | None = None):
     for data_file in data_files:
         doc_id = data_file.stem
         meta   = metadata_map.get(doc_id, {})
+        if meta.get("indexe") is False:
+            continue            # acte individuel, promulgation, ratification ou texte écarté par les contrôles
         if meta.get("statut") in NOT_INDEXED_STATUSES:
             print(f"  ⏭ {doc_id} : {meta.get('nom', '?')[:55]} — {meta['statut']}, non indexé")
             continue

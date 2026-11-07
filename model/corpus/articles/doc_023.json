@@ -7,19 +7,7 @@
     "chapitre": "",
     "section": "",
     "texte": "Les dispositions de la présente loi sont applicables aux relations individuelles et collectives entre les travailleurs et les employeurs exerçant leur activité professionnelle dans les secteurs mixte et privé en République de Guinée. Est considéré comme travailleur salarié au sens de la présente loi, quels que soient son sexe, sa religion, sa nationalité, son origine, toute personne qui s’est engagée à mettre son activité professionnelle, moyennant rémunération, sous la direction et l’autorité d’une personne physique ou morale, publique ou privée, laïque ou religieuse, appelée employeur. Les dispositions de la présente loi s’appliquent également aux relations entre les maîtres et leurs apprentis ainsi qu’aux contrats de stage. Les travailleurs domestiques sont régis par la présente loi ainsi que les employeurs exerçant une profession libérale. Les fonctionnaires, personnes nommées dans un emploi permanent, d’une administration publique, les membres des forces armées ainsi que les agents contractuels permanents et temporaires de l’Etat ne sont pas soumis aux dispositions de la présente loi.",
-    "page": 5
-  },
-  {
-    "doc_id": "doc_023",
-    "article_ref": "Article 1er",
-    "livre": "",
-    "titre": "",
-    "chapitre": "",
-    "section": "DISPOSITIONS PRÉLIMINAIRES",
-    "sous_section": "",
-    "paragraphe": "",
-    "texte": "Les dispositions de la présente loi sont applicables aux relations individuelles et collectives entre les travailleurs et les employeurs exerçant leur activité professionnelle dans les secteurs mixte et privé en République de Guinée. Est considéré comme travailleur salarié au sens de la présente loi, quels que soient son sexe, sa religion, sa nationalité, son origine, toute personne qui s’est engagée à mettre son activité professionnelle, moyennant rémunération, sous la direction et l’autorité d’une personne physique ou morale, publique ou privée, laïque ou religieuse, appelée employeur. Les dispositions de la présente loi s’appliquent également aux relations entre les maîtres et leurs apprentis ainsi qu’aux contrats de stage. Les travailleurs domestiques sont régis par la présente loi ainsi que les employeurs exerçant une profession libérale. Les fonctionnaires, personnes nommées dans un emploi permanent, d’une administration publique, les membres des forces armées ainsi que les agents contractuels permanents et temporaires de l’Etat ne sont pas soumis aux dispositions de la présente loi.",
-    "source": "droitguineen",
+    "page": 5,
     "source_url": "https://droitguineen.com/lois/code-l-2014-072-cnt-code-du-travail/article/1er"
   },
   {
@@ -1071,6 +1059,7 @@
     "doc_id": "doc_023",
     "article_ref": "Article 142",
     "livre": "",
+    "division": "",
     "titre": "",
     "chapitre": "",
     "section": "SECTION III - DEVOIRS DES MAITRES ET DES APPRENTIS",
@@ -3258,6 +3247,7 @@
     "doc_id": "doc_023",
     "article_ref": "Article 242",
     "livre": "",
+    "division": "",
     "titre": "",
     "chapitre": "",
     "section": "SECTION II - PRIVILÈGES ET GARANTIES DE LA CRÉANCE DE SALAIRE",

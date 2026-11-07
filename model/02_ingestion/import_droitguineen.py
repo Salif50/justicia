@@ -157,6 +157,15 @@ DISPLAY_NAMES = {
     "doc_033": "Projet de Code général des impôts",
 }
 
+# Textes nationaux dont une partie est régie depuis 2000 par le droit OHADA (citation exacte du Traité)
+PRIORITY_NOTES = {
+    "doc_001": ("Code antérieur à l'adhésion de la Guinée à l'OHADA. Pour les sociétés commerciales, le droit "
+                "commercial général, les sûretés, le recouvrement et les procédures collectives, les Actes uniformes "
+                "s'appliquent en priorité : ils « sont directement applicables et obligatoires dans les Etats Parties, "
+                "nonobstant toute disposition contraire de droit interne, antérieure ou postérieure » "
+                "(article 10 du Traité OHADA de Port-Louis)."),
+}
+
 # Statut de nos propres documents, établi par une disposition des textes collectés
 OUR_STATUS: dict[str, dict] = {
     "doc_003": {"statut": "abroge", "remplace_par_slug": "code-environnement",
@@ -197,7 +206,8 @@ def _load_ids() -> dict:
 
 
 def _next_doc_id(used: set[str]) -> str:
-    n = max(int(d.split("_")[1]) for d in used if re.match(r"doc_\d+$", d)) + 1
+    # doc_001…doc_999 : codes, lois et guides ; doc_1001+ : textes officiels (import_textes)
+    n = max(int(d.split("_")[1]) for d in used if re.match(r"doc_\d+$", d) and int(d.split("_")[1]) < 1000) + 1
     return f"doc_{n:03d}"
 
 
@@ -206,6 +216,7 @@ def _article_record(doc_id: str, art: dict) -> dict:
         "doc_id": doc_id,
         "article_ref": art["article_ref"],
         "livre": art.get("livre", ""),
+        "division": art.get("division", ""),
         "titre": art.get("titre", ""),
         "chapitre": art.get("chapitre", ""),
         "section": art.get("section", ""),
@@ -217,6 +228,8 @@ def _article_record(doc_id: str, art: dict) -> dict:
     }
     if _truncated(art["texte"]):
         rec["note"] = INCOMPLETE_NOTE
+    elif art.get("note_complement"):
+        rec["note"] = art["note_complement"]
     return rec
 
 
@@ -261,6 +274,83 @@ def _looks_merged(ours: str, theirs: str) -> bool:
 
 # ── 1. Codes ─────────────────────────────────────────────────────────────────
 
+_RANGE_RE = re.compile(r"^(?P<sep>à|et)\s+(?P<end>\d+[\w\-]*)\.?\s*[-–‐.]*\s*(?P<rest>.*)$", re.S)
+
+
+def complete_from_page(slug: str, arts: list[dict], page: dict, report: dict) -> list[dict]:
+    """Complète les articles d'un texte avec sa page « texte intégral » (seconde source).
+
+    - article absent de la collecte article par article → ajouté s'il a un vrai contenu ;
+    - plage « Art. 8 à 12. – Abrogés. » → une entrée « Articles 8 à 12 » (l'information
+      « abrogé » est précieuse : l'assistant peut dire qu'un article n'existe plus) ;
+    - article tronqué à la source → remplacé si la page donne une version complète
+      qui commence pareil et n'est pas tronquée.
+    """
+    body = page.get("_body") or ""
+    if not body:
+        return arts
+    url = f"{dg.SITE}/lois/{slug}"
+    by_num = {a["num"]: a for a in arts}
+    added = repaired = 0
+    extra = []
+    for num, texte in dg.split_full_page(body):
+        ref = f"Article {num.replace('-', ' ')}"
+        rm = _RANGE_RE.match(texte)
+        if rm:
+            rest = rm.group("rest").strip()
+            first = re.split(r"(?<=[.])\s", rest, maxsplit=1)[0].strip()
+            if re.match(r"(?i)^(abrog|r[ée]serv)", first):
+                ref = f"Articles {num} {rm.group('sep')} {rm.group('end')}"
+                texte = first
+        if num in by_num:
+            mine = by_num[num]
+            if _truncated(mine["texte"]) and not _truncated(texte) and len(texte) > len(mine["texte"]) \
+                    and _sim(mine["texte"][:200], texte[:200]) >= 0.9:
+                mine["texte"] = texte
+                mine["source_url"] = url
+                mine["note_complement"] = "Texte complété d'après la page « texte intégral » de la source."
+                repaired += 1
+            continue
+        if len(texte) < 40 and not re.match(r"(?i)^(abrog|r[ée]serv)", texte):
+            continue        # simple intitulé (« Définition ») sans le corps de l'article
+        extra.append({"slug": slug, "num": num, "article_ref": ref, "texte": texte, "source_url": url,
+                      "retrieved_at": page.get("retrieved_at", ""), "texte_ref": "", "hierarchy": "",
+                      "doc_name": "", "sha256": ""})
+        added += 1
+    if added or repaired:
+        report["complements_page"].append({"slug": slug, "ajoutes": added, "completes": repaired})
+    merged = arts + extra
+    merged.sort(key=lambda a: dg.natural_key(a["num"]))
+    return merged
+
+
+# Régimes des formes de sociétés dans l'AUSCGIE, repérés par leur article de définition
+# (« La société anonyme est une société dans laquelle… », art. 385). Un article appartient au
+# régime de la dernière définition qui le précède. Le dernier bloc (GIE, art. 869) n'a pas de
+# borne de fin dans le texte : il n'est pas étiqueté plutôt que de deviner.
+_FORM_DEFINITION = re.compile(
+    r"^(?:La |Le )?(?P<forme>société en nom collectif|société en commandite simple|société à responsabilité limitée|"
+    r"société anonyme|société par actions simplifiée|société en participation|groupement d'intérêt économique)"
+    r"\s+(?:est celle|est celui|est une société)", re.I)
+
+
+def label_company_regimes(records: list[dict]) -> int:
+    anchors = []
+    for i, a in enumerate(records):
+        m = _FORM_DEFINITION.match((a.get("texte") or "").strip())
+        if m and m.group("forme").lower() not in {f for _, f in anchors}:
+            anchors.append((i, m.group("forme").lower()))
+    labelled = 0
+    for k, (start, forme) in enumerate(anchors[:-1]):       # le dernier régime n'a pas de fin connue
+        end = anchors[k + 1][0]
+        first, last = records[start]["article_ref"], records[end - 1]["article_ref"]
+        label = f"{forme[0].upper()}{forme[1:]} ({first.lower()} à {last.replace('Article ', '')})"
+        for a in records[start:end]:
+            a["division"] = label
+            labelled += 1
+    return labelled
+
+
 def build_codes(codes: dict[str, list[dict]], pages: dict, metadata: list[dict], ids: dict, report: dict):
     meta_by_id = {m["doc_id"]: m for m in metadata}
     used = set(meta_by_id) | set(ids.values())
@@ -272,6 +362,7 @@ def build_codes(codes: dict[str, list[dict]], pages: dict, metadata: list[dict],
             report["manquants"].append(slug)
             continue
         page = pages.get(slug) or {}
+        arts = complete_from_page(slug, arts, page, report)
         dm = _DESC_RE.search(page.get("description", "") or "")
         numero = (dm.group("num") if dm and dm.group("num") else "") or arts[0].get("texte_ref", "")
         if numero in ("Code",):
@@ -312,6 +403,8 @@ def build_codes(codes: dict[str, list[dict]], pages: dict, metadata: list[dict],
             ids[slug] = doc_id
         used.add(doc_id)
         outputs[doc_id] = [_article_record(doc_id, a) for a in arts]
+        if slug == "acte-uniforme-societes-commerciales-auscgie":
+            report["regimes_auscgie"] = label_company_regimes(outputs[doc_id])
         ohada = conf["type"] == "ACTE UNIFORME OHADA"
         entry = {
             "doc_id": doc_id,
@@ -352,6 +445,8 @@ def build_codes(codes: dict[str, list[dict]], pages: dict, metadata: list[dict],
                                   "remplace_par": target})
     for m in metadata:
         m.setdefault("statut", "en_vigueur")
+        if m["doc_id"] in PRIORITY_NOTES:
+            m["note"] = PRIORITY_NOTES[m["doc_id"]]
         if m["doc_id"] in DISPLAY_NAMES:
             if m["nom"].strip() != DISPLAY_NAMES[m["doc_id"]]:
                 m.setdefault("nom_original", m["nom"].strip())
@@ -555,7 +650,7 @@ def _between(text: str, start: str, ends: list[str], max_len: int = 4000) -> str
     return text[i:j].strip()[:max_len]
 
 
-def build_decisions(raw: list[dict], ids: dict, report: dict) -> list[dict]:
+def build_decisions(raw: list[dict], ids: dict, report: dict, key_index: dict | None = None) -> list[dict]:
     decisions = []
     seen = set()
     for item in raw:
@@ -648,6 +743,10 @@ def build_decisions(raw: list[dict], ids: dict, report: dict) -> list[dict]:
             law = re.sub(r"\s+", " ", m.group("law")).strip(" ,")
             law = re.split(r"\s*[:;]|\s+(?:qui|dispose|énonce|prévoit|stipule|selon|en ce|aux termes|que|lequel|laquelle|au sens|ainsi|s[’']|Considérant|Attendu|dont)\b", law)[0].strip(" ,")
             doc_id = _resolve_law(law, ids)
+            if not doc_id and key_index:
+                import import_textes as tx
+                k = tx.numero_key(law)
+                doc_id = key_index.get(tuple(k)) if k else None
             for num in re.findall(r"\d+[\w\-]*", m.group("nums")):
                 if len(num) > 6:
                     continue
@@ -833,12 +932,32 @@ def write_report(report: dict) -> None:
           "## Textes remplacés", ""]
     for r in report["remplaces"]:
         L.append(f"- {r['doc_id']} ← `{r['slug']}` ({r['articles']} articles)")
+    if report.get("complements_page"):
+        L += ["", "## Compléments tirés des pages « texte intégral »", "",
+              "Articles absents de la collecte article par article (dont les plages « abrogés »), "
+              "ou tronqués, repris de la page qui reproduit le texte complet.", "",
+              "| Texte | Articles ajoutés | Articles complétés |", "|---|---:|---:|"]
+        for c in report["complements_page"]:
+            L.append(f"| {c['slug']} | {c['ajoutes']} | {c['completes']} |")
     L += ["", "## Statut de nos textes (non indexés pour les réponses)", ""]
     for s in report["statuts"]:
         L.append(f"- **{s['doc_id']} — {s['nom']}** : {s['statut']} → remplacé par {s['remplace_par']}. {s['statut_source']}")
     L += ["", "## Nouveaux textes", "", "| Document | Texte | Articles | Statut |", "|---|---|---:|---|"]
     for n in report["nouveaux"]:
         L.append(f"| {n['doc_id']} | {n['nom']} | {n['articles']} | {n['statut']} |")
+    t = report.get("textes")
+    if t:
+        L += ["", "## Textes officiels (lois, décrets, arrêtés…)", "",
+              f"- Répartition : {t['stats']}", f"- Familles : {t['familles']}",
+              f"- Contrôles qualité (non indexés) : {t['qualite']}",
+              f"- Journal officiel : {t['journal']['numeros']} numéros, {t['journal']['entrees']} textes annoncés, "
+              f"{t['journal']['reliees']} reliés à un texte de la bibliothèque",
+              f"- Relations repérées : {report.get('relations', {})}", "",
+              "Seules les familles loi, constitution, traité, convention, réglementaire et organisation sont "
+              "indexées pour les réponses ; les actes individuels, ratifications et promulgations restent consultables.", "",
+              "### Textes écartés par les contrôles qualité", ""]
+        for p in report.get("textes_problemes", [])[:120]:
+            L.append(f"- {p['probleme']} — [{p['titre'][:90]}]({p['url']})")
     j = report.get("jurisprudence", {})
     L += ["", "## Jurisprudence", "", f"- Décisions : {j.get('decisions')}",
           f"- Par juridiction : {j.get('par_juridiction')}", f"- Par matière (classement automatique) : {j.get('par_matiere')}",
@@ -881,8 +1000,17 @@ def main(report_only: bool) -> None:
     _build_vocab(codes)
     outputs = build_codes(codes, pages, metadata, ids, report)
 
+    print("Textes officiels et Journal officiel…", flush=True)
+    import import_textes as tx
+    journal = tx.build_textes(metadata, ids, outputs, report, _merge, _article_record)
+    key_index = {}
+    for m in metadata:
+        k = tx.numero_key(m.get("numero", ""))
+        if k and m.get("statut", "en_vigueur") == "en_vigueur":
+            key_index.setdefault(tuple(k), m["doc_id"])
+
     print("Jurisprudence…", flush=True)
-    decisions = build_decisions(dg.load_decisions_raw(), ids, report)
+    decisions = build_decisions(dg.load_decisions_raw(), ids, report, key_index)
 
     print("Guide création d'entreprise…", flush=True)
     guide = build_company_guide(report)
@@ -904,6 +1032,15 @@ def main(report_only: bool) -> None:
         }
         metadata = [m for m in metadata if m["doc_id"] != doc_id] + [entry]
 
+    print("Relations entre textes…", flush=True)
+
+    def _load_articles(doc_id: str) -> list[dict]:
+        path = ARTICLES_DIR / f"{doc_id}.json"
+        return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else []
+    relations = tx.build_relations(metadata, outputs, _load_articles)
+    report["relations"] = {"textes_relies": len(relations),
+                           "liens": sum(len(v["cite"]) for v in relations.values())}
+
     write_report(report)
     print(f"Rapport → {REPORTS_DIR / 'harmonisation_droitguineen.md'}")
     if report_only:
@@ -919,6 +1056,10 @@ def main(report_only: bool) -> None:
     if guide:
         GUIDES_DIR.mkdir(parents=True, exist_ok=True)
         (GUIDES_DIR / "creation_entreprise.json").write_text(json.dumps(guide, ensure_ascii=False, indent=2), encoding="utf-8")
+    (CORPUS_DIR / "journal_officiel").mkdir(parents=True, exist_ok=True)
+    (CORPUS_DIR / "journal_officiel" / "numeros.json").write_text(
+        json.dumps(journal, ensure_ascii=False, indent=1), encoding="utf-8")
+    (CORPUS_DIR / "relations.json").write_text(json.dumps(relations, ensure_ascii=False), encoding="utf-8")
     IDS_FILE.parent.mkdir(parents=True, exist_ok=True)
     IDS_FILE.write_text(json.dumps(ids, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
     print(f"Corpus écrit : {len(outputs)} documents, {len(decisions)} décisions.")

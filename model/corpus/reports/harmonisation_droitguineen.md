@@ -1,22 +1,26 @@
 # Harmonisation du corpus avec la collecte droitguineen.com
 
-Généré le 2026-11-01 21:52 UTC. Aucun texte n'a été rédigé : les articles sont repris tels quels.
+Généré le 2026-11-07 18:25 UTC. Aucun texte n'a été rédigé : les articles sont repris tels quels.
 
 ## Codes déjà présents (même loi)
 
 | Document | Avant | Après | Identiques | OCR corrigés | Nettoyés | Ajoutés | Réparés | Source tronquée | Divergents | Dont forts (<60 %) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | doc_032 | 1637 | 1637 | 1495 | 0 | 66 | 0 | 0 | 1 | 72 | 16 |
-| doc_020 | 1260 | 1261 | 1203 | 52 | 0 | 1 | 0 | 0 | 1 | 1 |
-| doc_005 | 1004 | 1024 | 667 | 274 | 5 | 20 | 47 | 0 | 10 | 0 |
+| doc_020 | 1260 | 1260 | 1206 | 50 | 0 | 0 | 0 | 0 | 1 | 1 |
+| doc_005 | 1004 | 1023 | 686 | 256 | 5 | 19 | 47 | 0 | 10 | 0 |
 | doc_008 | 1011 | 1013 | 984 | 5 | 0 | 2 | 0 | 1 | 12 | 6 |
 | doc_031 | 915 | 915 | 674 | 1 | 138 | 0 | 0 | 3 | 69 | 20 |
-| doc_023 | 509 | 512 | 489 | 0 | 0 | 3 | 0 | 0 | 6 | 1 |
-| doc_007 | 252 | 292 | 193 | 3 | 4 | 40 | 2 | 0 | 13 | 4 |
+| doc_023 | 509 | 511 | 490 | 0 | 0 | 2 | 0 | 0 | 6 | 1 |
+| doc_007 | 252 | 292 | 194 | 2 | 4 | 40 | 2 | 0 | 15 | 6 |
 | doc_006 | 241 | 254 | 199 | 0 | 0 | 13 | 1 | 0 | 25 | 8 |
 | doc_016 | 95 | 113 | 73 | 0 | 0 | 18 | 9 | 2 | 9 | 1 |
-| doc_002 | 43 | 51 | 38 | 0 | 0 | 8 | 4 | 0 | 0 | 0 |
-| doc_019 | 37 | 38 | 32 | 3 | 0 | 1 | 0 | 0 | 1 | 0 |
+| doc_002 | 43 | 50 | 38 | 0 | 0 | 7 | 4 | 0 | 1 | 1 |
+| doc_019 | 37 | 37 | 32 | 3 | 0 | 0 | 0 | 0 | 2 | 0 |
+| doc_027 | 35 | 35 | 22 | 7 | 0 | 0 | 0 | 0 | 5 | 1 |
+| doc_025 | 85 | 85 | 73 | 0 | 0 | 0 | 0 | 0 | 12 | 2 |
+| doc_011 | 201 | 201 | 159 | 4 | 0 | 0 | 0 | 12 | 19 | 5 |
+| doc_028 | 129 | 133 | 67 | 23 | 0 | 4 | 0 | 1 | 33 | 12 |
 
 « Nettoyé » : notre texte contenait un en-tête de page du JO ou l'intitulé de la division suivante ; on retire ce bruit de notre texte (la version collectée confirme qu'il ne fait pas partie de l'article).
 « Source tronquée » : la version collectée s'interrompt (lien perdu sur le site) ; on garde la nôtre, complète.
@@ -26,6 +30,18 @@ Généré le 2026-11-01 21:52 UTC. Aucun texte n'a été rédigé : les articles
 ## Textes remplacés
 
 - doc_034 ← `code-securite-sociale` (132 articles)
+
+## Compléments tirés des pages « texte intégral »
+
+Articles absents de la collecte article par article (dont les plages « abrogés »), ou tronqués, repris de la page qui reproduit le texte complet.
+
+| Texte | Articles ajoutés | Articles complétés |
+|---|---:|---:|
+| code-2011-06-code-minier | 2 | 0 |
+| code-general-des-impots | 78 | 4 |
+| code-douanes-2015-code-des-douanes | 4 | 0 |
+| acte-uniforme-comptabilite-syscohada-audcif | 3 | 0 |
+| acte-uniforme-comptabilite-audc-2000 | 1 | 0 |
 
 ## Statut de nos textes (non indexés pour les réponses)
 
@@ -38,7 +54,7 @@ Généré le 2026-11-01 21:52 UTC. Aucun texte n'a été rédigé : les articles
 
 | Document | Texte | Articles | Statut |
 |---|---|---:|---|
-| doc_035 | Code général des impôts | 714 | en_vigueur |
+| doc_035 | Code général des impôts | 792 | en_vigueur |
 | doc_036 | Code électoral | 343 | en_vigueur |
 | doc_037 | Code de l'environnement | 212 | en_vigueur |
 | doc_038 | Code des marchés publics | 160 | en_vigueur |
@@ -49,7 +65,7 @@ Généré le 2026-11-01 21:52 UTC. Aucun texte n'a été rédigé : les articles
 | doc_043 | Code de la route | 42 | en_vigueur |
 | doc_044 | Code des assurances | 433 | en_vigueur |
 | doc_045 | Code des assurances (1995) | 305 | en_vigueur |
-| doc_046 | Code des douanes | 452 | en_vigueur |
+| doc_046 | Code des douanes | 456 | en_vigueur |
 | doc_047 | Code pastoral | 112 | en_vigueur |
 | doc_048 | Code de la construction et de l'habitation | 284 | en_vigueur |
 | doc_049 | Code des investissements | 48 | en_vigueur |
@@ -71,10 +87,68 @@ Généré le 2026-11-01 21:52 UTC. Aucun texte n'a été rédigé : les articles
 | doc_065 | Acte uniforme OHADA relatif au droit de l'arbitrage (AUA) | 38 | en_vigueur |
 | doc_066 | Acte uniforme OHADA relatif à la médiation (AUM) | 18 | en_vigueur |
 | doc_067 | Acte uniforme OHADA relatif aux contrats de transport de marchandises par route (AUCTMR) | 31 | en_vigueur |
-| doc_068 | Acte uniforme OHADA relatif au droit comptable et à l'information financière (AUDCIF) | 120 | en_vigueur |
+| doc_068 | Acte uniforme OHADA relatif au droit comptable et à l'information financière (AUDCIF) | 123 | en_vigueur |
 | doc_069 | Acte uniforme OHADA — Système comptable des entités à but non lucratif (SYCEBNL) | 28 | en_vigueur |
 | doc_070 | AUPSRVE — version originale de 1998 | 338 | historique |
-| doc_071 | Acte uniforme relatif au droit comptable — version de 2000 | 112 | historique |
+| doc_071 | Acte uniforme relatif au droit comptable — version de 2000 | 113 | historique |
+
+## Textes officiels (lois, décrets, arrêtés…)
+
+- Répartition : {'indexes': 919, 'consultables': 943, 'deja_integres': 49, 'fusionnes': 4}
+- Familles : {'organisation': 543, 'reglementaire': 346, 'individuel': 734, 'ratification': 79, 'promulgation': 100, 'loi': 53, 'convention': 2, 'traite': 5}
+- Contrôles qualité (non indexés) : {'debut_manquant': 16, 'incoherent': 29}
+- Journal officiel : 98 numéros, 1807 textes annoncés, 1575 reliés à un texte de la bibliothèque
+- Relations repérées : {'textes_relies': 358, 'liens': 332}
+
+Seules les familles loi, constitution, traité, convention, réglementaire et organisation sont indexées pour les réponses ; les actes individuels, ratifications et promulgations restent consultables.
+
+### Textes écartés par les contrôles qualité
+
+- debut_manquant — [Décret D/2022/036 : Attributions et organisation](https://droitguineen.com/lois/decret-d-2022-036-prg-cnrd-sgg-portant-attributions-et-organisation-du-ministere-de)
+- debut_manquant — [Fixant les conditions et les modalités de répartition](https://droitguineen.com/lois/arrete-a-2022-2164-mb-cab-sgg-fixant-les-conditions-et-les-modalites-de-repartition-des)
+- debut_manquant — [Arrêté A/2022/1912 : Création, attributions, organisation](https://droitguineen.com/lois/arrete-a-2022-1912-mjdh-cab-sgg-portant-creation-attributions-organisation-et)
+- incoherent — [Arrêté A/2022/3311 : Création, attributions, organisation](https://droitguineen.com/lois/arrete-a-2022-3311-mpfepv-cab-sgg-portant-creation-attributions-organisation-et)
+- debut_manquant — [Arrêté A/2024/841 : CREATION, ORGANISATION ET ATTRIBUTIONS](https://droitguineen.com/lois/arrete-a-2024-841-mpci-cab-sgg-portant-creation-organisation-et-attributions-du-comite)
+- debut_manquant — [Arrêté A/2024/1236 : CREATION, ORGANISATION](https://droitguineen.com/lois/arrete-a-2024-1236-mshp-cab-sgg-portant-creation-organisation-et-fonctionnement-du)
+- debut_manquant — [Arrêté A/2024/1221 : CREATION, ATTRIBUTIONS. ORGANISATION](https://droitguineen.com/lois/arrete-a-2024-1221-mef-cab-sgg-portant-creation-attributions-organisation-et)
+- debut_manquant — [Arrêté A/2024/1151 : CREATION. ATTRIBUTIONS, ORGANISATION](https://droitguineen.com/lois/arrete-a-2024-1151-pm-sgg-portant-creation-attributions-organisation-et-fonctionnement-du)
+- incoherent — [Décret D/2026/006 : Structure du Gouvernement](https://droitguineen.com/lois/decret-d-2026-006-prg-sgg-portant-structure-du-gouvernement)
+- debut_manquant — [Instruction : Fixation du taux d'intérêt des contrats](https://droitguineen.com/lois/instruction-i-07-19-rea-instruction-portant-fixation-du-taux-dinteret-des-contrats)
+- incoherent — [Loi L/2013/063 : Code de l'Aviation Civile de la République](https://droitguineen.com/lois/loi-l-2013-063-cnt-portant-code-de-laviation-civile-de-la-republique-de-guinee-vu-la-loi)
+- incoherent — [Fixant les taux et tarifs des droits fixes, les taxes](https://droitguineen.com/lois/decret-d-2022-387-prg-cnrd-sgg-fixant-les-taux-et-tarifs-des-droits-fixes-les-taxes-et)
+- incoherent — [Loi L/2017/0050 : Création, Attributions, Organisation](https://droitguineen.com/lois/loi-l-2017-0050-an-portant-creation-attributions-organisation-et-fonctionnement-de)
+- incoherent — [Arrêté A/2022/2572 : Sélection, accréditation](https://droitguineen.com/lois/arrete-a-2022-2572-mpfepv-cab-sgg-portant-selection-accreditation-et-accompagnement-des)
+- incoherent — [Loi L/2014/016 : Statut de la Banque Centrale](https://droitguineen.com/lois/loi-l-2014-016-an-portant-statut-de-la-banque-centrale-de-la-republique-de-guinee-vu-le)
+- debut_manquant — [Arrêté A/2022/2168 : Conditions d'implantation de création](https://droitguineen.com/lois/arrete-a-2022-2168-mit-cab-sgg-portant-conditions-dimplantation-de-creation-dorganisation)
+- incoherent — [Arrêté A/2022/1178/MJS/CAB/SGG du 2 juin 2022](https://droitguineen.com/lois/loi-l-2021-0018-an-portant-nomination-du-premier-ministre-chef-du-gouvernement-vu-le-3)
+- incoherent — [Arrêté A/2022/373/MEFP/CAB/SGG/SWEDD du 28 mars 2022](https://droitguineen.com/lois/loi-l-2018-028-an-portant-statut-ge-neral-des-agents-de-i-etat-vu-le-communique-n-001-du)
+- incoherent — [Décret D/2022/084/PRG/CNRD/SGG du 8 février 2022](https://droitguineen.com/lois/loi-l-2016-075-an-portant-statut-ge-neral-des-agents-de-l-etat-vu-le-communique-n-001-du)
+- debut_manquant — [Décret D/2022/059 : Attributions et organisation](https://droitguineen.com/lois/decret-d-2022-059-prg-cnrd-sgg-portant-attributions-et-organisation-du-ministere-de-la)
+- incoherent — [Arrêté A/2022/049 : Organisation de la cellule](https://droitguineen.com/lois/arrete-a-2022-049-pm-cab-sgg-portant-organisation-de-la-cellule-de-communication-du)
+- incoherent — [Loi L/2025/028 : Octroi d’un permis](https://droitguineen.com/lois/loi-l-2025-028-cnt-portant-octroi-d-un-permis-d-exploitation-mi-niere-industrielle-a-la)
+- incoherent — [Loi L/2025/027 : Promulgation de la loi L/2025/028/CNT](https://droitguineen.com/lois/loi-l-2025-027-cnt-portant-promulgation-de-la-loi-l-2025-028-cnt-portant-autorisation-de)
+- incoherent — [Arrêté A/2026/029 : Retrait d’autorisations d’exploitation…](https://droitguineen.com/lois/arrete-a-2026-029-mmg-sgg-portant-retrait-d-autorisations-d-exploitation-de-carrieres-09)
+- incoherent — [Loi L/2025/025 : Autorisation de ratification des accords](https://droitguineen.com/lois/loi-l-2025-025-cnt-portant-promulgation-de-la-loi-ordi-naire-l-2025-006-cnt-du-28-fevrier)
+- incoherent — [Loi L/2025/022 : Autorisation de ratification de l’accord](https://droitguineen.com/lois/loi-l-2025-022-cnt-portant-autorisation-de-ratification-de-l-accord-de-pret-entre-la)
+- incoherent — [Loi L/2024/015 : Autorisation de ratification](https://droitguineen.com/lois/loi-l-2024-015-cnt-portant-prise-effective-du-pouvoir-par-les-forces-de-defense-et-de)
+- debut_manquant — [Arrêté A/2024/1562 : Délivrance d'un certificat](https://droitguineen.com/lois/arrete-a-2024-1562-mcipme-cab-sgg-portant-delivrance-dun-certificat-dinvestissement-pour)
+- debut_manquant — [Arrêté A/2024/1527/MB/CAB/SGG du 7 novembre 2024](https://droitguineen.com/lois/arrete-a-2015-6244-mdb-sgg-portant-code-des-douanes-de-la-republique-de-guinee-vu-la-loi)
+- incoherent — [Arrêté A/2024/1498 : Création, mission, composition](https://droitguineen.com/lois/arrete-a-2024-1498-medd-cab-sgg-portant-creation-mission-composition-et-fonctionnement-du)
+- incoherent — [Loi L/2024/016/CNT/SGG du 24 mai 2024 portant autorisation](https://droitguineen.com/lois/loi-l-2024-009-cnt-portant-prorogation-des-lois-nationale-des-conventions-traites-et)
+- debut_manquant — [Décret D/2024/172 : Interdiction de la fabrication](https://droitguineen.com/lois/decret-d-2024-172-prg-cnrd-sgg-portant-interdiction-de-la-fabrication-de-limportation-de)
+- incoherent — [Décret D/2024/162 : Limogeage d'un haut cadre](https://droitguineen.com/lois/decret-d-2024-162-prg-cnrd-sgg-portant-limogeage-dun-haut-cadre-a-la-presidence-de-la)
+- incoherent — [Relative aux Lois de Finances : texte intégral](https://droitguineen.com/lois/loi-organique-l-2012-012-cnt-relative-aux-lois-de-finances-vu-la-loi-l-2024-020-cnt-du-12)
+- debut_manquant — [Décret D/2024/152 : Répartition des crédits](https://droitguineen.com/lois/decret-d-2024-152-prg-cnrd-sgg-portant-repartition-des-credits-de-paiement-ouverts-au)
+- incoherent — [Arrêté A/2024/832 : Création, missions, fonctionnement](https://droitguineen.com/lois/arrete-a-2024-832-pm-cab-sgg-portant-creation-missions-fonctionnement-et-composition-du)
+- incoherent — [Loi L/2023/026 : Loi de finances pour l'année 2024](https://droitguineen.com/lois/loi-l-2023-026-cnt-portant-prorogation-des-lois-natio-nales-des-conventions-traites-et)
+- incoherent — [Arrêté A/2023/4410 : Promotion aux grades académiques](https://droitguineen.com/lois/arrete-a-2023-4410-mesrsi-cab-sgg-portant-promotion-aux-grades-academiques-de-professeur)
+- incoherent — [Décret D/2023/228 : Élévation à la dignité de général](https://droitguineen.com/lois/decret-d-2023-228-prg-cnrd-sgg-portant-elevation-a-la-dignite-de-general-de-division)
+- incoherent — [Loi L/2023/0011 : Autorisation de ratification de l'accord](https://droitguineen.com/lois/loi-l-2023-0011-cnt-portant-prise-effective-du-pouvoir-par-les-forces-de-defense-et-de)
+- incoherent — [Loi L/2015/007 : Code des Douanes de la République de Guinée](https://droitguineen.com/lois/loi-l-2015-007-1-portant-code-des-douanes-de-la-republique-de-guinee-vu-la-loi-l-2018-025)
+- incoherent — [Loi L/2023/002 : Autorisation de ratification d’un accord](https://droitguineen.com/lois/loi-l-2023-002-cnt-portant-prise-effective-du-pouvoir-par-les-forces-de-defense-et-de)
+- incoherent — [Loi L/2022/016 : Loi de Finances pour l’année 2023](https://droitguineen.com/lois/loi-l-2022-016-cnt-portant-loi-de-finances-pour-l-annee-2023)
+- debut_manquant — [Fixant les charges horaires statutaires](https://droitguineen.com/lois/arrete-a-2024-108-mesrsi-sgg-fixant-les-charges-horaires-statutaires-denseignement-des)
+- debut_manquant — [Fixant les conditions d'exercice des activités de transport](https://droitguineen.com/lois/arrete-a-2024-095-mspc-cab-sgg-fixant-les-conditions-dexercice-des-activites-de-transport)
 
 ## Jurisprudence
 
@@ -82,7 +156,7 @@ Généré le 2026-11-01 21:52 UTC. Aucun texte n'a été rédigé : les articles
 - Par juridiction : {'Tribunal de première instance de Kaloum': 3, 'Tribunal de première instance': 4, 'Tribunal de première instance de Mafanco': 10, 'Cour suprême': 126, 'CCJA (OHADA)': 10, "Cour d'appel de Conakry": 2}
 - Par matière (classement automatique) : {'Pénal': 19, 'Commercial et OHADA': 96, 'Administratif': 18, 'Foncier': 16, 'Civil': 2, 'Social': 1, 'Famille et successions': 3}
 - Avec dispositif repéré : 146
-- Articles cités reliés au corpus : 809 / 1286
+- Articles cités reliés au corpus : 811 / 1286
 - Sans date : []
 
 ## Collecte à compléter
@@ -253,7 +327,13 @@ s'il n'a pas eu les moyens suffisants de contrôler les indications du char
   - Notre texte : Le contrat de travail peut être conclu pour une durée indéterminée ou pour une durée déterminée. Le contrat conclu sans limitation de durée est dénommé « contrat à durée indéterminée » ; le contrat à durée déterminée est
   - Collecté : Le stagiaire est astreint au respect du règlement intérieur de l’entreprise et au secret professionnel notamment les secrets de fabrication, de commercialisation, les procédés d’exploitation et de gestion dont il a pris 
 
-### doc_007 (4)
+### doc_007 (6)
+- **Article 30** (2 %) — [source](https://droitguineen.com/lois/code-2011-06-code-minier)
+  - Notre texte : Attribution
+  - Collecté : III. Statut du permis de recherche après attribution du Permis d'exploitation L'attribution d'un Permis d'exploitation industrielle ou semi-industrielle entraîne l'annulation du Permis de recherche à l'intérieur du périm
+- **Article 37** (1 %) — [source](https://droitguineen.com/lois/code-2011-06-code-minier)
+  - Notre texte : Attribution
+  - Collecté : III. Statut du Permis de recherche après attribution de la Concession minière L'attribution d'une Concession minière entraîne l'annulation du Permis de recherche à l'intérieur du périmètre de la Concession minière. Toute
 - **Article 164** (41 %) — [source](https://droitguineen.com/lois/code-2011-06-code-minier/article/164)
   - Notre texte : Taxe à l'exportation sur la production artisanale d’or, de Pierres précieuses et autres Pierres Gemmes L’or et les Pierres précieuses et Pierres Gemmes extraits en Guinée par les titulaires d’une Autorisation d’exploitat
   - Collecté : Taxe à l'exportation sur la production artisanale d'or, de Pierres précieuses et autres Pierres Gemmes
@@ -303,4 +383,93 @@ L'or et les Pierres précieuses et Pierres Gemmes extraits en Guinée par les ti
 - **Article 99** (52 %) — [source](https://droitguineen.com/lois/code-l-2014-034-an-code-petrolier/article/99)
   - Notre texte : Bureau de dédouanement A la demande de la direction générale des douanes, les Contractants doivent mettre gratuitement à sa disposition sur chaque site d'exploitation les locaux et facilités nécessaires à l'établissement
   - Collecté : Bureau de dédouanement A la demande de la direction générale des douanes, les Contractants doivent mettre gratuitement à sa disposition sur chaque site d'exploitation les locaux et facilités nécessaires à l'établissement
+
+### doc_002 (1)
+- **Article premier** (16 %) — [source](https://droitguineen.com/lois/code-de-conduite-de-l-agent-public/article/premier)
+  - Notre texte : : Au sens du présent code, les termes suivants sont entendus comme suit :  L’éthique : L’ensemble des valeurs et principes moraux ou civiques auxquels adhèrent les membres d’une organisation et qui servent de référentiel
+  - Collecté : Au sens du présent code, les termes suivants sont entendus comme suit :
+Il comporte ou indique les mesures soit disciplinaires soit pénales pour les manquements à ses règles ;
+
+### doc_027 (1)
+- **Article 1** (1 %) — [source](https://droitguineen.com/lois/loi-u2023-0008-cnt-portant-statut-general-des-autorites-administratives-independantes-le)
+  - Notre texte : La présente Loi fixe les règles de création, d'organisation et de fonctionnement des Autorités Administratives Indépendantes.
+  - Collecté : cle· 2 : Au sens de la présente Loi, on entend par Autorité Administrative Indépendante, en abrégé « AAI », un organisme administratif de régulation qui, agissant au nom de l'État, sans pour autant relever de l'autorité 
+
+### doc_025 (2)
+- **Article 41** (12 %) — [source](https://droitguineen.com/lois/loi-l-2015-019-an-organisation-judiciaire)
+  - Notre texte : : Dans chaque tribunal de première instance, un ou plusieurs juges sont délégués dans les fonctions de juge aux affaires familiales. Le juge aux affaires familiales connait : de l'homologation judiciaire du changement de
+  - Collecté : Dans chaque tribunal de première instance, il est créé une ou plusieurs sections commerciales. Les règles relatives à la compétence et aux attributions de la section commerciale sont prévues par les Actes uniformes OHADA
+- **Article 42** (56 %) — [source](https://droitguineen.com/lois/loi-l-2015-019-an-organisation-judiciaire)
+  - Notre texte : : Dans chaque tribuinal de première instance, un ou plusieurs juges sont délégués dans les fonctions de juge aux affaires famillales, / Le juge aux affaires famillales connaît : . de l'homologation judiciaire du changeme
+  - Collecté : Dans chaque tribunal de première instance, un ou plusieurs juges sont délégués dans les fonctions de juge aux affaires familiales. Le juge aux affaires familiales connaît :
+de l'homologation judiciaire du changement de r
+
+### doc_011 (5)
+- **Article 17** (32 %) — [source](https://droitguineen.com/lois/loi-constitutionnelle-d-2025-176-prg-constitution)
+  - Notre texte : Toute violation de domicile ou toute atteinte à l’intimité de la vie privée, quelles qu’en soient les raisons et les moyens utilisés, est punie conformément à la loi.
+  - Collecté : Le droit de propriété est garanti. Nul ne peut être exproprié que pour cause d'utilité publique déclarée et sous réserve d'une juste et préalable indemnisation.
+- **Article 18** (1 %) — [source](https://droitguineen.com/lois/loi-constitutionnelle-d-2025-176-prg-constitution)
+  - Notre texte : Toute perquisition, toute visite domiciliaire ou toute autre atteinte à l’inviolabilité du domicile ne peut être prononcée que par le juge ou par toute autorité que la loi désigne et dans les formes qu’elle prescrit. Les
+  - Collecté : L'État garantit la liberté de conscience et de culte. Il garantit à toute personne la libre profession de sa foi, la pratique d'une religion ou d'un culte sur toute l'étendue du territoire national, dans le respect de la
+- **Article 80** (38 %) — [source](https://droitguineen.com/lois/loi-constitutionnelle-d-2025-176-prg-constitution)
+  - Notre texte : Le premier ministre est choisi parmi les citoyens guinéens reconnus pour leur intégrité, leur expérience professionnelle et leur haute qualification dans l’un des domaines économiques, sociaux, juridiques, techniques ou 
+  - Collecté : Le Premier ministre est choisi parmi les citoyens guinéens reconnus pour leur intégrité, leur expérience professionnelle et leur haute qualification dans l'un des domaines économique, social, juridique, technique ou scie
+- **Article 170** (43 %) — [source](https://droitguineen.com/lois/loi-constitutionnelle-d-2025-176-prg-constitution)
+  - Notre texte : La Commission nationale pour le développement est composée de hauts cadres du pays, reconnus pour leur probité, leur intégrité, leur expérience professionnelle et de leur haute qualification dans l’un des domaines économ
+  - Collecté : La Commission nationale pour le développement est composée de hauts cadres du pays reconnus pour leur probité, leur intégrité, leur expérience professionnelle et leur haute qualification dans l'un des domaines économique
+- **Article 176** (43 %) — [source](https://droitguineen.com/lois/loi-constitutionnelle-d-2025-176-prg-constitution)
+  - Notre texte : La Commission de régulation de la communication et de l’audiovisuel a pour mission de réguler, en toute indépendance et impartialité, les secteurs de l’information et de la communication écrite, numérique, audiovisuelle,
+  - Collecté : La Commission de régulation de la communication et de l'audiovisuel a pour mission de réguler, en toute indépendance et impartialité, les secteurs de l'information et de la communication écrite, numérique, audiovisuelle,
+
+### doc_028 (12)
+- **Article 15** (39 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Réponse à la demande d’authentification L’organe en charge du Registre national des personnes physiques donne suite à toute demande d'authentification émanant d’une entité requérante par une réponse positive, négative ou
+  - Collecté : Réponse à la demande d’authentification L’organe en charge du Registre National des Personnes Physiques donne suite à toute demande d’authentification émanant d’une entité requérante par une réponse positive, négative ou
+- **Article 16** (0 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : de l’de la présente Loi sont collectées, Ù<, /\\/ 11
+  - Collecté : Identification biométrique de la personne physique L’identification biométrique de la personne physique est la collecte des données relatives aux caractéristiques biologiques et morphologiques de tout guinéen ou étranger
+- **Article 37** (52 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Types de documents d’identification Les documents d’identification sont : e l’acte de naissance ; e e livret de famille ; e la carte d’électeur ; s la carté de résident : e la carte de sécurité sociale ; # la carte consu
+  - Collecté : Types de documents d’identification Les documents d’identification sont :
+l’acte de naissance ;
+le livret de famille ;
+la carte d’électeur ;
+la carte de résident ;
+la carte de sécurité sociale ;
+la carte consulaire ;
+le 
+- **Article 40** (37 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Carte de résident La carte de résident, délivré par les autorités compétentes, permet à un étranger de séjourner en République de Guinée, de façon temporaire ou permanente. Elle identifie le résident étranger et détermin
+  - Collecté : Carte de résident La carte de résident, délivré par les autorités compétentes, permet à un étranger de séjourner en République de Guinée, de façon temporaire ou permanente. Elle identifie le résident étranger et détermin
+- **Article 43** (45 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Données de la Carte de sécurité sociale La carte de sécurité sociale comporte les données ci-après : ‘ e le Numéro personnel d’identification ; e le numéro de la carte ; « la photographie ; e les prénoms ; # lenom:; « le
+  - Collecté : Données de la Carte de sécurité sociale La carte de sécurité sociale comporte les données ciaprès :
+le Numéro personnel d’identification ;
+le numéro de la carte ;
+la photographie ;
+les prénoms ; special TeXTes leGislaTiF
+- **Article 50** (43 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Conditions de suspénsion ou de retrait La suspension ou le retrait du permis de conduire résultent de sanctions fixées par le Code de la route. Artiele 51 : Permis de travail Le permis de travail, tel que défini par prés
+  - Collecté : Conditions de suspension ou de retrait La suspension ou le retrait du permis de conduire résultent de sanctions fixées par le Code de la route.
+- **Article 52** (23 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Catégories de permis de travail Les catégories de permis de travail sont : ; e Permis de type À ; « Permis de type B ; e Permis de type C. Àrticle 53 : Etablissement et données du permis de travail pour les étrangers L’é
+  - Collecté : Catégories de permis de travail Les catégories de permis de travail sont :
+Permis de type A ;
+Permis de type B ;
+Permis de type C.
+- **Article 83** (34 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Accès au registre consulaire des personnes physiques L’agent consulaire et ses suppléants ont accès au Registre National des Personnes Physiques pour consulter les données énumérées aux articles 4 et 5 de la présente Loi
+  - Collecté : Accès au registre consulaire des personnes physiques L’agent consulaire et ses suppléants ont accès au Registre National des Personnes Physiques pour consulter les données énumérées aux articles 4 et 5 de la présente Loi
+- **Article 93** (49 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Obligations d’information de l’organe en charge du Registre National des Personnes Physiques et de l’état civil L’organe en charge du Registre National des Personnes Physiques et de l’état civil est tenu
+  - Collecté : Obligations d’information de l’organe en charge du Registre National des Personnes Physiques et de l’état civil L’organe en charge du Registre National des Personnes Physiques et de l’état civil est tenu d’informer, de m
+- **Article 100** (46 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Mesures de sécurisation et de protection L'organe en charge du Registre National des Personnes Physiques et de l’état civil prend et
+  - Collecté : Mesures de sécurisation et de protection L’organe en charge du Registre National des Personnes Physiques et de l’état civil prend et applique fidèlement les mesures nécessaires pour que les données, énumérées à l’article
+- **Article 103** (2 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : applique fidèlement les mesures nécessaires pour que les données, énumérées à l’de la présente Loi, soient sécurisées et protégées contre toute destruction, perte, détérioration, tout accès illicite, dommage accidentel o
+  - Collecté : Restriction du partage et de l’utilisation des données du Registre National des Personnes Physiques Les données nominatives, numériques et biométriques, recueillies par l’organe en charge du Registre National des Personn
+- **Article 128** (57 %) — [source](https://droitguineen.com/lois/loi-l-2023-019-cnt-identification-des-personnes-physiques)
+  - Notre texte : Entrée en vigueur La présente Loi, qui prend effet à compter de sa date de promulgation, sera enregistrée et publiée au Journal ofticiel de ia République. Conakry, le 25 9CT, 2623 Pour la Plénière Le Secrétaire de Séance
+  - Collecté : Entrée en vigueur La présente Loi, qui prend effet à compter de sa date de promulgation, sera enregistrée et publiée au Journal officiel de la République.
 

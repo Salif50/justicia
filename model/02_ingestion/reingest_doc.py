@@ -123,7 +123,7 @@ def reingest_doc(
     if meta.get("statut") in {"abroge", "projet", "historique", "doublon"}:
         # Texte retiré des réponses : ses anciens articles sont supprimés, rien n'est réindexé
         print(f"  ⏭ statut « {meta['statut']} » : retiré de l'index")
-    retire = meta.get("statut") in {"abroge", "projet", "historique", "doublon"}
+    retire = meta.get("statut") in {"abroge", "projet", "historique", "doublon"} or meta.get("indexe") is False
 
     # 1. Supprimer les anciens articles de ce doc dans ChromaDB
     try:
@@ -153,6 +153,8 @@ def reingest_doc(
         texte = article.get("texte", "").strip()
         if not texte:
             continue
+        if str(article.get("note") or "").startswith("Texte incomplet"):
+            continue        # même règle qu'ingest.py : jamais utilisé pour répondre
 
         uid        = article.get("id") or f"{doc_id}_art_{i:04d}"
         embed_text = build_embed_context(article, meta)
@@ -166,6 +168,7 @@ def reingest_doc(
             "titre":       article.get("titre", ""),
             "chapitre":    article.get("chapitre", ""),
             "section":     article.get("section", ""),
+            "division":    article.get("division", ""),
             "texte":       texte,
             "nom":         meta.get("nom", ""),
             "domaine":     meta.get("domaine", ""),
@@ -175,6 +178,8 @@ def reingest_doc(
             "source":      meta.get("source_officielle", ""),
             "source_url":  article.get("source_url") or meta.get("url_source", ""),
             "statut":      meta.get("statut", "en_vigueur"),
+            "famille":     meta.get("famille", "code"),
+            "nature":      meta.get("nature", meta.get("type", "")),
             "note":        article.get("note", ""),
             "source_file": meta.get("source_pdf", ""),
             "source_status": meta.get("verification_status") or (

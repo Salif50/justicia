@@ -106,6 +106,15 @@ def clean_running_headers(text: str) -> str:
     return re.sub(r"[ \t]{2,}", " ", out).strip()
 
 
+def norm_num(num: str) -> str:
+    """Clé unique d'un numéro d'article : « 1er »/« premier » → « 1 », « 22 bis » → « 22-bis »."""
+    n = (num or "").strip().lower().replace(".", "-")
+    n = re.sub(r"\s+", "-", n)
+    if n in ("1er", "premier", "1-er"):
+        return "1"
+    return n
+
+
 def natural_key(num: str) -> tuple:
     """Tri naturel des numéros d'article : 2 < 10 < 58-3 < 58-10 < 100 bis."""
     parts = re.findall(r"\d+|[a-zA-Z]+", num or "")
@@ -166,7 +175,8 @@ def parse_article_page(doc: dict) -> dict | None:
     m = _ART_URL_RE.search(url)
     if not m or "content" not in doc:
         return None
-    slug, num = m.group(1), m.group(2)
+    slug, raw_num = m.group(1), m.group(2)
+    num = norm_num(raw_num)
     body = strip_footer(doc["content"])
     paragraphs = [p for p in body.split("\n") if p.strip()]
 
@@ -198,7 +208,7 @@ def parse_article_page(doc: dict) -> dict | None:
     art = {
         "slug": slug,
         "num": num,
-        "article_ref": f"Article {num}",
+        "article_ref": f"Article {raw_num.replace('-', ' ') if raw_num.lower() in ('1er', 'premier') or 'bis' in raw_num or 'ter' in raw_num else raw_num}",
         "texte": texte,
         "doc_name": doc_name,
         "texte_ref": header_ref,
@@ -313,4 +323,76 @@ def load_decisions_raw() -> list[dict]:
         text = content[: m.start()] if m else strip_footer(content)
         meta = _decode_initial_data(content[m.start():]) if m else None
         out.append({"doc": doc, "text": text.strip(), "meta": meta or {}})
+    return out
+
+
+# ── Pages « texte intégral » : seconde source pour les mêmes articles ────────
+
+_PAGE_ART_RE = re.compile(
+    r"(?m)^Art(?:icle)?\.?\s*(premier|1er|\d+(?:[\-.]\d+)*(?:[\s\-]?(?:bis|ter|quater|quinquies))?)\s*[.:—–-]\s*")
+
+
+def split_full_page(body: str) -> list[tuple[str, str]]:
+    """Découpe une page « texte intégral » en (numéro, texte), dans l'ordre de la page.
+
+    Les numéros qui rompent l'ordre (renvoi en début de ligne pris pour un en-tête,
+    ex. « 198 » entre 23 et 33) sont écartés : on ne garde que la suite croissante.
+    """
+    ms = list(_PAGE_ART_RE.finditer(body or ""))
+    raw = []
+    for i, m in enumerate(ms):
+        n = norm_num(m.group(1))
+        end = ms[i + 1].start() if i + 1 < len(ms) else len(body)
+        texte = clean_running_headers("\n".join(repair_lines(body[m.end():end].split("\n"))).strip())
+        raw.append((n, texte))
+    out: list[tuple[str, str]] = []
+    seen = set()
+    for i, (n, t) in enumerate(raw):
+        k = natural_key(n)
+        prev_ok = not out or natural_key(out[-1][0]) < k
+        nxt = raw[i + 1][0] if i + 1 < len(raw) else None
+        next_ok = nxt is None or k < natural_key(nxt) or (i + 2 < len(raw) and k < natural_key(raw[i + 2][0]))
+        if n in seen or not prev_ok or not next_ok:
+            continue
+        seen.add(n)
+        out.append((n, t))
+    return out
+
+
+# ── Hiérarchie complète (livre › titre › chapitre › section) ─────────────────
+
+_LEVELS = ["partie", "livre", "titre", "sous_titre", "chapitre", "section", "sous_section", "paragraphe"]
+_HEADING_RE = re.compile(
+    r"^(?P<kw>PARTIE|LIVRE|TITRE|SOUS[- ]TITRE|CHAPITRE|SECTION|SOUS[- ]SECTION|PARAGRAPHE|Partie|Livre|Titre|"
+    r"Sous[- ]titre|Chapitre|Section|Sous[- ]section|Paragraphe)\s+"
+    r"(?P<n>[IVXLC]+|\d+|PREMIER|PREMIERE|Premier|Première|UNIQUE|Unique|préliminaire|PRELIMINAIRE|PRÉLIMINAIRE)\b")
+
+
+def page_hierarchy(body: str) -> dict[str, dict]:
+    """Rattache chaque article de la page à toute sa hiérarchie (et pas seulement à la section).
+
+    La page « texte intégral » intercale les intitulés (« LIVRE 4 - SOCIÉTÉ ANONYME »,
+    « Section 2 - Capital social ») entre les articles : on tient une pile d'intitulés,
+    un intitulé de niveau N remplace le précédent de même niveau et efface les niveaux inférieurs.
+    """
+    stack: dict[str, str] = {}
+    out: dict[str, dict] = {}
+    for line in (body or "").split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        hm = _HEADING_RE.match(line)
+        if hm and len(line) <= 220:
+            level = hm.group("kw").lower().replace(" ", "_").replace("-", "_")
+            if level in _LEVELS:
+                i = _LEVELS.index(level)
+                for deeper in _LEVELS[i:]:
+                    stack.pop(deeper, None)
+                stack[level] = line.rstrip(" .")
+            continue
+        am = _PAGE_ART_RE.match(line)
+        if am:
+            n = norm_num(am.group(1))
+            if n not in out:
+                out[n] = dict(stack)
     return out

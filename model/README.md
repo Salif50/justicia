@@ -13,12 +13,15 @@ model/
 │   ├── articles/      un JSON par texte, découpé article par article
 │   ├── metadata.json  catalogue des textes (nom, numéro, date, domaine, statut, source)
 │   ├── jurisprudence/ decisions.json : décisions structurées (Cour suprême, CCJA, CA, TPI)
+│   ├── journal_officiel/ numeros.json : sommaires du JO, chaque entrée reliée à son texte
+│   ├── relations.json liens entre textes (modifie, abroge, applique, cite) repérés dans les articles
 │   ├── guides/        creation_entreprise.json (guichet unique APIP/GDB)
 │   ├── sources/       identifiants stables des textes collectés
 │   ├── reports/       rapport d'harmonisation (à faire relire par un juriste)
 │   └── corpus.jsonl   ancien export (non utilisé par l'ingestion)
 ├── 02_ingestion/      corpus → index : ingest.py (complet + jurisprudence), reingest_doc.py (un texte),
 │                      import_droitguineen.py (intègre la collecte data/droitguineen),
+│                      import_textes.py (lois, décrets, arrêtés, JO), test_import.py,
 │                      rebuild_bm25.py, audit_corpus.py, extract_ocr_articles.py
 ├── 03_vectorstore/    index générés : ChromaDB (sémantique) + BM25 (mots-clés)
 ├── 04_pipeline/       moteur de réponse
@@ -80,6 +83,22 @@ Le script repart toujours du corpus validé (`BASELINE_REF`) et ne rédige rien 
 - textes abrogés (preuve : disposition abrogatoire citée), projets, versions historiques
   et doublons restent dans le catalogue avec leur statut mais **ne sont plus indexés** ;
 - chaque écart non résolu est listé dans `corpus/reports/harmonisation_droitguineen.md`.
+
+Identifiants : `doc_001`–`doc_999` pour les codes, lois et guides ; `doc_1001`+ pour les
+textes officiels (lois, décrets, arrêtés…). Chaque texte officiel a une **famille** :
+
+| Famille | Exemples | Indexée pour répondre |
+|---|---|---|
+| loi, constitution, traité, convention | lois, ordonnances, Traité OHADA, règlements CCJA | oui |
+| réglementaire | décrets et arrêtés « fixant les modalités… » | oui |
+| organisation | création, attributions d'organismes | oui |
+| individuel | nominations, agréments, permis, promotions | non (consultable) |
+| ratification, promulgation | accords de prêt, décrets de promulgation | non (consultable) |
+
+Un texte dont le corps ne correspond pas au titre (erreur de la source) ou dont le début
+manque n'est pas indexé ; il reste consultable avec un avertissement. Les pages « texte
+intégral » servent de seconde source : articles manquants, plages « Art. 8 à 12. Abrogés »,
+articles tronqués complétés.
 
 La jurisprudence a son propre index (`justicia_jurisprudence_<version>`) : elle ne modifie
 jamais le classement des articles. Dans une réponse, la section « Jurisprudence » est
