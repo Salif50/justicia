@@ -1,5 +1,5 @@
 {
-  "genere_le": "2026-11-07 18:25 UTC",
+  "genere_le": "2026-11-07 18:55 UTC",
   "a_verifier": {
     "doc_032": [
       {
@@ -661,19 +661,20 @@
     {
       "doc_id": "doc_023",
       "avant": 509,
-      "apres": 511,
+      "apres": 509,
       "identiques": 490,
       "divergents": 6,
-      "ajoutes": 2,
+      "deja_presents": 2,
       "divergences_fortes": 1
     },
     {
       "doc_id": "doc_007",
       "avant": 252,
-      "apres": 292,
+      "apres": 261,
       "identiques": 194,
       "divergents": 15,
-      "ajoutes": 40,
+      "deja_presents": 31,
+      "ajoutes": 9,
       "nettoyes": 4,
       "repares": 2,
       "ocr_corriges": 2,

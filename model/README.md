@@ -105,6 +105,21 @@ jamais le classement des articles. Dans une réponse, la section « Jurisprudenc
 contrôlée à part (décision fournie, citation exacte, aucun numéro d'article absent du
 passage) et retirée au moindre doute ; les extraits restent affichés tels quels.
 
+## Batterie de questions réelles (de bout en bout)
+
+`evaluation/batterie_reelle.json` : 36 questions formulées comme un usager (pénal, travail,
+famille, foncier, OHADA, fiscal, douane, route, santé, numérique, décret de 2026, guide
+APIP, jurisprudence) et des pièges (article inexistant, droit étranger, hors sujet, textes
+abrogés). Chaque réponse attendue a été vérifiée dans le texte (champ `verifie`).
+
+```bash
+backend/env/bin/python model/evaluation/run_batterie.py --token <jeton>   # API lancée sur :8000
+```
+
+Contrôles : article attendu parmi les articles cités, chiffre clé présent, aucun texte
+abrogé ou projet cité, pièges sans source ni invention, jurisprudence jointe quand attendue.
+Dernier résultat (2026-11-07) : 36/36 — `evaluation/resultats_batterie.json`.
+
 ## Règle d'or
 
 Toute modification de `retriever.py` ou `rag.py` se valide **avant/après** avec

@@ -1205,12 +1205,20 @@ class JusticIAPipeline:
         if not nums:
             return []
         if getattr(self, "_ref_index", None) is None:
-            data = self.retriever.collection.get(include=["metadatas"])
+            # Lecture par pages : au-delà de ~32 000 articles, une seule requête dépasse la
+            # limite de variables de SQLite (« too many SQL variables ») et faisait échouer
+            # toute question citant un numéro d'article.
             index: dict[tuple[str, str], list[str]] = {}
-            for aid, meta in zip(data["ids"], data["metadatas"]):
-                n = _ref_number(meta.get("article_ref", ""))
-                if n:
-                    index.setdefault((meta.get("doc_id", ""), n), []).append(aid)
+            page, offset = 5000, 0
+            while True:
+                data = self.retriever.collection.get(include=["metadatas"], limit=page, offset=offset)
+                for aid, meta in zip(data["ids"], data["metadatas"]):
+                    n = _ref_number(meta.get("article_ref", ""))
+                    if n:
+                        index.setdefault((meta.get("doc_id", ""), n), []).append(aid)
+                if len(data["ids"]) < page:
+                    break
+                offset += page
             self._ref_index = index
         doc_order = docs or sorted({d for d, _ in self._ref_index})
         ids: list[str] = []
@@ -1240,6 +1248,32 @@ class JusticIAPipeline:
                 "page": meta.get("page", ""), "score": 1.0, "rrf_score": 0.0, "_exact": True,
             })
         return out
+
+    def missing_article_refs(self, question: str) -> Optional[str]:
+        """Message précis si un numéro d'article cité n'existe pas dans le texte nommé, sinon None."""
+        nums, docs = _explicit_article_refs(question)
+        if not nums or not docs:
+            return None
+        self.lookup_articles(question)                       # construit l'index des références
+        index = getattr(self, "_ref_index", None) or {}
+        lines = []
+        for doc_id in docs[:1]:
+            present = sorted({n for (d, n) in index if d == doc_id}, key=lambda n: [int(p) for p in re.findall(r"\d+", n)])
+            if not present:
+                return None                                  # texte non indexé : on laisse la recherche normale
+            absent = [n for n in nums if (doc_id, n) not in index]
+            if not absent or len(absent) < len(nums):
+                return None                                  # au moins un article existe : réponse normale
+            got = self.retriever.collection.get(where={"doc_id": doc_id}, limit=1, include=["metadatas"])
+            nom = (got["metadatas"][0].get("nom") if got.get("metadatas") else "") or "ce texte"
+            lines.append(
+                f"**{'Les articles' if len(absent) > 1 else 'L’article'} {', '.join(absent)} "
+                f"n’exist{'ent' if len(absent) > 1 else 'e'} pas dans le {nom}** tel qu’il figure dans les textes "
+                f"que je consulte : ses articles vont de l’article {present[0]} à l’article {present[-1]} "
+                f"({len(present)} articles).\n\n"
+                "Vérifiez le numéro ou le nom du texte, ou décrivez la situation qui vous intéresse : "
+                "je retrouverai les articles applicables.")
+        return "\n".join(lines) if lines else None
 
     def find_decisions(self, question: str, top_k: int = JURIS_TOP_K) -> list[dict]:
         """Décisions pertinentes (index de jurisprudence + contrôle par le juge léger)."""
@@ -1431,20 +1465,30 @@ class JusticIAPipeline:
             ))
             variant_labels += [f"[tout le corpus] {q}" for q in global_queries]
 
+        # Les scores du cross-encoder ne se comparent pas d'une requête à l'autre : une
+        # reformulation générique (« divorce séparation dissolution mariage ») donne 0,8 à des
+        # articles voisins, quand la vraie question place l'article attendu 2e avec 0,29
+        # (Code civil art. 304, « les cas de divorce »). On classe donc chaque article par son
+        # score RELATIF à la meilleure réponse de sa propre requête ; le score brut reste
+        # utilisé pour les seuils de confiance.
+        relative: dict[str, float] = {}
         for q_idx, (q_variant, retrieved) in enumerate(zip(variant_labels, all_variant_results)):
+            top = max((a.get("score", 0) for a in retrieved), default=0) or 1.0
             for art in retrieved:
                 aid = art.get("id", "")
-                if aid and aid not in all_retrieved:
-                    all_retrieved[aid] = art
-                elif aid and art.get("score", 0) > all_retrieved[aid].get("score", 0):
-                    # Garder le meilleur score pour cet article
+                if not aid:
+                    continue
+                relative[aid] = max(relative.get(aid, 0.0), art.get("score", 0) / top)
+                if aid not in all_retrieved or art.get("score", 0) > all_retrieved[aid].get("score", 0):
+                    # Garder le meilleur score brut pour cet article
                     all_retrieved[aid] = art
 
             if self.verbose:
                 print(f"  Query {q_idx+1}/{len(variant_labels)}: {len(retrieved)} articles — '{q_variant[:60]}'")
 
-        # Fusionner, trier par score et limiter à top_k
-        articles = sorted(all_retrieved.values(), key=lambda x: x.get("score", 0), reverse=True)
+        # Fusionner, trier par score relatif (puis brut) et limiter à top_k
+        articles = sorted(all_retrieved.values(),
+                          key=lambda x: (relative.get(x.get("id", ""), 0.0), x.get("score", 0)), reverse=True)
         articles = articles[:top_k]
 
         # Seuil minimum de score : éliminer les articles vraiment hors sujet
@@ -1514,6 +1558,10 @@ class JusticIAPipeline:
             "france", "sénégal", "senegal", "mali", "côte d'ivoire", "cote d'ivoire",
             "maroc", "algérie", "algerie", "tunisie", "cameroun", "belgique",
             "canada", "états-unis", "etats-unis", "usa", "europe",
+            # « en droit français » : l'adjectif doit aussi déclencher le refus
+            "droit français", "droit francais", "loi française", "loi francaise", "code français",
+            "droit sénégalais", "droit senegalais", "droit ivoirien", "droit malien", "droit marocain",
+            "droit belge", "droit canadien", "droit américain", "droit americain", "droit européen",
         ]
         question_lower = question.lower()
         pays_detecte = next(
@@ -1522,11 +1570,14 @@ class JusticIAPipeline:
             None
         )
         if pays_detecte:
+            # « droit français » → « le droit **français** » ; « france » → « le droit de **France** »
+            first, _, rest = pays_detecte.partition(" ")
+            cible = f"le droit **{rest}**" if first in ("droit", "loi", "code") else f"le droit de **{pays_detecte.title()}**"
             refus = (
                 f"Je suis **JusticIA-GN**, l'assistant juridique dédié au droit de la "
                 f"**République de Guinée**. Ma compétence est strictement limitée au droit "
                 f"positif guinéen.\n\n"
-                f"Votre question porte sur le droit de **{pays_detecte.title()}**, "
+                f"Votre question porte sur {cible}, "
                 f"qui ne relève pas de ma compétence.\n\n"
                 f"Pour toute question relative au droit guinéen (travail, pénal, civil, "
                 f"foncier, famille, mines, constitution…), je reste à votre entière disposition."
@@ -1540,6 +1591,12 @@ class JusticIAPipeline:
                 progress(step_id, label, status, detail)
             except Exception:  # noqa: BLE001 — le suivi ne doit jamais casser une réponse
                 pass
+
+        # Article cité qui n'existe pas dans le texte nommé (« article 2500 du Code pénal ») :
+        # on le dit précisément, avec la numérotation réelle du texte, plutôt que de chercher autre chose.
+        missing = self.missing_article_refs(question)
+        if missing:
+            return missing + RESPONSE_FOOTER, []
 
         emit("recherche", "Recherche dans les textes officiels")
         r = self.retrieve_articles(question, domaine=domaine, top_k=top_k, history=history, search_hint=search_hint)

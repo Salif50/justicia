@@ -111,7 +111,10 @@ _ABOUT = re.compile(
     r"a quoi (tu sers|sert justicia|servez vous)|tu es une ia|es tu (une ia|un robot|humain)|tu es un robot|"
     r"quel(le)?s? (sont )?(tes|vos) (capacites|fonctions|competences|limites)|"
     r"(tarif|tarifs|prix|abonnement|abonnements|formule|formules|plan pro|offre|offres|gratuit|payant|"
-    r"combien (ca coute|coute)|moyen de paiement|orange money|"
+    # « combien coûte la création d'une SARL » est une question de droit des affaires :
+    # seul le prix de la plateforme relève de cette catégorie.
+    r"combien (ca coute|coute)(?! (la |le |l |une |un )?(creation|constitution|immatriculation|procedure|divorce|"
+    r"proces|avocat|notaire|enregistrement|permis|titre|depot))|moyen de paiement|orange money|"
     # « payer » seul désignait aussi une dette (« un client refuse de payer ma facture ») :
     # seuls les paiements de la plateforme relèvent de cette catégorie.
     r"payer (mon |l |votre |le |son )?(abonnement|forfait|plan|justicia)|payer (en ligne|par carte|par orange|par mobile))|"
@@ -412,8 +415,10 @@ async def triage(message: str, history: list[dict] | None = None) -> Triage | No
     questions = [str(q).strip() for q in (data.get("clarify_questions") or []) if str(q).strip()][:3]
     if kind == Kind.CLARIFY and (not questions or _clearly_legal(message, history)):
         kind = Kind.LEGAL
-    # « Que dit la loi guinéenne sur… » n'est jamais hors sujet, même si le thème est inattendu
-    if kind == Kind.OFFTOPIC and _STRONG_LEGAL.search(normalize(message)):
+    # « Que dit la loi guinéenne sur… » n'est jamais hors sujet, même si le thème est inattendu.
+    # Le modèle léger varie d'un appel à l'autre (« la contrebande en douane » parfois jugée hors
+    # sujet) : une notion juridique repérée par les règles l'emporte toujours.
+    if kind == Kind.OFFTOPIC and (_STRONG_LEGAL.search(normalize(message)) or classify(message) == Kind.LEGAL):
         kind = Kind.LEGAL
     return Triage(
         kind=kind,

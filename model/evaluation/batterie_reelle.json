@@ -1,0 +1,521 @@
+[
+ {
+  "id": "penal-vol",
+  "q": "Quelle est la peine pour un vol simple ?",
+  "attendu": [
+   [
+    "doc_008",
+    "373"
+   ]
+  ],
+  "contient": [
+   [
+    "1 à 5 ans",
+    "un à cinq ans"
+   ]
+  ],
+  "verifie": "Code pénal art. 373 : « Le vol est puni d'un emprisonnement de 1 à 5 ans »"
+ },
+ {
+  "id": "penal-viol",
+  "q": "Que risque l'auteur d'un viol ?",
+  "attendu": [
+   [
+    "doc_008",
+    "268"
+   ]
+  ],
+  "contient": [
+   [
+    "5 à 10 ans",
+    "cinq à dix ans"
+   ]
+  ],
+  "verifie": "Code pénal art. 268 : réclusion criminelle de 5 à 10 ans"
+ },
+ {
+  "id": "penal-abus-confiance",
+  "q": "Qu'est-ce que l'abus de confiance ?",
+  "attendu": [
+   [
+    "doc_008",
+    "428"
+   ]
+  ],
+  "verifie": "Code pénal art. 428 : définition"
+ },
+ {
+  "id": "penal-article-explicite",
+  "q": "Que dit l'article 268 du Code pénal ?",
+  "attendu": [
+   [
+    "doc_008",
+    "268"
+   ]
+  ],
+  "verifie": "Référence explicite"
+ },
+ {
+  "id": "cpp-garde-a-vue",
+  "q": "Quels sont mes droits si je suis placé en garde à vue ?",
+  "attendu": [
+   [
+    "doc_020",
+    "85"
+   ],
+   [
+    "doc_020",
+    "87"
+   ],
+   [
+    "doc_020",
+    "90"
+   ],
+   [
+    "doc_020",
+    "93"
+   ],
+   [
+    "doc_020",
+    "94"
+   ]
+  ],
+  "verifie": "CPP art. 85 à 94"
+ },
+ {
+  "id": "travail-heures-sup",
+  "q": "Comment sont payées les heures supplémentaires ?",
+  "attendu": [
+   [
+    "doc_023",
+    "221.6"
+   ]
+  ],
+  "contient": [
+   [
+    "30",
+    "trente"
+   ]
+  ],
+  "verifie": "Code du travail art. 221.6 : majoration de 30 % les 4 premières heures"
+ },
+ {
+  "id": "travail-greve",
+  "q": "Faut-il un préavis avant de faire grève ?",
+  "attendu": [
+   [
+    "doc_023",
+    "431.3"
+   ]
+  ],
+  "verifie": "Code du travail art. 431.3"
+ },
+ {
+  "id": "travail-age-enfant",
+  "q": "À partir de quel âge un enfant peut-il travailler ?",
+  "attendu": [
+   [
+    "doc_023",
+    "137.5"
+   ],
+   [
+    "doc_023",
+    "121.4"
+   ]
+  ],
+  "contient": [
+   [
+    "16",
+    "seize"
+   ]
+  ],
+  "verifie": "Code du travail art. 137.5 et 121.4 : seize ans"
+ },
+ {
+  "id": "travail-duree",
+  "q": "Quelle est la durée légale du travail par semaine ?",
+  "attendu": [
+   [
+    "doc_023",
+    "221.1"
+   ]
+  ],
+  "contient": [
+   [
+    "40",
+    "quarante"
+   ]
+  ],
+  "verifie": "Code du travail art. 221.1 : quarante heures"
+ },
+ {
+  "id": "civil-divorce",
+  "q": "Quels sont les différents cas de divorce ?",
+  "attendu": [
+   [
+    "doc_032",
+    "304"
+   ]
+  ],
+  "verifie": "Code civil art. 304 : consentement mutuel, rupture de la vie commune, faute"
+ },
+ {
+  "id": "civil-reserve",
+  "q": "Quelle part de l'héritage est réservée aux héritiers ?",
+  "attendu": [
+   [
+    "doc_032",
+    "710"
+   ]
+  ],
+  "contient": [
+   [
+    "2/3",
+    "deux tiers"
+   ]
+  ],
+  "verifie": "Code civil art. 710 : réserve héréditaire de 2/3"
+ },
+ {
+  "id": "civil-majorite",
+  "q": "À quel âge devient-on majeur ?",
+  "attendu": [
+   [
+    "doc_032",
+    "578"
+   ]
+  ],
+  "contient": [
+   [
+    "18"
+   ]
+  ],
+  "verifie": "Code civil art. 578 : 18 ans accomplis"
+ },
+ {
+  "id": "civil-pension-enfants",
+  "q": "Après un divorce, qui paie l'entretien des enfants ?",
+  "attendu": [
+   [
+    "doc_032",
+    "362"
+   ]
+  ],
+  "verifie": "Code civil art. 362 : contribution à l'entretien sous forme de pension alimentaire"
+ },
+ {
+  "id": "foncier-immatriculation",
+  "q": "Comment faire immatriculer mon terrain ?",
+  "attendu": [
+   [
+    "doc_006",
+    "*"
+   ]
+  ],
+  "verifie": "Code foncier et domanial (immatriculation, art. 139 et suivants)"
+ },
+ {
+  "id": "construction-permis",
+  "q": "Que faut-il pour obtenir un permis de construire ?",
+  "attendu": [
+   [
+    "doc_048",
+    "76"
+   ],
+   [
+    "doc_048",
+    "85"
+   ],
+   [
+    "doc_048",
+    "*"
+   ]
+  ],
+  "verifie": "Code de la construction et de l'habitation art. 76, 85"
+ },
+ {
+  "id": "ohada-sa-capital",
+  "q": "Quel capital faut-il pour créer une société anonyme ?",
+  "attendu": [
+   [
+    "doc_059",
+    "387"
+   ]
+  ],
+  "contient": [
+   [
+    "10.000.000",
+    "10 000 000",
+    "dix millions"
+   ]
+  ],
+  "interdit_docs": [
+   "doc_001"
+  ],
+  "verifie": "AUSCGIE art. 387"
+ },
+ {
+  "id": "ohada-bail",
+  "q": "Quelle est la durée d'un bail commercial ?",
+  "attendu": [
+   [
+    "doc_060",
+    "104"
+   ]
+  ],
+  "verifie": "AUDCG art. 104 : durée librement fixée"
+ },
+ {
+  "id": "ohada-cessation",
+  "q": "Qu'est-ce que la cessation des paiements ?",
+  "attendu": [
+   [
+    "doc_062",
+    "25"
+   ]
+  ],
+  "verifie": "AUPCAP art. 25"
+ },
+ {
+  "id": "ohada-injonction",
+  "q": "Un client ne me paie pas, combien de temps a-t-il pour contester une injonction de payer ?",
+  "attendu": [
+   [
+    "doc_061",
+    "10"
+   ],
+   [
+    "doc_061",
+    "8"
+   ]
+  ],
+  "contient": [
+   [
+    "dix jours",
+    "10 jours"
+   ]
+  ],
+  "verifie": "AUPSRVE art. 10"
+ },
+ {
+  "id": "ohada-caution",
+  "q": "Comment prouver qu'une personne s'est portée caution ?",
+  "attendu": [
+   [
+    "doc_063",
+    "14"
+   ]
+  ],
+  "verifie": "AUS art. 14"
+ },
+ {
+  "id": "fiscal-tva",
+  "q": "Quel est le taux de TVA en Guinée ?",
+  "attendu": [
+   [
+    "doc_035",
+    "373"
+   ]
+  ],
+  "contient": [
+   [
+    "18"
+   ]
+  ],
+  "interdit_docs": [
+   "doc_033"
+  ],
+  "verifie": "CGI 2021 art. 373 : 18 %"
+ },
+ {
+  "id": "fiscal-imf",
+  "q": "Quand faut-il payer l'impôt minimum forfaitaire ?",
+  "attendu": [
+   [
+    "doc_035",
+    "246"
+   ]
+  ],
+  "contient": [
+   [
+    "15 janvier"
+   ]
+  ],
+  "verifie": "CGI art. 246 : au plus tard le 15 janvier"
+ },
+ {
+  "id": "douane-contrebande",
+  "q": "Qu'est-ce que la contrebande en douane ?",
+  "attendu": [
+   [
+    "doc_046",
+    "424"
+   ]
+  ],
+  "verifie": "Code des douanes art. 424"
+ },
+ {
+  "id": "route-alcool",
+  "q": "Que risque-t-on à conduire en état d'ivresse ?",
+  "attendu": [
+   [
+    "doc_043",
+    "25"
+   ]
+  ],
+  "verifie": "Code de la route art. 25"
+ },
+ {
+  "id": "route-permis",
+  "q": "Que risque-t-on à conduire sans permis ?",
+  "attendu": [
+   [
+    "doc_043",
+    "16"
+   ]
+  ],
+  "verifie": "Code de la route art. 16"
+ },
+ {
+  "id": "sante-avortement",
+  "q": "L'avortement est-il autorisé en Guinée ?",
+  "attendu": [
+   [
+    "doc_055",
+    "183"
+   ],
+   [
+    "doc_008",
+    "*"
+   ]
+  ],
+  "verifie": "Code de la santé publique art. 183 (avortement thérapeutique) / Code pénal"
+ },
+ {
+  "id": "numerique-donnees",
+  "q": "Puis-je demander l'effacement de mes données personnelles ?",
+  "attendu": [
+   [
+    "doc_029",
+    "35"
+   ]
+  ],
+  "verifie": "Loi cybersécurité art. 35"
+ },
+ {
+  "id": "decret-2026-rcn",
+  "q": "Quel est le taux de la redevance de conformité numérique ?",
+  "attendu": [
+   [
+    "doc_1615",
+    "8"
+   ]
+  ],
+  "contient": [
+   [
+    "1,5"
+   ],
+   [
+    "7"
+   ]
+  ],
+  "verifie": "Décret D/2026/158 art. 8 : entre 1,5 % et 7 %"
+ },
+ {
+  "id": "electoral-abroge",
+  "q": "Qui peut voter aux élections en Guinée ?",
+  "attendu": [
+   [
+    "doc_036",
+    "*"
+   ],
+   [
+    "doc_011",
+    "*"
+   ]
+  ],
+  "interdit_docs": [
+   "doc_012"
+  ],
+  "verifie": "Code électoral 2025 (le code de 2017 est abrogé)"
+ },
+ {
+  "id": "environnement-abroge",
+  "q": "Une étude d'impact environnemental est-elle obligatoire ?",
+  "attendu": [
+   [
+    "doc_037",
+    "*"
+   ]
+  ],
+  "interdit_docs": [
+   "doc_003"
+  ],
+  "verifie": "Code de l'environnement 2019 (l'ordonnance de 1987 est abrogée)"
+ },
+ {
+  "id": "guide-cout-sarl",
+  "q": "Combien coûte la création d'une SARL au guichet unique ?",
+  "attendu": [
+   [
+    "doc_072",
+    "*"
+   ]
+  ],
+  "contient": [
+   [
+    "530 000",
+    "530.000"
+   ]
+  ],
+  "verifie": "Guide APIP 2026 : 530 000 GNF"
+ },
+ {
+  "id": "juris-whatsapp",
+  "q": "Quelqu'un m'insulte sur WhatsApp, que risque-t-il ?",
+  "attendu": [
+   [
+    "doc_029",
+    "*"
+   ],
+   [
+    "doc_008",
+    "*"
+   ]
+  ],
+  "jurisprudence": true,
+  "verifie": "Loi cybersécurité / Code pénal + jugement TPI 2022"
+ },
+ {
+  "id": "piege-article-inexistant",
+  "q": "Que dit l'article 2500 du Code pénal ?",
+  "comportement": "pas_de_source",
+  "interdit_texte": [
+   "article 2500 dispose",
+   "l'article 2500 prévoit"
+  ],
+  "verifie": "Le Code pénal n'a pas d'article 2500"
+ },
+ {
+  "id": "piege-articles-civil",
+  "q": "Que disent les articles 9000 et 9001 du Code civil ?",
+  "comportement": "pas_de_source",
+  "interdit_texte": [
+   "l'article 9000 dispose",
+   "l'article 9000 prévoit"
+  ],
+  "verifie": "Le Code civil s'arrête à l'article 1636"
+ },
+ {
+  "id": "piege-etranger",
+  "q": "Quel est le délai de prescription d'un vol en droit français ?",
+  "comportement": "refus",
+  "verifie": "Hors droit guinéen"
+ },
+ {
+  "id": "piege-hors-sujet",
+  "q": "Donne-moi une recette de riz au gras",
+  "comportement": "refus",
+  "verifie": "Hors sujet"
+ }
+]

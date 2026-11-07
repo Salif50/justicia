@@ -502,6 +502,13 @@ def _merge(doc_id: str, theirs: list[dict], report: dict) -> list[dict]:
     for art in theirs:
         k = art["num"].lower()
         if k not in by_num:
+            # « 30-iii » chez la source, paragraphe « III » de notre « Article 30 » : même texte,
+            # numéroté autrement. On n'ajoute que ce qui n'existe pas déjà sous le même numéro de base.
+            base = k.split("-")[0]
+            same_base = [o for o in ours if (_num_key(o.get("article_ref", "")) or "").split("-")[0] == base]
+            if any(_sim(o["texte"], art["texte"]) >= 0.85 for o in same_base):
+                stats["deja_presents"] += 1
+                continue
             added.append(_article_record(doc_id, art))
             stats["ajoutes"] += 1
             continue

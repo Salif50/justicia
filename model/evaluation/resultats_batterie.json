@@ -1,0 +1,609 @@
+[
+ {
+  "id": "penal-vol",
+  "question": "Quelle est la peine pour un vol simple ?",
+  "verifie": "Code pénal art. 373 : « Le vol est puni d'un emprisonnement de 1 à 5 ans »",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 373 (doc_008)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLe vol simple est qualifié de délit et est puni d’un emprisonnement de 1 à 5 ans et d’une amende de 500.000 à 2.000.000 de francs guinéens, ou de l’une de ces deux peines seulement [1].\n\n### Ce que dit la loi\n1. **Qualification du vol** — Le vol est défini comme la soustraction frauduleuse de la chose d'autrui, y compris la soustraction frauduleuse d’eau ou d’énergie [1].\n2. **Peine principale** — Le vol est puni d’un emprisonnement de 1 à 5 ans et d’une amende de 500.000 à 2.000.000 de francs guinéens, ou de l’une de ces deux peines seulement [1].\n\n### En pratique\n- La peine pour vol simple peut être soit une peine d'emprisonnement, soit une amende, soit les deux, selon la décision du juge [1].\n- La soustraction frauduleuse d'eau ou d'énergie est assimilée au vol et est donc passible des mêmes peines [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 22.9
+ },
+ {
+  "id": "penal-viol",
+  "question": "Que risque l'auteur d'un viol ?",
+  "verifie": "Code pénal art. 268 : réclusion criminelle de 5 à 10 ans",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 268 (doc_008)",
+   "Article 820 (doc_005)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nL'auteur d'un viol risque une peine de réclusion criminelle de 5 à 10 ans, voire de 10 à 20 ans dans certaines circonstances aggravantes [1].\n\n### Ce que dit la loi\n1. **Définition du viol** — « Tout acte de pénétration sexuelle, de quelque nature qu'il soit, commis sur la personne d'autrui par violence, contrainte ou surprise, constitue un viol » [1].\n2. **Peine de base pour viol** — Le viol est puni de la réclusion criminelle de 5 à 10 ans [1].\n3. **Circonstances aggravantes** — La peine est portée à 10 à 20 ans de réclusion criminelle si le viol a entraîné une mutilation, est commis sur un mineur de moins de 18 ans, ou dans d'autres situations spécifiques telles que l'abus d'autorité ou l'usage d'une arme [1].\n4. **Viol en temps de conflit armé** — Lorsqu'il est commis sur des personnes de moins de 18 ans, le viol en temps de conflit armé est puni de la réclusion criminelle à perpétuité [2].\n\n### En pratique\n- La peine de réclusion criminelle peut être augmentée en fonction des circonstances aggravantes telles que l'âge de la victime ou l'utilisation d'une arme [1].\n- En cas de viol sur un mineur en temps de conflit armé, la peine est extrêmement sévère, allant jusqu'à la réclusion criminelle à perpétuité [2].\n- Les dispositions relatives au sursis ne sont pas applicables pour les infractions de viol en temps de conflit armé [2].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.5
+ },
+ {
+  "id": "penal-abus-confiance",
+  "question": "Qu'est-ce que l'abus de confiance ?",
+  "verifie": "Code pénal art. 428 : définition",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 428 (doc_008)",
+   "Article 429 (doc_008)",
+   "Article 430 (doc_008)"
+  ],
+  "decisions": [
+   "Tribunal de première instance de Mafanco, 24 juillet 2023, RP 510"
+  ],
+  "ok": true,
+  "reponse": "### En bref\nL'abus de confiance est défini comme le fait de détourner ou de dissiper, au préjudice d'autrui, des fonds, des valeurs ou un bien quelconque qui ont été remis à une personne avec l'obligation de les rendre, de les représenter ou d'en faire un usage déterminé [1].\n\n### Ce que dit la loi\n1. **Définition légale** — « L'abus de confiance est le fait par une personne de détourner ou de dissiper, au préjudice d'autrui, des fonds, des valeurs ou un bien quelconque qui lui ont été remis et qu'elle a acceptés à charge de les rendre, de les représenter ou d'en faire un usage déterminé » [1].\n2. **Sanctions de base** — L'abus de confiance est puni d'un emprisonnement de 1 à 3 ans et d'une amende de 500.000 à 25.000.000 de francs guinéens, ou de l'une de ces deux peines seulement [1].\n3. **Aggravation des peines** — Les peines peuvent être portées à 5 ans d'emprisonnement et à 50.000.000 de francs guinéens lorsque l'abus de confiance est commis dans certaines circonstances aggravantes, telles que l'appel au public pour la remise de fonds ou au préjudice de personnes vulnérables [2].\n4. **Peines pour les mandataires de justice** — Les peines sont portées à 7 ans d'emprisonnement et à 100.000.000 de francs guinéens d’amende lorsque l'abus de confiance est réalisé par un mandataire de justice ou un officier public ou ministériel dans l'exercice de ses fonctions [3].\n\n### En pratique\n- Lorsqu'une personne détourne des fonds ou des biens qui lui ont été confiés, elle peut être poursuivie pour abus de confiance et encourir des peines d'emprisonnement et/ou d'amende [1].\n- Les circonstances aggravantes, telles que l'appel au public ou le préjudice causé à des personnes vulnérables, peuvent entraîner des peines plus sévères [2].\n- Les mandataires de justice et les officiers publics ou ministériels sont soumis à des peines plus lourdes en cas d'abus de confiance dans l'exercice de leurs fonctions [3].\n\n### Jurisprudence\n- **Tribunal de première instance de Mafanco, 24 juillet 2023** — La cour a requalifié un cas en abus de confiance lorsque le prévenu, ayant reçu des fonds pour un mandat, a manqué de réaliser ce mandat, démontrant ainsi un détournement des biens confiés [J1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 9.9
+ },
+ {
+  "id": "penal-article-explicite",
+  "question": "Que dit l'article 268 du Code pénal ?",
+  "verifie": "Référence explicite",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 268 (doc_008)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nL'article 268 du Code pénal guinéen définit le viol comme tout acte de pénétration sexuelle commis par violence, contrainte ou surprise, et prévoit des peines de réclusion criminelle variant selon les circonstances aggravantes [1].\n\n### Ce que dit la loi\n1. **Définition du viol** — « Tout acte de pénétration sexuelle, de quelque nature qu'il soit, commis sur la personne d'autrui par violence, contrainte ou surprise, constitue un viol » [1].\n2. **Peine de base** — Le viol est puni de la réclusion criminelle de 5 à 10 ans [1].\n3. **Circonstances aggravantes** — La peine est portée à 10 à 20 ans de réclusion criminelle dans plusieurs cas, notamment si le viol a entraîné une mutilation, est commis sur un mineur, ou implique l'abus d'autorité [1].\n\n### En pratique\n- La qualification de viol nécessite la preuve de violence, contrainte ou surprise lors de l'acte de pénétration sexuelle [1].\n- Les circonstances aggravantes, telles que l'âge de la victime ou l'abus d'autorité, augmentent significativement la peine encourue [1].\n- Les peines varient en fonction de la gravité des conséquences pour la victime, comme une mutilation ou une infirmité permanente [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 9.9
+ },
+ {
+  "id": "cpp-garde-a-vue",
+  "question": "Quels sont mes droits si je suis placé en garde à vue ?",
+  "verifie": "CPP art. 85 à 94",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 90 (doc_020)",
+   "Article 91 (doc_020)",
+   "Article 10 (doc_011)",
+   "Article 98 (doc_020)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nEn garde à vue, vous avez le droit d'être informé des motifs de votre arrestation, d'être assisté par un avocat, et de faire prévenir un proche ou votre employeur [1] [2].\n\n### Ce que dit la loi\n1. **Information immédiate** — Vous devez être informé immédiatement de votre placement en garde à vue, de la durée de la mesure, et des motifs de votre arrestation dans une langue que vous comprenez [1].\n2. **Droits de communication** — Vous avez le droit de faire prévenir un proche, votre employeur, et, si vous êtes de nationalité étrangère, les autorités consulaires de votre pays [2].\n3. **Assistance d'un avocat** — Vous avez le droit d'être assisté par un avocat durant la garde à vue [1].\n4. **Droit à un traitement digne** — Vous avez droit à un traitement qui préserve votre dignité et à un procès juste et équitable [3].\n\n### En pratique\n- Lors de votre placement en garde à vue, un officier de police judiciaire doit vous informer de vos droits et des raisons de votre arrestation immédiatement [1].\n- Vous pouvez demander à ce qu'un proche ou votre employeur soit informé de votre situation dans un délai de trois heures, sauf circonstances insurmontables [2].\n- Si vous ne comprenez pas le français, un interprète doit vous être fourni pour vous notifier vos droits [1].\n- Votre avocat ne peut divulguer les informations recueillies durant la garde à vue tant que celle-ci est en cours [4].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.1
+ },
+ {
+  "id": "travail-heures-sup",
+  "question": "Comment sont payées les heures supplémentaires ?",
+  "verifie": "Code du travail art. 221.6 : majoration de 30 % les 4 premières heures",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 221.6 (doc_023)",
+   "Article 221.9 (doc_023)",
+   "Article 221.5 (doc_023)",
+   "Article 221.7 (doc_023)",
+   "Article 16 (doc_1291)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLes heures supplémentaires sont rémunérées avec une majoration de salaire de 30 % pour les quatre premières heures et de 60 % au-delà, sauf si des conditions plus avantageuses sont prévues par contrat ou convention collective [1].\n\n### Ce que dit la loi\n1. **Majoration des heures supplémentaires** — Les heures supplémentaires donnent lieu à une majoration de salaire : « Cette majoration est de trente pour cent les quatre premières heures, de soixante pour cent au-delà » [1].\n2. **Conditions plus avantageuses** — Des modes de rémunération plus avantageux peuvent être établis par contrat individuel de travail ou par convention collective [1].\n3. **Rémunération des heures de nuit** — Si une heure supplémentaire est effectuée la nuit, la majoration de l'heure supplémentaire s'applique sur le montant déjà majoré de l'heure de nuit [2].\n\n### En pratique\n- Les employeurs peuvent imposer jusqu'à 100 heures supplémentaires par an sans autorisation préalable, mais au-delà, une autorisation de l'inspecteur du travail est requise [3].\n- La durée du travail effectif, y compris les heures supplémentaires, ne peut dépasser 48 heures par semaine [4].\n- Les heures supplémentaires doivent être dûment constatées pour être rémunérées, notamment dans le secteur public [5].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.1
+ },
+ {
+  "id": "travail-greve",
+  "question": "Faut-il un préavis avant de faire grève ?",
+  "verifie": "Code du travail art. 431.3",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 431.3 (doc_023)",
+   "Article 431.4 (doc_023)",
+   "Article 431.5 (doc_023)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\n\nUn préavis est obligatoire avant de faire grève, et il doit être notifié par écrit à l'autorité compétente de l'administration du travail [1].\n\n### Ce que dit la loi\n\n1. **Obligation de préavis** — La grève doit être précédée d’un préavis permettant la négociation entre les parties. Ce préavis est obligatoire et doit être notifié par écrit à l’autorité compétente de l’administration du travail [1].\n   \n2. **Dépôt du préavis** — Le préavis de grève ne peut être déposé que par une organisation syndicale représentative ou, en l'absence de délégué syndical, par le collectif des salariés en conflit [1].\n\n3. **Durée du préavis** — Le préavis de grève est d’une durée de dix jours ouvrables [1].\n\n4. **Contenu du préavis** — La notification écrite du préavis doit comporter les raisons et les revendications formulées par l’organisation syndicale ou le collectif déposant le préavis [1].\n\n### En pratique\n\n- Le préavis doit être déposé auprès de la direction de l’entreprise, de l’établissement ou des organisations patronales de la branche concernée [1].\n- L'autorité compétente doit initier des négociations dès la réception du préavis, sous l'égide de l'inspecteur du travail [2].\n- Les parties en conflit sont tenues de participer à toutes les réunions de concertation et de conciliation organisées par l’autorité compétente [2].\n- Si aucun accord n'est conclu dans les dix jours suivant la notification du préavis, les salariés peuvent cesser complètement le travail, sous réserve d'assurer un service minimum [3].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.0
+ },
+ {
+  "id": "travail-age-enfant",
+  "question": "À partir de quel âge un enfant peut-il travailler ?",
+  "verifie": "Code du travail art. 137.5 et 121.4 : seize ans",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 137.5 (doc_023)",
+   "Article 919 (doc_005)",
+   "Article 927 (doc_005)",
+   "Article 933 (doc_005)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nUn enfant peut travailler à partir de l'âge de seize ans, sauf comme apprenti, sous certaines conditions [1] [2].\n\n### Ce que dit la loi\n1. **Âge minimum pour travailler** — Les enfants ne peuvent être employés dans aucune entreprise avant l’âge de seize ans, sauf comme apprenti tel que prévu par le Code du travail [1].\n2. **Consentement requis** — Pour les enfants âgés de seize ans au moins, le consentement écrit du titulaire de l’autorité parentale ou du tuteur, ainsi que de l’inspecteur de travail, est requis [2].\n3. **Interdictions spécifiques** — Il est interdit d’employer les enfants de moins de seize ans à certains travaux dangereux, tels que le travail moteur ou l'usage de scies circulaires [3].\n\n### En pratique\n- Un arrêté du Ministre en charge du Travail fixe les catégories d’entreprises et la nature des travaux interdits aux jeunes de moins de dix-huit ans [1].\n- L'emploi d'enfants de seize ans sans le consentement requis est passible d'une amende de 1.000.000 à 5.000.000 de francs guinéens [2].\n- Pour les enfants de 14 à 16 ans, une liste nominative doit être établie et adressée à l'inspecteur du travail dans les huit jours suivant l'embauche [4].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.5
+ },
+ {
+  "id": "travail-duree",
+  "question": "Quelle est la durée légale du travail par semaine ?",
+  "verifie": "Code du travail art. 221.1 : quarante heures",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 221.1 (doc_023)",
+   "Article 221.7 (doc_023)",
+   "Article 221.4 (doc_023)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLa durée légale du travail par semaine est habituellement de quarante heures dans les établissements privés, mais elle peut être étendue à quarante-huit heures en cas d'heures supplémentaires [1] [2].\n\n### Ce que dit la loi\n1. **Durée habituelle** — « Dans tous les établissements privés, la durée du travail effectif des salariés est habituellement de quarante heures par semaine » [1].\n2. **Heures supplémentaires** — La durée du travail peut atteindre quarante-huit heures par semaine en cas d'exécution d'heures supplémentaires, sous réserve des règles d’équivalence, de récupération ou de modulation [2].\n3. **Modulation du temps de travail** — Un accord de modulation peut prévoir une répartition inégale des heures de travail selon les semaines, sans augmenter la durée moyenne hebdomadaire sur une année civile [3].\n\n### En pratique\n- Un contrat de travail peut prévoir une durée inférieure à quarante heures, ce qui constitue un contrat à temps partiel [1].\n- Les heures effectuées au-delà de quarante heures dans le cadre d'une modulation ne sont pas considérées comme des heures supplémentaires [3].\n- Les accords de modulation doivent respecter les durées maximales hebdomadaire et journalière du travail [3].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.1
+ },
+ {
+  "id": "civil-divorce",
+  "question": "Quels sont les différents cas de divorce ?",
+  "verifie": "Code civil art. 304 : consentement mutuel, rupture de la vie commune, faute",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 304 (doc_032)",
+   "Article 321 (doc_032)",
+   "Article 317 (doc_032)",
+   "Article 334 (doc_032)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLes cas de divorce en droit guinéen incluent le divorce par consentement mutuel, pour rupture de la vie commune, et pour faute [1].\n\n### Ce que dit la loi\n1. **Divorce par consentement mutuel** — Le divorce peut être prononcé sur la base d'une demande conjointe des époux, ce qui implique un accord mutuel pour se séparer [1].\n2. **Divorce pour rupture de la vie commune** — Ce type de divorce est possible lorsque la vie commune est rompue de manière prolongée, nécessitant une tentative de conciliation préalable [2].\n3. **Divorce pour faute** — Un époux peut demander le divorce si son conjoint a commis des fautes graves, telles que des injures graves, un refus persistant d'accomplir des devoirs conjugaux, ou des sévices graves [3].\n\n### En pratique\n- Une tentative de conciliation est obligatoire avant l'instance judiciaire pour les divorces pour rupture de la vie commune ou pour faute [2].\n- La décision de divorce dissout le mariage à compter de la date à laquelle elle acquiert la force de chose jugée [4].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.1
+ },
+ {
+  "id": "civil-reserve",
+  "question": "Quelle part de l'héritage est réservée aux héritiers ?",
+  "verifie": "Code civil art. 710 : réserve héréditaire de 2/3",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 710 (doc_032)",
+   "Article 799 (doc_032)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLa part de l'héritage réservée aux héritiers est de 2/3 de la masse successorale, constituant la réserve héréditaire globale [1].\n\n### Ce que dit la loi\n1. **Réserve héréditaire globale** — La loi prévoit que « la réserve héréditaire globale est de 2/3 de la masse successorale » [1].\n2. **Quotité disponible** — Le dernier tiers de la masse successorale constitue la quotité disponible, qui peut être librement disposée par le défunt [1].\n3. **Saisine des héritiers** — Les héritiers réservataires sont saisis de plein droit de tous les biens de la succession au décès du testateur [2].\n\n### En pratique\n- Les héritiers réservataires reçoivent automatiquement leur part de la succession sans besoin de formalités supplémentaires [2].\n- Le légataire universel doit demander la délivrance des biens correspondant à la quotité disponible, ce qui peut nécessiter des démarches judiciaires [2].\n- La répartition de la réserve héréditaire et de la quotité disponible doit respecter les proportions légales pour éviter des contestations [1] [2].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 6.9
+ },
+ {
+  "id": "civil-majorite",
+  "question": "À quel âge devient-on majeur ?",
+  "verifie": "Code civil art. 578 : 18 ans accomplis",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 578 (doc_032)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nOn devient majeur à l'âge de 18 ans accomplis en République de Guinée [1].\n\n### Ce que dit la loi\n1. **Majorité légale** — La majorité est fixée à 18 ans accomplis ; à cet âge, une personne est capable de tous les actes de la vie civile [1].\n2. **Protection des majeurs vulnérables** — Même après avoir atteint la majorité, un individu peut être protégé par la loi s'il est dans l'incapacité de pourvoir seul à ses intérêts en raison d'une altération de ses facultés personnelles, de prodigalité, d'intempérance ou d'oisiveté [1].\n\n### En pratique\n- À 18 ans, une personne acquiert la pleine capacité juridique pour effectuer tous les actes de la vie civile sans nécessiter de représentation légale [1].\n- Les majeurs peuvent être soumis à des mesures de protection si leur capacité à gérer leurs affaires est compromise, ce qui peut inclure des mesures de tutelle ou de curatelle selon les circonstances [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 6.9
+ },
+ {
+  "id": "civil-pension-enfants",
+  "question": "Après un divorce, qui paie l'entretien des enfants ?",
+  "verifie": "Code civil art. 362 : contribution à l'entretien sous forme de pension alimentaire",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 362 (doc_032)",
+   "Article 965 (doc_042)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nAprès un divorce, l'entretien des enfants est assuré par le versement d'une pension alimentaire par le parent qui n'a pas l'exercice de l'autorité parentale ou chez lequel les enfants ne résident pas habituellement [1].\n\n### Ce que dit la loi\n1. **Pension alimentaire pour les enfants** — « La contribution à l'entretien et à l'éducation des enfants prend la forme d'une pension alimentaire versée, selon le cas, au parent qui a l'exercice de l'autorité parentale ou chez lequel les enfants ont leur résidence habituelle » [1].\n2. **Obligations pendant et après le divorce** — Lorsqu'un divorce est demandé pour rupture de la vie commune, la requête doit préciser comment l'époux assurera ses obligations envers les enfants, tant durant l'instance qu'après la dissolution du mariage [2].\n\n### En pratique\n- La pension alimentaire est fixée par le jugement de divorce ou par une convention homologuée par le juge en cas de divorce sur demande conjointe [1].\n- Le parent qui n'a pas la garde des enfants est généralement celui qui verse la pension alimentaire [1].\n- Les modalités de paiement et les garanties de la pension alimentaire sont déterminées par le jugement [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.5
+ },
+ {
+  "id": "foncier-immatriculation",
+  "question": "Comment faire immatriculer mon terrain ?",
+  "verifie": "Code foncier et domanial (immatriculation, art. 139 et suivants)",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 140 (doc_006)",
+   "Article 143 (doc_006)",
+   "Article 150 (doc_006)",
+   "Article 144 (doc_006)",
+   "Article 11 (doc_006)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\n\nPour immatriculer un terrain en Guinée, il faut déposer une réquisition d'immatriculation auprès du Conservateur foncier, accompagnée des documents requis et d'une provision pour les frais de formalité [1] [2].\n\n### Ce que dit la loi\n\n1. **Déclaration initiale** — Le requérant doit remettre au Conservateur une déclaration signée contenant ses informations personnelles, la description de l'immeuble, son estimation de valeur, et les droits réels afférents [1].\n   \n2. **Dépôt de documents** — La déclaration doit être accompagnée de tous les contrats et actes publics relatifs aux droits sur l'immeuble, ainsi que d'un plan de l'immeuble conforme aux instructions du Service Topographique [1].\n\n3. **Réquisition d'immatriculation** — Le requérant doit formuler une réquisition au Conservateur pour procéder à l'immatriculation, en fournissant un état des publications d'actes et des inscriptions non radiées concernant l'immeuble [3].\n\n4. **Provision pour frais** — Une provision égale au montant présumé des frais de formalité doit être déposée en même temps que la réquisition [2].\n\n5. **Établissement du titre foncier** — L'immatriculation aboutit à l'établissement d'un titre foncier sur les Livres Fonciers, remplaçant les anciens titres de propriété [4].\n\n### En pratique\n\n- La réquisition d'immatriculation doit être déposée auprès du Conservateur foncier, qui est l'autorité compétente pour cette procédure [1].\n- Le dépôt d'une provision pour les frais est obligatoire et son montant est arbitré par le Conservateur [2].\n- L'immatriculation est une étape préalable obligatoire pour tout acte concernant l'immeuble qui doit être publié [5].\n- Le titre foncier établi est définitif et remplace tous les anciens titres de propriété [4].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 9.1
+ },
+ {
+  "id": "construction-permis",
+  "question": "Que faut-il pour obtenir un permis de construire ?",
+  "verifie": "Code de la construction et de l'habitation art. 76, 85",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 85 (doc_048)",
+   "Article 89 (doc_006)",
+   "Article 76 (doc_037)",
+   "Article 119 (doc_048)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nPour obtenir un permis de construire en Guinée, il est nécessaire de faire appel à un architecte agréé pour la conception du projet et de s'assurer que le projet respecte les réglementations d'urbanisme, de sécurité et d'environnement [1] [2] [3].\n\n### Ce que dit la loi\n1. **Recours à un architecte** — Toute demande de permis de construire doit être instruite par un architecte agréé qui établira le projet architectural [1].\n2. **Conformité aux réglementations** — Le permis de construire ne peut être accordé que si les constructions projetées sont conformes à la réglementation d'urbanisme applicable, ainsi qu'aux règlements sanitaires et de sécurité [2].\n3. **Avis environnemental** — Avant la délivrance du permis, celui-ci doit être communiqué pour avis au Ministère en charge de l'environnement, qui peut imposer des prescriptions spéciales si nécessaire [3].\n4. **Règles de sécurité et d'hygiène** — Le permis de construire ne sera délivré que si les règles d'hygiène et de sécurité sont respectées, notamment en matière d'assainissement et d'évacuation en cas d'incendie [4].\n\n### En pratique\n- Le recours à un architecte est obligatoire pour établir le projet architectural, ce qui implique des coûts supplémentaires pour le demandeur [1].\n- Le permis de construire est délivré au nom de l'État, ce qui signifie que les autorités publiques ont un contrôle direct sur l'octroi de ces permis [2].\n- Les projets doivent être conformes aux règlements d'urbanisme locaux, ce qui peut nécessiter des ajustements ou des consultations supplémentaires pour s'assurer de cette conformité [2].\n- L'avis du Ministère de l'environnement peut entraîner des délais supplémentaires dans le processus d'obtention du permis si des prescriptions spéciales sont requises [3].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 9.1
+ },
+ {
+  "id": "ohada-sa-capital",
+  "question": "Quel capital faut-il pour créer une société anonyme ?",
+  "verifie": "AUSCGIE art. 387",
+  "controles": {
+   "source": true,
+   "chiffre1": true,
+   "retire": true
+  },
+  "cites": [
+   "Article 387 (doc_059)",
+   "Article 388 (doc_059)",
+   "Article 389 (doc_059)",
+   "Article 827-2 (doc_059)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nPour créer une société anonyme, le capital social minimum requis est de dix millions (10.000.000) de francs CFA [1].\n\n### Ce que dit la loi\n1. **Capital social minimum** — Le capital social minimum pour une société anonyme est fixé à dix millions (10.000.000) de francs CFA. Ce capital est divisé en actions dont le montant nominal est librement fixé par les statuts [1].\n2. **Souscription intégrale** — Le capital de la société anonyme doit être entièrement souscrit avant la date de la signature des statuts [2].\n3. **Libération des actions en numéraire** — Les actions représentant des apports en numéraire doivent être libérées d'au moins un quart de leur valeur nominale lors de la souscription du capital. Le surplus doit être libéré dans un délai ne dépassant pas trois ans après l'immatriculation de la société [3] [4].\n\n### En pratique\n- Lors de la création d'une société anonyme, il est impératif de s'assurer que le capital social est entièrement souscrit avant la signature des statuts [2].\n- Les actions en numéraire doivent être libérées d'au moins 25 % de leur valeur nominale au moment de la souscription, avec le reste à libérer dans les trois ans suivant l'immatriculation [3] [4].\n- Tant que le capital n'est pas entièrement libéré, la société ne peut ni augmenter son capital par des apports en numéraire ni émettre des obligations [3] [4].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.2
+ },
+ {
+  "id": "ohada-bail",
+  "question": "Quelle est la durée d'un bail commercial ?",
+  "verifie": "AUDCG art. 104 : durée librement fixée",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 104 (doc_060)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLa durée d'un bail commercial peut être fixée librement par les parties, pour une durée déterminée ou indéterminée, selon l'Acte uniforme OHADA [1].\n\n### Ce que dit la loi\n1. **Durée librement fixée** — Les parties à un bail commercial ont la liberté de fixer la durée du bail, qui peut être déterminée ou indéterminée. « Les parties fixent librement la durée du bail » [1].\n2. **Effet du contrat** — Le bail prend effet à compter de la signature du contrat, sauf convention contraire des parties [1].\n\n### En pratique\n- La flexibilité dans la durée permet aux parties de s'adapter aux besoins spécifiques de leur relation commerciale [1].\n- En l'absence d'un terme fixé par écrit, le bail est réputé conclu pour une durée indéterminée, ce qui peut influencer la stabilité des relations contractuelles [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.1
+ },
+ {
+  "id": "ohada-cessation",
+  "question": "Qu'est-ce que la cessation des paiements ?",
+  "verifie": "AUPCAP art. 25",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 25 (doc_062)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\n\nLa cessation des paiements est définie comme l'état où un débiteur se trouve dans l'impossibilité de faire face à son passif exigible avec son actif disponible, sauf si des réserves de crédit ou des délais de paiement lui permettent de le faire [1].\n\n### Ce que dit la loi\n\n1. **Définition légale** — La cessation des paiements est définie comme « l'état où le débiteur se trouve dans l'impossibilité de faire face à son passif exigible avec son actif disponible » [1].\n   \n2. **Exclusion des réserves de crédit** — La situation de cessation des paiements exclut les cas où le débiteur peut faire face à son passif grâce à des réserves de crédit ou des délais de paiement accordés par ses créanciers [1].\n\n3. **Obligation de déclaration** — Le débiteur en cessation des paiements doit faire une déclaration pour obtenir l'ouverture d'une procédure de redressement judiciaire ou de liquidation des biens [1].\n\n### En pratique\n\n- **Délai de déclaration** : Le débiteur doit déclarer la cessation des paiements dans un délai de trente (30) jours suivant cet état, en déposant la déclaration au greffe de la juridiction compétente [1].\n- **Choix de la procédure** : Dans sa déclaration, le débiteur doit préciser s'il demande l'ouverture d'une procédure de redressement judiciaire ou de liquidation des biens [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 9.1
+ },
+ {
+  "id": "ohada-injonction",
+  "question": "Un client ne me paie pas, combien de temps a-t-il pour contester une injonction de payer ?",
+  "verifie": "AUPSRVE art. 10",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 10 (doc_061)",
+   "Article 11 (doc_061)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLe débiteur dispose d'un délai de dix jours pour former opposition à une ordonnance d'injonction de payer, à compter de sa signification [1].\n\n### Ce que dit la loi\n1. **Délai d'opposition** — L'opposition doit être formée dans les dix jours suivant la signification de l'ordonnance d'injonction de payer. Ce délai peut être prolongé par des délais de distance si applicable [1].\n2. **Signification personnelle** — Si le débiteur n'a pas reçu personnellement la signification, l'opposition est recevable jusqu'à l'expiration du délai de dix jours suivant le premier acte signifié à personne ou la première mesure d'exécution rendant les biens indisponibles [1].\n3. **Formalités d'opposition** — L'opposant doit, dans le même acte que celui de l'opposition, signifier son recours à toutes les parties concernées et servir assignation à comparaître devant la juridiction compétente dans un délai de trente jours à compter de l'opposition [2].\n\n### En pratique\n- Le débiteur doit être vigilant quant à la réception de la signification de l'ordonnance pour ne pas manquer le délai d'opposition [1].\n- En cas de non-réception personnelle, le débiteur doit surveiller les actes ou mesures d'exécution pour calculer correctement le délai d'opposition [1].\n- L'opposition doit être formalisée correctement et signifiée à toutes les parties concernées pour être recevable [2].\n- Une assignation à comparaître doit être servie dans un délai de trente jours suivant l'opposition pour éviter la déchéance du recours [2].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.9
+ },
+ {
+  "id": "ohada-caution",
+  "question": "Comment prouver qu'une personne s'est portée caution ?",
+  "verifie": "AUS art. 14",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 14 (doc_063)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nPour prouver qu'une personne s'est portée caution, il est nécessaire de produire un acte signé par la caution et le créancier, mentionnant la somme maximale garantie en toutes lettres et en chiffres [1].\n\n### Ce que dit la loi\n1. **Preuve par écrit** — Le cautionnement doit être prouvé par un acte comportant la signature de la caution et du créancier, ainsi que la mention, écrite de la main de la caution, de la somme maximale garantie « en toutes lettres et en chiffres » [1].\n2. **Assistance pour les analphabètes** — Si la caution ne sait ou ne peut écrire, elle doit être assistée de deux témoins qui certifient son identité et sa présence, et attestent que la nature et les effets de l'acte lui ont été précisés [1].\n\n### En pratique\n- La présence de témoins dispense la caution analphabète de l'accomplissement des formalités d'écriture personnelle de la somme garantie [1].\n- En cas de différence entre les chiffres et les lettres, la somme exprimée en lettres prévaut [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 6.3
+ },
+ {
+  "id": "fiscal-tva",
+  "question": "Quel est le taux de TVA en Guinée ?",
+  "verifie": "CGI 2021 art. 373 : 18 %",
+  "controles": {
+   "source": true,
+   "chiffre1": true,
+   "retire": true
+  },
+  "cites": [
+   "Article 373 (doc_035)",
+   "Article 89 (doc_016)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLe taux de droit commun de la Taxe sur la Valeur Ajoutée (TVA) en Guinée est de dix-huit pourcent (18%) [1].\n\n### Ce que dit la loi\n1. **Taux de droit commun** — Le taux de droit commun de la TVA est fixé à dix-huit pourcent (18%) [1].\n2. **Exceptions au taux de droit commun** — Certaines opérations, telles que les exportations directes de biens et le transport international, sont imposables au taux de zéro pourcent (0%) [1].\n3. **TVA dans le secteur pétrolier** — Les exportations d'hydrocarbures sont soumises à la TVA au taux de zéro pourcent (0%) [2].\n\n### En pratique\n- Les entreprises doivent appliquer le taux de 18% sur la plupart des ventes de biens et services [1].\n- Les exportateurs peuvent bénéficier d'un taux de TVA de 0% pour les biens exportés directement [1].\n- Les entreprises du secteur pétrolier doivent se conformer aux règles spécifiques de TVA, notamment pour les exportations d'hydrocarbures [2].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.6
+ },
+ {
+  "id": "fiscal-imf",
+  "question": "Quand faut-il payer l'impôt minimum forfaitaire ?",
+  "verifie": "CGI art. 246 : au plus tard le 15 janvier",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Article 246 (doc_035)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nL'Impôt Minimum Forfaitaire doit être payé spontanément au plus tard le 15 janvier de l'année au cours de laquelle il est exigible [1].\n\n### Ce que dit la loi\n1. **Date limite de paiement** — L'Impôt Minimum Forfaitaire doit être payé « spontanément au plus tard le 15 janvier de l'année au cours de laquelle il est exigible » [1].\n2. **Non-déductibilité** — Cet impôt ne constitue pas une charge déductible pour l'entreprise versante [1].\n3. **Imputation sur d'autres impôts** — Il est imputable sur certains impôts dus au cours de la même période d'imposition, tels que l'Impôt sur les Bénéfices Industriels et Commerciaux, l'Impôt sur les Sociétés, etc. [1].\n4. **Caractère définitif** — La fraction non imputée de cet impôt n'est pas reportable et prend le caractère d'un prélèvement fiscal définitif [1].\n\n### En pratique\n- Les entreprises doivent s'assurer de régler l'Impôt Minimum Forfaitaire avant le 15 janvier pour éviter des pénalités de retard [1].\n- L'impôt payé ne peut pas être déduit des charges de l'entreprise, ce qui peut affecter la trésorerie de celle-ci [1].\n- Les entreprises doivent calculer l'impôt dû en tenant compte de son imputation possible sur d'autres impôts pour optimiser leur charge fiscale [1].\n- Toute fraction non imputée de l'impôt est considérée comme un prélèvement définitif, ce qui signifie qu'elle ne peut pas être récupérée ou reportée [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.5
+ },
+ {
+  "id": "douane-contrebande",
+  "question": "Qu'est-ce que la contrebande en douane ?",
+  "verifie": "Code des douanes art. 424",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 424 (doc_046)",
+   "Article 421 (doc_046)",
+   "Article 344 (doc_046)",
+   "Article 418 (doc_046)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\n\nLa contrebande en douane est définie comme les importations ou exportations effectuées en dehors des bureaux de douane, ainsi que toute violation des dispositions légales ou réglementaires relatives à la détention et au transport des marchandises à l'intérieur du territoire douanier [1].\n\n### Ce que dit la loi\n\n1. **Définition de la contrebande** — « La contrebande s’entend des importations ou exportations en dehors des Bureaux ainsi que de toute violation des dispositions légales ou réglementaires relatives à la détention et au transport des marchandises à l’intérieur du territoire douanier » [1].\n   \n2. **Exemples spécifiques de contrebande** — Constituent des faits de contrebande, entre autres, la violation des dispositions spécifiques des articles mentionnés, les transbordements sans autorisation, et les embarquements frauduleux dans les ports ou sur les côtes [1].\n\n3. **Sanctions pour contrebande** — Les faits de contrebande peuvent entraîner la confiscation des marchandises, des moyens de transport, des objets servant à masquer la fraude, une amende solidaire, et un emprisonnement d’un à six mois, notamment lorsque les marchandises sont prohibées ou fortement taxées [2].\n\n### En pratique\n\n- Les marchandises introduites en contrebande peuvent être confisquées, ce qui inclut également les moyens de transport utilisés pour la fraude [2].\n- Les personnes impliquées dans la contrebande, même indirectement, peuvent être passibles des mêmes peines que les auteurs principaux de l'infraction [3].\n- Les infractions de contrebande peuvent également entraîner des amendes significatives, allant de 1.000.000 GNF à 2.000.000 GNF, selon la nature des marchandises concernées [4].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.4
+ },
+ {
+  "id": "route-alcool",
+  "question": "Que risque-t-on à conduire en état d'ivresse ?",
+  "verifie": "Code de la route art. 25",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 25 (doc_043)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nConduire en état d'ivresse est passible d'un emprisonnement de trois mois à un an et d'une amende de la 5e classe, ou de l'une de ces deux peines seulement [1].\n\n### Ce que dit la loi\n1. **Conduite en état d'ivresse** — Toute personne conduisant un véhicule à moteur en état d'ivresse est punie d'un emprisonnement de trois mois à un an et d'une amende de la 5e classe, ou de l'une de ces deux peines seulement. « La preuve des faits prévus par l'alinéa 1 du présent article pourra être apportée par tout moyen, y compris par vérifications médicales, cliniques et biologiques » [1].\n2. **Homicide ou blessures involontaires** — Si la conduite en état d'ivresse entraîne un homicide ou des blessures involontaires, les peines sont doublées et ne peuvent bénéficier du sursis ou de circonstances atténuantes [1].\n\n### En pratique\n- Les vérifications médicales, cliniques et biologiques peuvent être utilisées pour prouver l'état d'ivresse du conducteur [1].\n- Les peines peuvent être appliquées même en l'absence de signes d'ivresse manifeste, si le taux d'alcool est prouvé par voie réglementaire [1].\n- Les conditions d'application de ces dispositions sont fixées par voie réglementaire, ce qui implique des règlements spécifiques pour leur mise en œuvre [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.8
+ },
+ {
+  "id": "route-permis",
+  "question": "Que risque-t-on à conduire sans permis ?",
+  "verifie": "Code de la route art. 16",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 16 (doc_043)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nConduire sans permis en Guinée expose à une peine d'emprisonnement de dix jours à trois mois et/ou à une amende de la 4ème classe [1].\n\n### Ce que dit la loi\n1. **Conduite sans permis** — Toute personne conduisant un véhicule à moteur sans être titulaire du permis de conduire valable pour la catégorie du véhicule est passible d'une peine d'emprisonnement de dix jours à trois mois et d'une amende de la 4ème classe, ou de l'une de ces deux peines seulement [1].\n2. **Abandon de conduite à un tiers non titulaire** — Est également punie des mêmes peines toute personne qui abandonne sciemment la conduite d'un véhicule à un tiers non titulaire du permis exigé pour ce véhicule [1].\n3. **Exception pour apprentissage** — Les peines ne s'appliquent pas à une personne apprenant à conduire, à condition qu'elle soit accompagnée d'une personne titulaire du permis correspondant et que le véhicule soit utilisé uniquement à cette fin [1].\n\n### En pratique\n- Si une personne est arrêtée pour conduite sans permis, elle risque une arrestation immédiate et une procédure judiciaire pouvant aboutir à une peine d'emprisonnement ou une amende [1].\n- Le véhicule peut être immobilisé jusqu'à ce que le conducteur présente un permis valide ou que le véhicule soit conduit par une personne titulaire d'un permis [1].\n- Les personnes apprenant à conduire doivent s'assurer d'être accompagnées par un titulaire de permis et de ne pas transporter de passagers pour éviter les sanctions [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 10.9
+ },
+ {
+  "id": "sante-avortement",
+  "question": "L'avortement est-il autorisé en Guinée ?",
+  "verifie": "Code de la santé publique art. 183 (avortement thérapeutique) / Code pénal",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 265 (doc_008)",
+   "Article 263 (doc_008)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nL'avortement est autorisé en Guinée dans certaines circonstances spécifiques, notamment pour sauvegarder la vie de la mère ou en cas de viol, d'inceste, de grossesse précoce, ou d'affections graves de l'enfant à naître [1].\n\n### Ce que dit la loi\n1. **Interdiction générale de l'avortement** — L'avortement est généralement interdit et puni par la loi, sauf dans les cas prévus par la législation. Toute personne qui procure ou tente de procurer un avortement est passible de sanctions pénales [2].\n2. **Exceptions à l'interdiction** — L'avortement est permis lorsque la vie de la mère est gravement menacée, ou en cas de grossesse précoce, de viol, d'inceste, ou d'affections graves de l'enfant à naître. Dans ces cas, l'interruption de grossesse doit être autorisée par un collège de médecins spécialistes [1].\n3. **Conditions de pratique de l'avortement** — L'avortement, lorsqu'il est autorisé, doit être pratiqué par un médecin dans un établissement disposant des moyens nécessaires pour effectuer des interruptions volontaires de grossesse [1].\n\n### En pratique\n- Un collège de médecins spécialistes doit autoriser l'avortement dans les cas exceptionnels prévus par la loi, et cette décision doit être consignée dans un procès-verbal [1].\n- L'avortement autorisé doit être réalisé dans un établissement public ou privé adéquat, garantissant la sécurité de la procédure [1].\n- Les professionnels de santé impliqués dans un avortement illégal encourent des peines d'emprisonnement et des amendes, ainsi que des sanctions professionnelles telles que la suspension ou l'incapacité d'exercer leur profession [2].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.5
+ },
+ {
+  "id": "numerique-donnees",
+  "question": "Puis-je demander l'effacement de mes données personnelles ?",
+  "verifie": "Loi cybersécurité art. 35",
+  "controles": {
+   "source": true
+  },
+  "cites": [
+   "Article 35 (doc_029)",
+   "Article 33 (doc_029)",
+   "Article 38 (doc_029)",
+   "Article 37 (doc_029)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nOui, vous pouvez demander l'effacement de vos données personnelles si certaines conditions sont remplies, telles que l'absence de nécessité des données ou le retrait de votre consentement [1].\n\n### Ce que dit la loi\n1. **Droit à l'effacement** — La personne concernée par le traitement des données à caractère personnel a le droit d'obtenir du responsable du traitement l'effacement des données qui la concernent pour des motifs tels que l'absence de nécessité des données ou le retrait du consentement [1].\n2. **Rectification et suppression** — Toute personne physique peut exiger la suppression des données à caractère personnel qui sont inexactes, incomplètes, ou dont la conservation est interdite [2].\n3. **Mécanismes d'effacement** — Le responsable du traitement doit mettre en place des mécanismes pour assurer l'effacement des données et ne doit pas procéder à d'autres traitements après l'effacement [3].\n4. **Exceptions à l'effacement** — L'effacement n'est pas requis si la conservation des données est nécessaire pour l'exercice du droit à la liberté d'expression, pour des motifs d'intérêt général en santé publique, ou pour respecter une obligation légale [4].\n\n### En pratique\n- Vous devez justifier de votre identité pour demander l'effacement de vos données personnelles [2].\n- Le responsable du traitement est tenu de mettre en œuvre des mécanismes pour faciliter l'effacement des données, ce qui implique une obligation proactive de leur part [3].\n- L'effacement peut être refusé si les données doivent être conservées pour des raisons légales ou d'intérêt public [4].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.3
+ },
+ {
+  "id": "decret-2026-rcn",
+  "question": "Quel est le taux de la redevance de conformité numérique ?",
+  "verifie": "Décret D/2026/158 art. 8 : entre 1,5 % et 7 %",
+  "controles": {
+   "source": true,
+   "chiffre1": true,
+   "chiffre2": true
+  },
+  "cites": [
+   "Article 8 (doc_1615)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLe taux de la redevance de conformité numérique (RCN) est fixé entre 1,5 % et 7 % de la base assujettie, avec un taux transitoire unique de 3 % applicable durant les douze premiers mois suivant l'entrée en vigueur du décret [1].\n\n### Ce que dit la loi\n1. **Taux de la RCN** — Le taux de la RCN est fixé entre « un et demi pour cent (1,5 %) et sept pour cent (7 %) de la base assujettie » [1].\n2. **Taux transitoire** — Un taux unique de trois pour cent (3 %) est applicable à toutes les catégories de service durant les douze premiers mois suivant l'entrée en vigueur du décret [1].\n3. **Révision de la grille tarifaire** — La grille tarifaire est révisée au moins tous les deux ans par le Conseil National de Régulation de l'Autorité de Régulation des Postes et Télécommunications [1].\n\n### En pratique\n- La grille tarifaire applicable est publiée sur le site de l'Autorité de Régulation des Postes et Télécommunications et dans un Journal de la République de Guinée [1].\n- Le taux transitoire de 3 % s'applique uniformément à toutes les catégories de service pendant la première année [1].\n- La révision biennale de la grille tarifaire permet d'ajuster les taux en fonction des évolutions du secteur numérique [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.1
+ },
+ {
+  "id": "electoral-abroge",
+  "question": "Qui peut voter aux élections en Guinée ?",
+  "verifie": "Code électoral 2025 (le code de 2017 est abrogé)",
+  "controles": {
+   "source": true,
+   "retire": true
+  },
+  "cites": [
+   "Article 6 (doc_036)",
+   "Article 87 (doc_058)",
+   "Article 5 (doc_1411)",
+   "Article 3 (doc_036)",
+   "Article 90 (doc_036)",
+   "Article 11 (doc_036)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\n\nPour voter aux élections en Guinée, il faut être citoyen guinéen, avoir au moins 18 ans, être inscrit sur la liste électorale de sa circonscription et disposer d'une carte d'électeur valide [1] [2] [3].\n\n### Ce que dit la loi\n\n1. **Nationalité et âge** — Seuls les citoyens guinéens âgés de 18 ans révolus peuvent voter. Cette condition est essentielle pour être électeur [4] [3].\n   \n2. **Inscription sur la liste électorale** — L'électeur doit être inscrit sur la liste électorale de la circonscription où se trouve son domicile ou sa résidence principale. Cette inscription est obligatoire pour exercer le droit de vote [1] [3].\n\n3. **Carte d'électeur** — La possession d'une carte d'électeur valide est nécessaire pour participer au scrutin. Sans cette carte, le vote est impossible [1] [5].\n\n4. **Jouissance des droits civiques** — L'électeur doit jouir de ses droits civiques, civils et politiques. Toute déchéance de ces droits, par exemple par décision judiciaire, empêche l'exercice du droit de vote [1] [2].\n\n### En pratique\n\n- Pour être inscrit sur la liste électorale, il est nécessaire de résider dans la circonscription électorale concernée et de prouver cette résidence par des documents appropriés [2].\n- Les citoyens vivant à l'étranger doivent être immatriculés au Consulat ou à l'Ambassade de Guinée et inscrits sur la liste électorale pour pouvoir voter [3].\n- Les personnes condamnées pour certains crimes ou délits peuvent être empêchées de s'inscrire sur la liste électorale, sauf réhabilitation [6].\n- Toute personne remplissant les conditions requises est recensée d'office comme électeur au niveau communal si elle réside depuis au moins six mois dans la commune [2].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.6
+ },
+ {
+  "id": "environnement-abroge",
+  "question": "Une étude d'impact environnemental est-elle obligatoire ?",
+  "verifie": "Code de l'environnement 2019 (l'ordonnance de 1987 est abrogée)",
+  "controles": {
+   "source": true,
+   "retire": true
+  },
+  "cites": [
+   "Article 30 (doc_037)",
+   "Article 40 (doc_004)",
+   "Article 29 (doc_037)",
+   "Article 33 (doc_037)",
+   "Article 19 (doc_1099)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nUne étude d'impact environnemental est obligatoire pour les travaux, ouvrages et aménagements susceptibles de porter atteinte à l'environnement, selon les modalités définies par voie réglementaire [1] [2].\n\n### Ce que dit la loi\n1. **Obligation générale** — Les travaux, ouvrages et aménagements qui peuvent affecter l'environnement doivent être précédés d'une étude d'impact environnemental et social, définie par voie réglementaire [1].\n2. **Contenu de l'étude** — L'étude doit inclure une description du projet, une analyse de l'état initial du site, une évaluation des conséquences prévisibles, et des mesures pour éviter ou compenser les impacts négatifs [3].\n3. **Études de danger** — L'étude d'impact peut inclure des études de danger pour préciser les risques pour l'environnement et la santé humaine [4].\n4. **Responsabilité du promoteur** — Le promoteur est responsable de la réalisation de l'étude, qui doit être soumise au Ministère en charge de l'Environnement pour validation [5].\n\n### En pratique\n- Le promoteur doit initier le processus de communication pour informer et sensibiliser les parties prenantes sur les activités du projet [5].\n- L'étude d'impact doit être réalisée par un consultant agréé par le Ministère en charge de l'Environnement [5].\n- En cas de non-conformité, le Ministère peut exiger des études complémentaires ou des modifications du projet [5].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 7.4
+ },
+ {
+  "id": "guide-cout-sarl",
+  "question": "Combien coûte la création d'une SARL au guichet unique ?",
+  "verifie": "Guide APIP 2026 : 530 000 GNF",
+  "controles": {
+   "source": true,
+   "chiffre1": true
+  },
+  "cites": [
+   "Coût au guichet unique (doc_072)",
+   "Question fréquente 7 (doc_072)",
+   "Question fréquente 1 (doc_072)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nLa création d'une SARL au guichet unique en Guinée coûte 530 000 GNF, ce montant incluant les statuts sous seing privé [1].\n\n### Ce que dit la loi\n1. **Montant de la création** — Le coût pour créer une SARL au guichet unique est de 530 000 GNF. Ce montant couvre l'immatriculation au RCCM, le NIF, la publication sur SyNERGUI et les frais administratifs, mais exclut les honoraires du notaire et les frais bancaires [2].\n2. **Délai de traitement** — Le délai pour le traitement d'un dossier complet est de 72 heures à partir du dépôt [1].\n\n### En pratique\n- Le montant de 530 000 GNF pour une SARL inclut les frais administratifs mais pas les honoraires du notaire, qui sont facultatifs pour la SARL [3].\n- Il est conseillé de vérifier les tarifs auprès du guichet unique avant le dépôt, car ils peuvent évoluer [2].\n- La création d'une entreprise peut être effectuée à distance depuis l'étranger par l'intermédiaire d'un mandataire muni d'un pouvoir [3].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.4
+ },
+ {
+  "id": "juris-whatsapp",
+  "question": "Quelqu'un m'insulte sur WhatsApp, que risque-t-il ?",
+  "verifie": "Loi cybersécurité / Code pénal + jugement TPI 2022",
+  "controles": {
+   "source": true,
+   "juris": true
+  },
+  "cites": [
+   "Article 363 (doc_008)",
+   "Article 874 (doc_008)",
+   "Article 875 (doc_008)"
+  ],
+  "decisions": [],
+  "ok": true,
+  "reponse": "### En bref\nUne personne qui vous insulte sur WhatsApp pourrait être poursuivie pour injure, mais ce point n'est pas explicitement couvert par les articles disponibles [1].\n\n### Ce que dit la loi\n1. **Diffamation et injure** — La diffamation est définie comme « toute allégation ou imputation d’un fait qui porte atteinte à l’honneur ou à la considération de la personne » tandis que l'injure est « constituée par toute expression outrageante, terme de mépris ou invective qui ne renferme l’imputation d’aucun fait précis » [1].\n2. **Outrage par voie électronique** — Est puni d’un emprisonnement de 2 à 5 ans et d’une amende quiconque commet un outrage à l’encontre d’une race ou d’une religion par voie de communications électroniques [2].\n3. **Propagation de fausses nouvelles** — Publier ou propager une nouvelle sans preuve de sa véracité par voie électronique est puni d’un emprisonnement de 6 mois à 2 ans et d’une amende [3].\n\n### En pratique\n- Si l'injure est considérée comme un outrage à une race ou une religion, des peines d'emprisonnement et d'amende peuvent s'appliquer [2].\n- La propagation de fausses nouvelles par voie électronique est sévèrement punie, mais cela ne couvre pas explicitement les injures personnelles [3].\n- ⚠️ Ce point n'est pas couvert par les textes disponibles concernant spécifiquement les injures personnelles sur WhatsApp [1].\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 8.8
+ },
+ {
+  "id": "piege-article-inexistant",
+  "question": "Que dit l'article 2500 du Code pénal ?",
+  "verifie": "Le Code pénal n'a pas d'article 2500",
+  "controles": {
+   "piege": true
+  },
+  "cites": [],
+  "decisions": [],
+  "ok": true,
+  "reponse": "**L’article 2500 n’existe pas dans le Code pénal** tel qu’il figure dans les textes que je consulte : ses articles vont de l’article 1 à l’article 1011 (1011 articles).\n\nVérifiez le numéro ou le nom du texte, ou décrivez la situation qui vous intéresse : je retrouverai les articles applicables.\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 1.8
+ },
+ {
+  "id": "piege-articles-civil",
+  "question": "Que disent les articles 9000 et 9001 du Code civil ?",
+  "verifie": "Le Code civil s'arrête à l'article 1636",
+  "controles": {
+   "piege": true
+  },
+  "cites": [],
+  "decisions": [],
+  "ok": true,
+  "reponse": "**Les articles 9000, 9001 n’existent pas dans le Code civil** tel qu’il figure dans les textes que je consulte : ses articles vont de l’article 1 à l’article 1636 (1634 articles).\n\nVérifiez le numéro ou le nom du texte, ou décrivez la situation qui vous intéresse : je retrouverai les articles applicables.\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 2.6
+ },
+ {
+  "id": "piege-etranger",
+  "question": "Quel est le délai de prescription d'un vol en droit français ?",
+  "verifie": "Hors droit guinéen",
+  "controles": {
+   "piege": true
+  },
+  "cites": [],
+  "decisions": [],
+  "ok": true,
+  "reponse": "Je suis **JusticIA-GN**, l'assistant juridique dédié au droit de la **République de Guinée**. Ma compétence est strictement limitée au droit positif guinéen.\n\nVotre question porte sur le droit **français**, qui ne relève pas de ma compétence.\n\nPour toute question relative au droit guinéen (travail, pénal, civil, foncier, famille, mines, constitution…), je reste à votre entière disposition.\n\n*JusticIA-GN — République de Guinée. Analyse à titre informatif, ne remplace pas un avis professionnel.*",
+  "secondes": 1.5
+ },
+ {
+  "id": "piege-hors-sujet",
+  "question": "Donne-moi une recette de riz au gras",
+  "verifie": "Hors sujet",
+  "controles": {
+   "piege": true
+  },
+  "cites": [],
+  "decisions": [],
+  "ok": true,
+  "reponse": "Je suis spécialisé dans le droit de la République de Guinée et ne peux malheureusement pas vous aider avec des recettes culinaires. Cependant, je suis à votre disposition pour toute question juridique guinéenne. Par exemple, vous pourriez vouloir savoir comment enregistrer un terrain en Guinée. N'hésitez pas à poser vos questions sur le droit guinéen !",
+  "secondes": 3.0
+ }
+]

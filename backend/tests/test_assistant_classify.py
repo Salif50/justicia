@@ -17,6 +17,8 @@ CASES = {
     "Mon patron ne me paie pas": "legal",
     "Qu'est-ce que la redevance de conformité numérique ?": "legal",
     "Combien coûte l'abonnement ?": "about",
+    "Combien coûte la création d'une SARL au guichet unique ?": "legal",
+    "Combien ça coûte ?": "about",
     "Comment payer mon abonnement par Orange Money ?": "about",
     "Quels sont vos tarifs ?": "about",
     "Qui es-tu ?": "about",

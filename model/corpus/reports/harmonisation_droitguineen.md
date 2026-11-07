@@ -1,6 +1,6 @@
 # Harmonisation du corpus avec la collecte droitguineen.com
 
-Généré le 2026-11-07 18:25 UTC. Aucun texte n'a été rédigé : les articles sont repris tels quels.
+Généré le 2026-11-07 18:55 UTC. Aucun texte n'a été rédigé : les articles sont repris tels quels.
 
 ## Codes déjà présents (même loi)
 
@@ -11,8 +11,8 @@ Généré le 2026-11-07 18:25 UTC. Aucun texte n'a été rédigé : les articles
 | doc_005 | 1004 | 1023 | 686 | 256 | 5 | 19 | 47 | 0 | 10 | 0 |
 | doc_008 | 1011 | 1013 | 984 | 5 | 0 | 2 | 0 | 1 | 12 | 6 |
 | doc_031 | 915 | 915 | 674 | 1 | 138 | 0 | 0 | 3 | 69 | 20 |
-| doc_023 | 509 | 511 | 490 | 0 | 0 | 2 | 0 | 0 | 6 | 1 |
-| doc_007 | 252 | 292 | 194 | 2 | 4 | 40 | 2 | 0 | 15 | 6 |
+| doc_023 | 509 | 509 | 490 | 0 | 0 | 0 | 0 | 0 | 6 | 1 |
+| doc_007 | 252 | 261 | 194 | 2 | 4 | 9 | 2 | 0 | 15 | 6 |
 | doc_006 | 241 | 254 | 199 | 0 | 0 | 13 | 1 | 0 | 25 | 8 |
 | doc_016 | 95 | 113 | 73 | 0 | 0 | 18 | 9 | 2 | 9 | 1 |
 | doc_002 | 43 | 50 | 38 | 0 | 0 | 7 | 4 | 0 | 1 | 1 |
