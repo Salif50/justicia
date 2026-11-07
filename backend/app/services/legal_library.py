@@ -593,9 +593,19 @@ def public_figures() -> dict:
     s = stats()
     main = sorted((i for i in _items() if i["indexe"] and i["famille"] in MAIN_FAMILIES and "GUIDE" not in i["type"].upper()),
                   key=lambda i: -i["articles"])[:10]
+    guide = company_guide()
+    # Informations publiques uniquement : barème du guichet unique et sommaires du Journal officiel
+    entreprise = {k: guide[k] for k in ("titre", "mise_a_jour_source", "sources", "source_url", "formes", "delai",
+                                        "etapes", "organismes")} if guide else None
+    recents = sorted(journal(), key=lambda n: n.get("date") or "", reverse=True)[:4]
     return {k: s[k] for k in ("textes_en_vigueur", "articles", "textes_total", "codes_et_lois", "actes_uniformes",
                               "decisions", "numeros_jo")} | {
         "principaux_textes": [{"titre": i["nom"], "annee": i["annee"], "articles": i["articles"]} for i in main],
+        "creation_entreprise": entreprise,
+        "journal_recent": [{k: n[k] for k in ("numero", "special", "date", "titre")} | {
+            "nb_textes": len(n["entrees"]),
+            "apercu": [{"nature": e.get("nature") or "", "intitule": e["intitule"]} for e in n["entrees"][:3]],
+        } for n in recents],
     }
 
 

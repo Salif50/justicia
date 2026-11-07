@@ -43,7 +43,7 @@
         <app-guinea-map #map />
         <p class="hx-map-caption" aria-hidden="true">
           <span>République de Guinée</span>
-          <span>8 régions · 33 textes officiels</span>
+          <span>8 régions · @if (figures(); as f) {{{ formatNumber(f.textes_en_vigueur) }} textes en vigueur} @else {textes officiels}</span>
         </p>
       </div>
     </div>
@@ -112,6 +112,30 @@
     </div>
   </section>
 
+  <!-- ═════════ Questions concrètes (réponses vérifiées dans les textes) ═════════ -->
+  <section class="lp-section lp-section--tight" id="exemples" aria-labelledby="lp-ex-title">
+    <div class="pub-container">
+      <header class="lp-head" reveal>
+        <p class="lp-kicker">Exemples réels</p>
+        <h2 id="lp-ex-title">Des questions de tous les jours, <span>des réponses vérifiables.</span></h2>
+        <p class="lp-intro">Chaque réponse ci-dessous reprend l’article exact. Vous pouvez la vérifier vous-même dans le texte officiel.</p>
+      </header>
+      <ul class="lp-ex" reveal [revealStagger]="50">
+        @for (ex of examples; track ex.q) {
+          <li>
+            <span class="lp-ex-domain">{{ ex.domaine }}</span>
+            <h3>{{ ex.q }}</h3>
+            <p class="lp-ex-answer">{{ ex.r }}</p>
+            <blockquote>
+              <p>«&nbsp;{{ ex.extrait }}&nbsp;»</p>
+              <cite>{{ ex.ref }}</cite>
+            </blockquote>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+
   <!-- ═════════ Orbite des textes ═════════ -->
   <section class="lp-orbit" #orbit aria-labelledby="lp-orbit-title">
     <div class="pub-container lp-orbit-grid">
@@ -120,7 +144,7 @@
         <h2 id="lp-orbit-title">Tous les textes de loi, autour de votre question.</h2>
         <p class="lp-intro">
           Pas de nouveau jargon à apprendre&nbsp;: vous écrivez comme vous parlez,
-          JusticIA interroge les 33 textes officiels en même temps.
+          JusticIA interroge en même temps les codes, les lois, les décrets et les Actes uniformes OHADA.
         </p>
       </header>
 
@@ -196,6 +220,71 @@
     </div>
   </section>
 
+  <!-- ═════════ Créer une entreprise (barème officiel du guichet unique) ═════════ -->
+  @if (figures()?.creation_entreprise; as g) {
+    <section class="lp-section" id="entreprise" aria-labelledby="lp-co-title">
+      <div class="pub-container lp-split">
+        <header class="lp-head lp-sticky" reveal="left">
+          <p class="lp-kicker">Créer une entreprise</p>
+          <h2 id="lp-co-title">Votre société en Guinée, <span>étape par étape.</span></h2>
+          <p class="lp-intro">
+            Le guichet unique délivre en une fois le RCCM, le NIF et la publication légale.
+            Le droit des sociétés applicable est celui de l’OHADA, qui prime sur le droit interne.
+          </p>
+          <p class="lp-co-delay"><strong>72&nbsp;h</strong><span>au guichet unique, à partir du dépôt d’un dossier complet</span></p>
+          <a routerLink="/signup" class="lp-btn lp-btn--ink">
+            Poser une question sur mon projet
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </header>
+
+        <div class="lp-co" reveal>
+          <h3 class="lp-co-h">Frais au guichet unique, par forme juridique</h3>
+          <div class="lp-co-table" role="region" aria-label="Frais au guichet unique" tabindex="0">
+            <table>
+              <thead>
+                <tr><th scope="col">Forme</th><th scope="col">Frais</th><th scope="col">Notaire</th></tr>
+              </thead>
+              <tbody>
+                @for (f of g.formes; track f.forme) {
+                  <tr>
+                    <th scope="row">
+                      {{ f.forme }}
+                      <small>{{ f.resume }}</small>
+                      @if (f.capital_minimum) { <small class="lp-co-cap">Capital minimum&nbsp;: {{ f.capital_minimum }}</small> }
+                    </th>
+                    <td data-label="Frais">
+                      @if (f.frais_guichet) {
+                        <strong>{{ f.frais_guichet }}</strong>
+                        @if (f.precision) { <small>{{ f.precision }}</small> }
+                      } @else { <span class="lp-co-na">Non communiqué</span> }
+                    </td>
+                    <td data-label="Notaire">{{ f.notaire || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="lp-co-h">Les étapes</h3>
+          <ol class="lp-co-steps">
+            @for (e of g.etapes; track e.num) {
+              <li>
+                <span aria-hidden="true">{{ e.num }}</span>
+                <div><strong>{{ e.titre }}</strong><p>{{ e.description }}</p></div>
+              </li>
+            }
+          </ol>
+
+          <p class="lp-co-source">
+            Source&nbsp;: {{ g.sources }}, mises à jour le {{ g.mise_a_jour_source }}.
+            Les montants peuvent évoluer&nbsp;: vérifiez-les auprès du guichet unique avant le dépôt.
+          </p>
+        </div>
+      </div>
+    </section>
+  }
+
   <!-- ═════════ Le pipeline en direct (panneau sombre) ═════════ -->
   <section class="lp-dark" id="direct" aria-labelledby="lp-live-title">
     <div class="pub-container">
@@ -219,7 +308,7 @@
               <p>Quel préavis pour un cadre&nbsp;?</p>
             </li>
             <li [class.is-on]="liveStep() === 1" [class.is-done]="liveStep() > 1">
-              <span class="lp-schema-role">33 textes</span>
+              <span class="lp-schema-role">Corpus</span>
               <strong>Recherche</strong>
               <ul class="lp-schema-scan">
                 @for (code of flowCodes; track code) {
@@ -308,6 +397,35 @@
     </section>
   }
 
+  <!-- ═════════ Veille : derniers numéros du Journal officiel ═════════ -->
+  @if (figures()?.journal_recent?.length) {
+    <section class="lp-section lp-section--tight" id="veille" aria-labelledby="lp-jo-title">
+      <div class="pub-container">
+        <header class="lp-head" reveal>
+          <p class="lp-kicker">Veille juridique</p>
+          <h2 id="lp-jo-title">Les derniers Journaux officiels, <span>déjà dans la base.</span></h2>
+          <p class="lp-intro">Chaque numéro est relié aux textes qu’il publie&nbsp;; les textes abrogés ou remplacés sont signalés comme tels.</p>
+        </header>
+        <ul class="lp-jo" reveal [revealStagger]="60">
+          @for (n of figures()!.journal_recent; track n.titre) {
+            <li>
+              <p class="lp-jo-top">
+                <time [attr.datetime]="n.date">{{ formatDate(n.date) }}</time>
+                <span>{{ joLabel(n) }}</span>
+              </p>
+              <ul>
+                @for (e of n.apercu; track $index) {
+                  <li>@if (e.nature) {<b>{{ e.nature }}</b>}{{ e.intitule }}</li>
+                }
+              </ul>
+              <p class="lp-jo-count">{{ n.nb_textes }} texte{{ n.nb_textes > 1 ? 's' : '' }} publié{{ n.nb_textes > 1 ? 's' : '' }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+  }
+
   @if (testimonials().length > 0) {
     <section class="lp-section" aria-labelledby="lp-quotes-title">
       <div class="pub-container">
@@ -352,6 +470,14 @@
         <details>
           <summary>Et si la réponse n’est pas dans les textes&nbsp;?</summary>
           <p>JusticIA vous l’indique explicitement. Il ne complète jamais une réponse par une disposition qui ne figure pas dans le corpus.</p>
+        </details>
+        <details>
+          <summary>Les textes sont-ils à jour&nbsp;?</summary>
+          <p>La base suit le Journal officiel&nbsp;: chaque nouveau numéro est relié aux textes qu’il publie. Un texte abrogé reste consultable mais il est signalé comme tel, et JusticIA ne s’appuie pas dessus pour répondre.</p>
+        </details>
+        <details>
+          <summary>Et le droit des affaires OHADA&nbsp;?</summary>
+          <p>Les Actes uniformes OHADA (sociétés, commerce, sûretés, recouvrement…) font partie de la base. Comme le prévoit le Traité OHADA, ils priment sur le droit interne contraire&nbsp;: JusticIA les cite en premier lorsqu’ils s’appliquent.</p>
         </details>
         <details>
           <summary>Que deviennent mes questions&nbsp;?</summary>

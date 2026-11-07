@@ -57,8 +57,8 @@ const TOOLS = [
     text: 'Rédigés ou relus à partir du droit guinéen en vigueur.',
   },
   {
-    title: 'Encyclopédie',
-    text: '33 textes officiels, consultables article par article.',
+    title: 'Bibliothèque juridique',
+    text: 'Codes, lois, décrets et Actes uniformes OHADA, consultables article par article.',
   },
 ];
 
@@ -67,6 +67,69 @@ const AUDIENCES = [
   { title: 'Entreprises', text: 'Des décisions et des contrats appuyés sur le texte en vigueur.' },
   { title: 'Citoyens', text: 'Vos droits expliqués simplement, y compris en pular, malinké ou soussou.' },
   { title: 'Institutions', text: 'Des réponses homogènes et traçables pour les agents.' },
+];
+
+/**
+ * Questions concrètes : chaque réponse et chaque extrait sont recopiés du texte officiel
+ * (corpus vérifié, batterie de tests de bout en bout). Ne rien ajouter qui ne figure pas dans l'article.
+ */
+const EXAMPLES = [
+  {
+    domaine: 'Travail',
+    q: 'Comment sont payées les heures supplémentaires\u00a0?',
+    r: 'Avec une majoration de 30\u00a0% pour les quatre premières heures, puis de 60\u00a0% au-delà.',
+    extrait: 'Cette majoration est de trente pour cent les quatre premières heures, de soixante pour cent au-delà.',
+    ref: 'Code du travail · art. 221.6',
+  },
+  {
+    domaine: 'Travail',
+    q: 'Quelle est la durée légale du travail\u00a0?',
+    r: 'Quarante heures par semaine dans les établissements privés.',
+    extrait: 'La durée du travail effectif des salariés est habituellement de quarante heures par semaine.',
+    ref: 'Code du travail · art. 221.1',
+  },
+  {
+    domaine: 'Famille',
+    q: 'À quel âge devient-on majeur\u00a0?',
+    r: 'À 18 ans accomplis. On peut alors accomplir seul tous les actes de la vie civile.',
+    extrait: 'La majorité est fixée à 18 ans accomplis ; à cet âge, on est capable de tous les actes de la vie civile.',
+    ref: 'Code civil · art. 578',
+  },
+  {
+    domaine: 'Succession',
+    q: 'Quelle part de l’héritage revient aux héritiers réservataires\u00a0?',
+    r: 'Les deux tiers de la succession. Le dernier tiers est la quotité disponible.',
+    extrait: 'La réserve héréditaire globale est de 2/3 de la masse successorale […] ; le dernier tiers constitue la quotité disponible.',
+    ref: 'Code civil · art. 710',
+  },
+  {
+    domaine: 'Pénal',
+    q: 'Quelle est la peine pour un vol simple\u00a0?',
+    r: 'De 1 à 5 ans d’emprisonnement et une amende de 500\u00a0000 à 2\u00a0000\u00a0000\u00a0GNF, ou l’une de ces deux peines.',
+    extrait: 'Le vol est puni d’un emprisonnement de 1 à 5 ans et d’une amende de 500.000 à 2.000.000 de francs guinéens ou de l’une de ces deux peines seulement.',
+    ref: 'Code pénal · art. 373',
+  },
+  {
+    domaine: 'Recouvrement',
+    q: 'Combien de temps pour contester une injonction de payer\u00a0?',
+    r: 'Dix jours à compter de la signification de l’ordonnance.',
+    extrait: 'L’opposition doit être formée dans les dix jours qui suivent la signification de l’ordonnance portant injonction de payer.',
+    ref: 'Acte uniforme OHADA (AUPSRVE) · art. 10',
+  },
+  {
+    domaine: 'Sociétés',
+    q: 'Quel capital minimum pour une société anonyme\u00a0?',
+    r: 'Dix millions de francs CFA, selon l’Acte uniforme OHADA, qui prime sur le droit interne.',
+    extrait: 'Le capital social minimum est fixé à dix millions (10.000.000) de francs CFA.',
+    ref: 'Acte uniforme OHADA (AUSCGIE) · art. 387',
+  },
+  {
+    domaine: 'Fiscalité',
+    q: 'Quel est le taux normal de la TVA\u00a0?',
+    r: '18\u00a0%. Certaines opérations, comme les exportations directes, sont taxées à 0\u00a0%.',
+    extrait: 'Le taux de droit commun de la Taxe sur la Valeur Ajoutée est de dix-huit pourcent (18%).',
+    ref: 'Code général des impôts · art. 373',
+  },
 ];
 
 /** Textes affichés en orbite autour de la question. */
@@ -103,6 +166,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   /** Chiffres réels du corpus (aucun contenu) : bibliothèque, jurisprudence, Journal officiel, OHADA. */
   readonly figures = signal<PublicFigures | null>(null);
   readonly orbitTiles = ORBIT;
+  readonly examples = EXAMPLES;
 
   @ViewChild('map') private map?: GuineaMap;
   @ViewChild('hx') private hxRef?: ElementRef<HTMLElement>;
@@ -325,6 +389,16 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   formatNumber(n: number): string { return n.toLocaleString('fr-FR'); }
+
+  formatDate(iso: string): string {
+    const d = new Date(iso + 'T12:00:00');
+    return isNaN(d.getTime()) ? iso : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  /** « Journal Officiel N°12 (spécial) du 27 octobre 2026 » → « N°12 · spécial » (la date est affichée à part). */
+  joLabel(n: { numero: string; special: boolean }): string {
+    return `N°${n.numero}${n.special ? ' · spécial' : ''}`;
+  }
 
   getContactEmails(): string[] {
     return this.siteConfig()?.contact?.emails ?? ['mosagix.contact@gmail.com'];

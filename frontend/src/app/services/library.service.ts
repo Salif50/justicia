@@ -93,6 +93,12 @@ export interface QuickResults {
 export type PublicFigures = Pick<LibraryStats, 'textes_en_vigueur' | 'articles' | 'textes_total' | 'codes_et_lois'
   | 'actes_uniformes' | 'decisions' | 'numeros_jo'> & {
   principaux_textes: { titre: string; annee: number | null; articles: number }[];
+  creation_entreprise: Pick<CompanyGuide, 'titre' | 'mise_a_jour_source' | 'sources' | 'source_url' | 'formes'
+    | 'delai' | 'etapes' | 'organismes'> | null;
+  journal_recent: {
+    numero: string; special: boolean; date: string; titre: string; nb_textes: number;
+    apercu: { nature: string; intitule: string }[];
+  }[];
 };
 
 export interface TocEntry { titre: string; niveau: number; index: number; article_ref: string; }
