@@ -315,6 +315,11 @@ export class Conversation implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   readonly docLabel = docLabel;
+
+  articleNum(ref: string): string {
+    const m = /(\d+(?:[.\-]\d+)*)/.exec(ref || '');
+    return m ? m[1] : '';
+  }
   readonly shortRef = shortRef;
 
   goToAbonnement() {

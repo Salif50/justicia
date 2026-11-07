@@ -251,23 +251,62 @@
       <header class="lp-head lp-sticky" reveal="left">
         <p class="lp-kicker">Les textes</p>
         <h2 id="lp-corpus-title">Les réponses s’appuient sur le droit <span>en vigueur.</span></h2>
-        <p class="lp-intro">Codes, lois et décrets de la République de Guinée, découpés et rattachés à leur source officielle.</p>
+        <p class="lp-intro">Codes, lois, décrets et Actes uniformes OHADA de la République de Guinée, découpés article par article et rattachés à leur source officielle.</p>
         <a routerLink="/signup" class="lp-btn lp-btn--ink">
           Créer un compte pour consulter
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
       </header>
       <ol class="lp-codes" reveal [revealStagger]="40">
-        @for (code of corpus; track code.titre) {
+        @for (code of corpus(); track code.titre) {
           <li>
             <span class="lp-codes-title">{{ code.titre }}</span>
-            <span class="lp-codes-bar" aria-hidden="true"><i [style.--w]="code.articles / corpusMax"></i></span>
-            <span class="lp-codes-meta">{{ code.annee }} · {{ formatNumber(code.articles) }} art.</span>
+            <span class="lp-codes-bar" aria-hidden="true"><i [style.--w]="code.articles / corpusMax()"></i></span>
+            <span class="lp-codes-meta">@if (code.annee) {{{ code.annee }} · }{{ formatNumber(code.articles) }} art.</span>
           </li>
         }
       </ol>
     </div>
   </section>
+
+  @if (figures(); as f) {
+    <section class="lp-section lp-section--tight" aria-labelledby="lp-base-title">
+      <div class="pub-container">
+        <header class="lp-head" reveal>
+          <p class="lp-kicker">La base</p>
+          <h2 id="lp-base-title">Tout le droit guinéen, <span>au même endroit.</span></h2>
+          <p class="lp-intro">Chaque chiffre ci-dessous correspond à des textes réellement consultables, avec leur source.</p>
+        </header>
+        <ul class="lp-base" reveal [revealStagger]="60">
+          <li>
+            <strong>{{ formatNumber(f.textes_en_vigueur) }}</strong>
+            <span class="lp-base-title">Textes en vigueur</span>
+            <span class="lp-base-text">Codes, lois, décrets et arrêtés, avec leur statut : en vigueur, abrogé ou remplacé.</span>
+          </li>
+          <li>
+            <strong>{{ f.decisions }}</strong>
+            <span class="lp-base-title">Décisions de justice</span>
+            <span class="lp-base-text">Cour suprême, CCJA, cour d’appel et tribunaux, en texte intégral, reliées aux articles qu’elles appliquent.</span>
+          </li>
+          <li>
+            <strong>{{ f.actes_uniformes }}</strong>
+            <span class="lp-base-title">Actes uniformes OHADA</span>
+            <span class="lp-base-text">Sociétés, commerce, sûretés, recouvrement : le droit des affaires applicable en Guinée.</span>
+          </li>
+          <li>
+            <strong>{{ f.numeros_jo }}</strong>
+            <span class="lp-base-title">Numéros du Journal officiel</span>
+            <span class="lp-base-text">Une veille des textes publiés, chacun relié à sa version intégrale.</span>
+          </li>
+          <li>
+            <strong>72 h</strong>
+            <span class="lp-base-title">Créer une entreprise</span>
+            <span class="lp-base-text">Frais du guichet unique APIP par forme juridique, étapes et pièces, d’après les fiches 2026.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  }
 
   @if (testimonials().length > 0) {
     <section class="lp-section" aria-labelledby="lp-quotes-title">

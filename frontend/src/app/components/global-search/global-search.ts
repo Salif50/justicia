@@ -1,18 +1,37 @@
-import { Component, HostListener, ElementRef, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, HostListener, ElementRef, ViewChild, AfterViewInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription, debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
 import { SearchService } from '../../services/search.service';
+import { LibraryService, QuickResults } from '../../services/library.service';
 
 @Component({
   selector:    'app-global-search',
-  imports:     [CommonModule, RouterLink, FormsModule],
+  imports:     [CommonModule, FormsModule],
   templateUrl: './global-search.html',
   styleUrl:    './global-search.scss',
 })
-export class GlobalSearch implements AfterViewInit {
+export class GlobalSearch implements AfterViewInit, OnDestroy {
   svc    = inject(SearchService);
   router = inject(Router);
+  private lib = inject(LibraryService);
+
+  /** Droit guinéen : textes, articles et décisions (même index que la bibliothèque). */
+  legal = signal<QuickResults | null>(null);
+  private legal$ = new Subject<string>();
+  private sub: Subscription = this.legal$.pipe(
+    debounceTime(220),
+    distinctUntilChanged(),
+    switchMap(q => q.trim().length < 2 ? of(null) : this.lib.quick(q.trim()).pipe(catchError(() => of(null)))),
+  ).subscribe(r => this.legal.set(r));
+
+  ngOnDestroy(): void { this.sub.unsubscribe(); }
+
+  get legalCount(): number {
+    const l = this.legal();
+    return l ? l.textes.length + l.articles.length + l.decisions.length : 0;
+  }
 
   @ViewChild('searchInput') inputRef!: ElementRef<HTMLInputElement>;
 
@@ -36,7 +55,10 @@ export class GlobalSearch implements AfterViewInit {
 
   focus() { this.inputRef?.nativeElement?.focus(); }
 
-  onInput(value: string) { this.svc.search(value); }
+  onInput(value: string) {
+    this.svc.search(value);
+    this.legal$.next(value);
+  }
 
   navigate(link: string) {
     this.svc.close();
@@ -45,7 +67,7 @@ export class GlobalSearch implements AfterViewInit {
 
   get results() { return this.svc.results(); }
   get loading()  { return this.svc.loading(); }
-  get hasResults(){ return this.svc.totalResults > 0; }
+  get hasResults(){ return this.svc.totalResults > 0 || this.legalCount > 0; }
   get query()    { return this.svc.query(); }
   get isOpen()   { return this.svc.isOpen(); }
 

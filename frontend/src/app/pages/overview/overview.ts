@@ -7,6 +7,7 @@ import { forkJoin, catchError, of } from 'rxjs';
 import { ConversationHistoryService, UsageInfo } from '../../services/conversation-history';
 import { CaseService, CaseOut } from '../../services/case.service';
 import { environment } from '../../../environments/environment';
+import { LibraryService, LibraryStats, frDate } from '../../services/library.service';
 
 interface RecentConv {
   id: string;
@@ -64,6 +65,18 @@ export class Overview implements OnInit {
   private convSvc = inject(ConversationHistoryService);
   private caseSvc = inject(CaseService);
   private http    = inject(HttpClient);
+  private lib     = inject(LibraryService);
+
+  /** Veille juridique : derniers textes, Journal officiel et décisions (corpus réel). */
+  legal           = signal<LibraryStats | null>(null);
+  readonly frDate = frDate;
+
+  /** « Décret D/2026/316/PRG/SGG du 23 octobre 2026 portant ratification… » → « Ratification… ». */
+  objet(nom: string): string {
+    const m = /\bdu\s+\d{1,2}(?:er)?\s+\S+\s+\d{4}\s*(?:—\s*)?(?:portant\s+)?(.+)$/i.exec(nom || '');
+    const o = (m ? m[1] : nom).trim();
+    return o.charAt(0).toUpperCase() + o.slice(1);
+  }
 
   userName        = signal(localStorage.getItem('userName') || 'Utilisateur');
   currentTime     = signal(new Date());
@@ -88,6 +101,7 @@ export class Overview implements OnInit {
   }
 
   ngOnInit() {
+    this.lib.stats().pipe(catchError(() => of(null))).subscribe(s => this.legal.set(s));
     forkJoin({
       profile: this.convSvc.getUserProfile().pipe(catchError(() => of(null))),
       usage:   this.convSvc.getUsage().pipe(catchError(() => of(null))),

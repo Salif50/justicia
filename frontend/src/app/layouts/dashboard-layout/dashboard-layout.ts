@@ -59,6 +59,9 @@ export class DashboardLayout implements OnInit, OnDestroy {
     'translation':        'Traduction juridique',
     // Ressources
     'encyclopedia':       'Bibliothèque juridique',
+    'journal-officiel':   'Journal officiel',
+    'ohada':              'Droit OHADA',
+    'creer-entreprise':   'Créer une entreprise',
     'case-law':           'Jurisprudence nationale',
     'glossary':           'Glossaire juridique',
     'procedures':         'Guide des démarches',

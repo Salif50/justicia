@@ -11,9 +11,9 @@
     </div>
     <div class="cg-head-actions">
       <button class="app-btn app-btn--sm" (click)="ask()">Quelle forme choisir ?</button>
-      <button class="app-btn app-btn--quiet app-btn--sm" (click)="open.set(!open())" [attr.aria-expanded]="open()">
-        {{ open() ? 'Réduire le guide' : 'Ouvrir le guide complet' }}
-      </button>
+      @if (!full()) {
+        <a class="app-btn app-btn--quiet app-btn--sm" routerLink="/dashboard/creer-entreprise">Ouvrir le guide complet</a>
+      }
     </div>
   </div>
 

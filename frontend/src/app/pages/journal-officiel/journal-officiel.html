@@ -1,0 +1,97 @@
+@if (!issueId()) {
+<div class="app-page jo">
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Veille juridique</p>
+      <h1 class="app-title">Journal officiel</h1>
+      <p class="app-sub">
+        Les numéros du Journal officiel de la République de Guinée et les textes qu’ils publient,
+        reliés à leur version intégrale dans la bibliothèque.
+      </p>
+    </div>
+    @if (list(); as l) {
+      <dl class="jo-figures"><div><dt>Numéros</dt><dd>{{ l.total }}</dd></div></dl>
+    }
+  </header>
+
+  <div class="jo-bar">
+    <div class="app-seg" role="tablist" aria-label="Année">
+      <button role="tab" [attr.aria-selected]="annee() === null" (click)="setYear(null)">Toutes</button>
+      @for (y of list()?.annees ?? []; track y) {
+        <button role="tab" [attr.aria-selected]="annee() === y" (click)="setYear(y)">{{ y }}</button>
+      }
+    </div>
+    <input class="app-input jo-search" type="search" placeholder="Chercher un texte publié (ex. redevance numérique)"
+           (input)="onSearch($any($event.target).value)" aria-label="Chercher dans les sommaires" />
+  </div>
+
+  @if (loading()) {
+    <div class="app-loading"><span class="app-spinner"></span>Chargement…</div>
+  } @else if (error()) {
+    <div class="app-error">{{ error() }}</div>
+  } @else if (!items().length) {
+    <div class="app-panel app-empty"><h3>Aucun numéro</h3><p>Aucun sommaire ne contient ces mots.</p></div>
+  } @else {
+    <ol class="jo-list">
+      @for (n of items(); track n.id) {
+        <li>
+          <a class="jo-card" [routerLink]="['/dashboard/journal-officiel', n.id]">
+            <span class="jo-date">
+              <span class="jo-day">{{ frDate(n.date) }}</span>
+              <span class="jo-num">N° {{ n.numero }}@if (n.special) { <em>spécial</em> }</span>
+            </span>
+            <span class="jo-body">
+              @if (n.theme) { <span class="jo-theme">{{ n.theme }}</span> }
+              @for (t of n.apercu; track $index) { <span class="jo-line">{{ t }}</span> }
+              <span class="jo-foot">
+                {{ n.nb_textes }} texte{{ n.nb_textes > 1 ? 's' : '' }}
+                @if (n.nb_relies) { · {{ n.nb_relies }} en texte intégral }
+                @for (k of n.natures.slice(0, 3); track k[0]) { <span class="app-tag">{{ k[1] }} {{ k[0] }}{{ k[1] > 1 ? 's' : '' }}</span> }
+              </span>
+            </span>
+          </a>
+        </li>
+      }
+    </ol>
+    @if ((list()?.total ?? 0) > items().length) {
+      <button class="jo-more" (click)="load(true)">Afficher plus ({{ items().length }} / {{ list()?.total }})</button>
+    }
+  }
+  <p class="jo-note">Sommaires repris de droitguineen.com. Seule la publication officielle du Journal officiel fait foi.</p>
+</div>
+} @else {
+<div class="app-page app-page--narrow jo-read">
+  <button class="jo-back" (click)="back()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    Tous les numéros
+  </button>
+  @if (issueLoading()) {
+    <div class="app-loading"><span class="app-spinner"></span></div>
+  } @else if (issue(); as n) {
+    <header class="jo-read-head">
+      <p class="app-eyebrow">Journal officiel de la République de Guinée@if (n.special) { · numéro spécial}</p>
+      <h1 class="jo-read-title">N° {{ n.numero }} du {{ frDate(n.date) }}</h1>
+      @if (n.theme) { <p class="jo-read-theme">{{ n.theme }}</p> }
+      <p class="jo-read-meta">{{ n.entrees.length }} texte{{ n.entrees.length > 1 ? 's' : '' }} publié{{ n.entrees.length > 1 ? 's' : '' }}
+        @if (n.source_url) { · <a [href]="n.source_url" target="_blank" rel="noopener">Source ↗</a> }</p>
+    </header>
+    <ol class="jo-entries">
+      @for (e of n.entrees; track $index) {
+        <li>
+          <span class="jo-page">p. {{ e.page }}</span>
+          <div>
+            <p class="jo-entry-ref"><strong>{{ e.nature || 'Texte' }}</strong> {{ ref(e.intitule) }}
+              @if (e.famille_label) { <span class="app-tag">{{ e.famille_label }}</span> }</p>
+            <p class="jo-entry-obj">{{ objet(e.intitule) }}</p>
+            @if (e.doc_id) {
+              <a class="jo-open" [routerLink]="['/dashboard/encyclopedia', e.doc_id]">Lire le texte intégral →</a>
+            } @else {
+              <span class="jo-missing">Texte intégral non disponible dans la bibliothèque</span>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+  }
+</div>
+}

@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { LibraryService, PublicFigures } from '../../services/library.service';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -9,9 +10,10 @@ import { environment } from '../../../environments/environment';
 import { Reveal } from '../../core/reveal.directive';
 import { GuineaMap } from './guinea-map/guinea-map';
 
+// Valeurs remplacées au chargement par les chiffres réels du corpus (/public/corpus-figures)
 const LEDGER = [
-  { label: 'Textes officiels', value: 33 },
-  { label: 'Articles indexés', value: 12282 },
+  { label: 'Textes en vigueur', value: 984 },
+  { label: 'Articles indexés', value: 39815 },
   { label: 'Réponses sans source', value: 0 },
 ];
 
@@ -80,18 +82,8 @@ const ORBIT = [
 ];
 
 /** Sommaire du corpus (nombre d’articles par texte, tel qu’affiché dans l’Encyclopédie). */
-const CORPUS = [
-  { titre: 'Code des activités économiques', annee: 1994, articles: 2010 },
-  { titre: 'Code civil', annee: 2019, articles: 1637 },
-  { titre: 'Code de procédure pénale', annee: 2016, articles: 1260 },
-  { titre: 'Code pénal', annee: 2016, articles: 1011 },
-  { titre: 'Code de procédure civile', annee: 2018, articles: 915 },
-  { titre: 'Code général des impôts', annee: 2020, articles: 820 },
-  { titre: 'Code du travail', annee: 2014, articles: 464 },
-  { titre: 'Code minier', annee: 2013, articles: 252 },
-  { titre: 'Code foncier et domanial', annee: 1992, articles: 241 },
-  { titre: 'Constitution de la République', annee: 2025, articles: 201 },
-];
+// Remplacé au chargement par les dix plus grands textes du corpus (noms et nombres d'articles réels)
+const CORPUS: { titre: string; annee: number | null; articles: number }[] = [];
 
 function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 
@@ -106,8 +98,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   readonly steps = STEPS;
   readonly tools = TOOLS;
   readonly audiences = AUDIENCES;
-  readonly corpus = CORPUS;
-  readonly corpusMax = Math.max(...CORPUS.map((c) => c.articles));
+  readonly corpus = signal(CORPUS);
+  readonly corpusMax = signal(1);
+  /** Chiffres réels du corpus (aucun contenu) : bibliothèque, jurisprudence, Journal officiel, OHADA. */
+  readonly figures = signal<PublicFigures | null>(null);
   readonly orbitTiles = ORBIT;
 
   @ViewChild('map') private map?: GuineaMap;
@@ -144,9 +138,21 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private readonly motionOk =
     typeof window !== 'undefined' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
+  private lib = inject(LibraryService);
+
   constructor(private contentService: ContentService, private http: HttpClient, private zone: NgZone) {}
 
   ngOnInit() {
+    this.lib.publicFigures().subscribe({
+      next: (f) => {
+        this.figures.set(f);
+        this.ledger[0].value = f.textes_en_vigueur;
+        this.ledger[1].value = f.articles;
+        this.ledger.forEach(item => { if (item.shown() !== 0 || !this.motionOk) item.shown.set(item.value); });
+        this.corpus.set(f.principaux_textes);
+        this.corpusMax.set(Math.max(1, ...f.principaux_textes.map(c => c.articles)));
+      },
+    });
     this.contentService.getTestimonials().subscribe({ next: (data) => this.testimonials.set(data) });
     this.contentService.getPartners().subscribe({ next: (data) => this.partners.set(data) });
     this.contentService.getConfig().subscribe({ next: (data) => this.siteConfig.set(data) });

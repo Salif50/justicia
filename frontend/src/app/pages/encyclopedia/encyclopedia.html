@@ -56,6 +56,70 @@
       }
     </section>
   } @else {
+    <div class="lib-views" role="tablist" aria-label="Vues de la bibliothèque">
+      <button role="tab" [attr.aria-selected]="vue() === 'codes'" (click)="setVue('codes')">Codes, lois et traités</button>
+      <button role="tab" [attr.aria-selected]="vue() === 'actes'" (click)="setVue('actes')">
+        Décrets, arrêtés et décisions @if (catalog(); as c) { <span class="lib-cat-n">{{ n(actsTotal(c)) }}</span> }
+      </button>
+      <a routerLink="/dashboard/journal-officiel">Journal officiel</a>
+      <a routerLink="/dashboard/ohada">Droit OHADA</a>
+    </div>
+
+    @if (vue() === 'actes') {
+      <!-- Décrets, arrêtés, décisions -->
+      <section class="lib-acts">
+        <div class="lib-acts-bar">
+          <div class="lib-fams" role="group" aria-label="Familles d’actes">
+            <button [class.on]="!actsFamille()" (click)="setActsFilter('famille', '')">Tous</button>
+            @for (f of actsPage()?.facets?.familles ?? []; track f.famille) {
+              <button [class.on]="actsFamille() === f.famille" (click)="setActsFilter('famille', f.famille)">
+                {{ f.label }} <span class="lib-cat-n">{{ f.count }}</span>
+              </button>
+            }
+          </div>
+          <div class="lib-acts-filters">
+            <input class="app-input" type="search" placeholder="Mot du titre ou numéro (ex. D/2026/158)"
+                   (input)="onActsSearch($any($event.target).value)" aria-label="Chercher un acte" />
+            <select class="app-input" (change)="setActsFilter('annee', $any($event.target).value)" aria-label="Année">
+              <option value="">Toutes les années</option>
+              @for (a of actsPage()?.facets?.annees ?? []; track a) { <option [value]="a" [selected]="a === actsAnnee()">{{ a }}</option> }
+            </select>
+            <select class="app-input" (change)="setActsFilter('emetteur', $any($event.target).value)" aria-label="Autorité signataire">
+              <option value="">Toutes les autorités</option>
+              @for (e of actsPage()?.facets?.emetteurs ?? []; track e[0]) { <option [value]="e[0]" [selected]="e[0] === actsEmetteur()">{{ e[0] }} ({{ e[1] }})</option> }
+            </select>
+          </div>
+        </div>
+        @if (actsFamille() && !familleIndexee(actsFamille())) {
+          <p class="lib-acts-hint">Ces actes sont consultables mais l’assistant ne s’en sert pas pour répondre : ils concernent des personnes, des biens ou des accords précis, pas des règles générales.</p>
+        }
+        @if (actsLoading() && !actsItems().length) {
+          <div class="app-loading"><span class="app-spinner"></span></div>
+        } @else {
+          <p class="lib-results-count">{{ n(actsPage()?.total ?? 0) }} texte{{ (actsPage()?.total ?? 0) > 1 ? 's' : '' }}</p>
+          <ol class="lib-acts-list">
+            @for (a of actsItems(); track a.doc_id) {
+              <li>
+                <a [routerLink]="['/dashboard/encyclopedia', a.doc_id]" class="lib-act">
+                  <span class="lib-act-meta">
+                    <strong>{{ a.type }}</strong>
+                    @if (a.date) { <time [attr.datetime]="a.date">{{ frDate(a.date) }}</time> }
+                    @if (a.emetteur) { <span>{{ a.emetteur }}</span> }
+                    <span class="lib-act-fam">{{ a.famille_label }}</span>
+                    @if (a.qualite.length) { <span class="lib-act-warn">à vérifier</span> }
+                  </span>
+                  <span class="lib-act-name">{{ a.nom }}</span>
+                  @if (a.journal_officiel.length) { <span class="lib-act-jo">JO n° {{ a.journal_officiel[0].numero }} du {{ frDate(a.journal_officiel[0].date) }}, p. {{ a.journal_officiel[0].page }}</span> }
+                </a>
+              </li>
+            }
+          </ol>
+          @if ((actsPage()?.total ?? 0) > actsItems().length) {
+            <button class="lib-more" (click)="loadMoreActs()" [disabled]="actsLoading()">Afficher plus ({{ actsItems().length }} / {{ actsPage()?.total }})</button>
+          }
+        }
+      </section>
+    } @else {
     <!-- Catalogue -->
     @if (loading()) {
       <div class="app-loading"><span class="app-spinner"></span>Chargement de la bibliothèque…</div>
@@ -99,6 +163,7 @@
         En cas de divergence, seule la publication officielle fait foi.
       </p>
     }
+    }
   }
 </div>
 } @else {
@@ -139,6 +204,52 @@
       </div>
     }
     @if (d.note) { <div class="lib-info" role="note">{{ d.note }}</div> }
+    @if (d.qualite.length) {
+      <div class="lib-warning" role="note">
+        <strong>Texte à vérifier.</strong> {{ d.qualite.join(' ; ') }}. Il reste consultable mais l’assistant ne s’en sert pas pour répondre.
+      </div>
+    } @else if (d.statut === 'en_vigueur' && !d.indexe) {
+      <div class="lib-info lib-info--muted" role="note">
+        {{ d.famille_label }} : texte consultable, que l’assistant n’utilise pas pour répondre (il ne pose pas de règle générale).
+      </div>
+    }
+
+    @if (d.journal_officiel.length || d.relations.cite.length || d.relations.cite_par.length) {
+      <section class="lib-links" aria-label="Publication et textes liés">
+        @if (d.journal_officiel.length) {
+          <div class="lib-links-col">
+            <h2>Publication</h2>
+            @for (j of d.journal_officiel; track j.jo) {
+              <a [routerLink]="['/dashboard/journal-officiel', j.jo]">Journal officiel n° {{ j.numero }} du {{ frDate(j.date) }}, page {{ j.page }} →</a>
+            }
+          </div>
+        }
+        @if (d.relations.cite.length) {
+          <div class="lib-links-col">
+            <h2>Ce texte renvoie à</h2>
+            @for (r of d.relations.cite.slice(0, relLimit()); track r.doc_id + r.type) {
+              <a [routerLink]="['/dashboard/encyclopedia', r.doc_id]">
+                <span class="lib-rel-type" [attr.data-type]="r.type">{{ relLabel(r.type, 'out') }}</span> {{ short(r.nom, 110) }}
+              </a>
+            }
+          </div>
+        }
+        @if (d.relations.cite_par.length) {
+          <div class="lib-links-col">
+            <h2>Textes qui y renvoient</h2>
+            @for (r of d.relations.cite_par.slice(0, relLimit()); track r.doc_id + r.type) {
+              <a [routerLink]="['/dashboard/encyclopedia', r.doc_id]">
+                <span class="lib-rel-type" [attr.data-type]="r.type">{{ relLabel(r.type, 'in') }}</span> {{ short(r.nom, 110) }}
+              </a>
+            }
+          </div>
+        }
+        @if (d.relations.cite.length > relLimit() || d.relations.cite_par.length > relLimit()) {
+          <button class="lib-links-more" (click)="relLimit.set(100)">Voir tous les liens</button>
+        }
+        <p class="lib-links-note">Liens repérés automatiquement à partir des numéros de textes cités dans les articles.</p>
+      </section>
+    }
 
     <div class="lib-layout">
       <!-- Sommaire -->

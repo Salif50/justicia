@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CompanyGuide, LibraryService, frDate } from '../../../services/library.service';
 
@@ -18,12 +18,15 @@ export class CompanyGuideCard implements OnInit {
   private lib = inject(LibraryService);
   private router = inject(Router);
 
+  /** Page dédiée : guide déplié d'emblée ; sur la page des démarches : résumé + lien. */
+  full = input(false);
   guide = signal<CompanyGuide | null>(null);
   open = signal(false);
   faqOpen = signal<number | null>(null);
   readonly frDate = frDate;
 
   ngOnInit(): void {
+    this.open.set(this.full());
     this.lib.companyGuide().subscribe({ next: g => this.guide.set(g), error: () => this.guide.set(null) });
   }
 

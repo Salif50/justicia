@@ -134,6 +134,9 @@
                     @if (!openArticles().has(key) && (src.texte?.length || 0) > 380) {
                       <button type="button" class="cited-more" (click)="toggleSet(openArticles, key)">Lire l’article en entier</button>
                     }
+                    @if (src.doc_id) {
+                      <a class="cited-open" [routerLink]="['/dashboard/encyclopedia', src.doc_id]" [queryParams]="{ article: articleNum(src.article_ref) }">Ouvrir dans la bibliothèque →</a>
+                    }
                     @if (src.source_status && src.source_status !== 'publie' && src.source_status !== 'inconnu') {
                       <p class="cited-status">Statut du texte : {{ src.source_status }}</p>
                     }

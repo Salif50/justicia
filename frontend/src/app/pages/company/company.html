@@ -1,0 +1,43 @@
+<div class="app-page co">
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Droit des affaires</p>
+      <h1 class="app-title">Créer une entreprise</h1>
+      <p class="app-sub">
+        De la forme juridique à l’immatriculation : frais et pièces du guichet unique APIP / GDB,
+        et les articles de l’Acte uniforme OHADA qui s’appliquent.
+      </p>
+    </div>
+    <div class="app-head-actions">
+      <a class="app-btn app-btn--quiet" routerLink="/dashboard/ohada">Droit OHADA</a>
+    </div>
+  </header>
+
+  <app-company-guide [full]="true" />
+
+  <section class="co-law">
+    <h2 class="co-h2">Ce que dit le texte</h2>
+    <p class="co-sub">Les articles ci-dessous sont repris tels quels de l’AUSCGIE et de l’AUDCG.</p>
+    <div class="co-topics" role="tablist" aria-label="Sujets">
+      @for (t of topics; track t.label; let i = $index) {
+        <button role="tab" [attr.aria-selected]="active() === i" (click)="show(i)">{{ t.label }}</button>
+      }
+    </div>
+    @if (loading()) {
+      <div class="app-loading"><span class="app-spinner"></span></div>
+    } @else {
+      <ul class="co-hits">
+        @for (h of hits(); track h.doc_id + h.index) {
+          <li>
+            <a [routerLink]="['/dashboard/encyclopedia', h.doc_id]" [queryParams]="{ i: h.index }">
+              <strong>{{ h.article_ref }}</strong> <span>{{ h.nom }}</span>
+              <p>{{ h.extrait }}</p>
+            </a>
+          </li>
+        } @empty {
+          <li class="co-empty">Aucun article trouvé pour ce sujet.</li>
+        }
+      </ul>
+    }
+  </section>
+</div>

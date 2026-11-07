@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
 import {
-  ArticleHit, ArticleSearch, LibraryArticle, LibraryCatalog, LibraryDoc, LibraryDocDetail, LibraryService, TocEntry,
+  ActsPage, ArticleHit, ArticleSearch, LibraryArticle, LibraryCatalog, LibraryDoc, LibraryDocDetail, LibraryService,
+  TocEntry, frDate,
 } from '../../services/library.service';
 
 interface Seg { t: string; hit: boolean; }
@@ -60,7 +61,20 @@ export class Encyclopedia implements OnInit, OnDestroy {
 
   oldCount = computed(() => this.catalog()?.documents.filter(d => d.statut !== 'en_vigueur').length ?? 0);
 
+  // ── Décrets, arrêtés, décisions ───────────────────────────────────────────
+  readonly frDate = frDate;
+  vue           = signal<'codes' | 'actes'>('codes');
+  actsPage      = signal<ActsPage | null>(null);
+  actsItems     = signal<LibraryDoc[]>([]);
+  actsLoading   = signal(false);
+  actsFamille   = signal('');
+  actsAnnee     = signal<number | null>(null);
+  actsEmetteur  = signal('');
+  actsQuery     = signal('');
+  private acts$ = new Subject<string>();
+
   // ── Lecteur ───────────────────────────────────────────────────────────────
+  relLimit   = signal(8);
   docId      = signal<string | null>(null);
   doc        = signal<LibraryDocDetail | null>(null);
   docLoading = signal(false);
@@ -101,6 +115,18 @@ export class Encyclopedia implements OnInit, OnDestroy {
       this.inDoc$.pipe(debounceTime(250), distinctUntilChanged()).subscribe(q => {
         this.inDocQuery.set(q);
         this.loadWindow(0, true);
+      }),
+
+      this.acts$.pipe(debounceTime(300), distinctUntilChanged()).subscribe(q => {
+        this.actsQuery.set(q);
+        this.loadActs();
+      }),
+
+      this.route.queryParamMap.subscribe(qp => {
+        const v = qp.get('vue') === 'actes' ? 'actes' : 'codes';
+        this.actsFamille.set(qp.get('famille') ?? '');
+        this.vue.set(v);
+        if (v === 'actes' && !this.docId()) this.loadActs();
       }),
 
       this.route.paramMap.subscribe(p => {
@@ -150,6 +176,7 @@ export class Encyclopedia implements OnInit, OnDestroy {
     this.articles.set([]);
     this.inDocQuery.set('');
     this.focusIndex.set(null);
+    this.relLimit.set(8);
     this.lib.document(id).subscribe({
       next: d => {
         this.doc.set(d);
@@ -238,6 +265,49 @@ export class Encyclopedia implements OnInit, OnDestroy {
     const m = /(\d+(?:[.\-]\d+)*)/.exec(ref || '');
     return m ? m[1] : '';
   }
+
+  // ── Décrets, arrêtés ──────────────────────────────────────────────────────
+  setVue(v: 'codes' | 'actes'): void {
+    this.router.navigate([], { relativeTo: this.route, queryParams: { vue: v === 'actes' ? 'actes' : null, famille: null }, replaceUrl: true });
+  }
+
+  actsTotal(c: LibraryCatalog): number { return c.familles.reduce((t, f) => t + f.count, 0); }
+
+  familleIndexee(f: string): boolean { return f === 'reglementaire' || f === 'organisation'; }
+
+  setActsFilter(key: 'famille' | 'annee' | 'emetteur', value: string): void {
+    if (key === 'famille') this.actsFamille.set(value);
+    if (key === 'annee') this.actsAnnee.set(value ? Number(value) : null);
+    if (key === 'emetteur') this.actsEmetteur.set(value);
+    this.loadActs();
+  }
+
+  onActsSearch(v: string): void { this.acts$.next(v.trim()); }
+
+  loadActs(append = false): void {
+    this.actsLoading.set(true);
+    this.lib.acts({
+      q: this.actsQuery(), famille: this.actsFamille(), annee: this.actsAnnee(), emetteur: this.actsEmetteur(),
+      offset: append ? this.actsItems().length : 0, limit: 30,
+    }).subscribe({
+      next: r => {
+        this.actsPage.set(r);
+        this.actsItems.update(list => append ? [...list, ...r.items] : r.items);
+        this.actsLoading.set(false);
+      },
+      error: () => this.actsLoading.set(false),
+    });
+  }
+
+  loadMoreActs(): void { this.loadActs(true); }
+
+  relLabel(type: string, dir: 'out' | 'in'): string {
+    const out: Record<string, string> = { modifie: 'Modifie', abroge: 'Abroge', applique: 'Applique', cite: 'Cite' };
+    const inn: Record<string, string> = { modifie: 'Modifié par', abroge: 'Abrogation citée par', applique: 'Appliqué par', cite: 'Cité par' };
+    return (dir === 'out' ? out : inn)[type] ?? type;
+  }
+
+  short(s: string, n: number): string { return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; }
 
   n(x: number): string { return (x ?? 0).toLocaleString('fr-FR'); }
 

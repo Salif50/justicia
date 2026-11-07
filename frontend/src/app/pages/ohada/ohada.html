@@ -1,0 +1,78 @@
+<div class="app-page oh">
+  <header class="app-head">
+    <div>
+      <p class="app-eyebrow">Droit des affaires</p>
+      <h1 class="app-title">Droit OHADA</h1>
+      <p class="app-sub">
+        La Guinée applique le droit uniforme de l’OHADA depuis 2000 : sociétés, commerce, sûretés, recouvrement,
+        procédures collectives, arbitrage. Textes en vigueur et décisions de la Cour commune de justice et d’arbitrage.
+      </p>
+    </div>
+    @if (hub(); as h) {
+      <dl class="oh-figures">
+        <div><dt>Actes uniformes</dt><dd>{{ h.actes.length }}</dd></div>
+        <div><dt>Articles</dt><dd>{{ h.total_articles.toLocaleString('fr-FR') }}</dd></div>
+        <div><dt>Arrêts CCJA</dt><dd>{{ h.total_ccja }}</dd></div>
+      </dl>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="app-loading"><span class="app-spinner"></span></div>
+  } @else if (error()) {
+    <div class="app-error">{{ error() }}</div>
+  } @else if (hub(); as h) {
+    <section>
+      <h2 class="oh-h2">Actes uniformes en vigueur</h2>
+      <ul class="oh-grid">
+        @for (a of h.actes; track a.doc_id) {
+          @let s = sigle(a.nom);
+          <li class="oh-card">
+            <a [routerLink]="['/dashboard/encyclopedia', a.doc_id]" class="oh-card-main">
+              <span class="oh-sigle">{{ s || 'Acte uniforme' }}@if (a.annee) { · {{ a.annee }}}</span>
+              <span class="oh-theme">{{ themes[s] || a.nom }}</span>
+              <span class="oh-name">{{ a.nom }}</span>
+              <span class="oh-foot">{{ a.articles.toLocaleString('fr-FR') }} articles
+                @if (a.decisions_citant) { · cité {{ a.decisions_citant }} fois }</span>
+            </a>
+            <button class="oh-ask" (click)="ask(s, a.nom)">Poser une question</button>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <div class="oh-two">
+      <section>
+        <h2 class="oh-h2">Traités, règlements et versions antérieures</h2>
+        <ul class="oh-rows">
+          @for (t of h.textes; track t.doc_id) {
+            <li><a [routerLink]="['/dashboard/encyclopedia', t.doc_id]">
+              <span>{{ t.nom }}</span>
+              <small>{{ t.articles }} articles@if (t.statut !== 'en_vigueur') { · {{ t.statut_label }}}</small>
+            </a></li>
+          }
+        </ul>
+      </section>
+      <section>
+        <h2 class="oh-h2">Jurisprudence de la CCJA</h2>
+        <ul class="oh-rows">
+          @for (d of h.decisions_ccja; track d.id) {
+            <li><a [routerLink]="['/dashboard/case-law', d.id]">
+              <span>{{ label(d) }}</span>
+              <small>{{ d.extrait.slice(0, 140) }}…</small>
+            </a></li>
+          }
+        </ul>
+        <a class="oh-all" routerLink="/dashboard/case-law" [queryParams]="{ juridiction: 'CCJA (OHADA)' }">Toutes les décisions CCJA →</a>
+      </section>
+    </div>
+
+    <section class="oh-cta app-panel">
+      <div>
+        <h2>Créer une société en Guinée</h2>
+        <p>Formes juridiques de l’AUSCGIE, frais du guichet unique APIP, étapes jusqu’au RCCM.</p>
+      </div>
+      <a class="app-btn" routerLink="/dashboard/creer-entreprise">Ouvrir le guide</a>
+    </section>
+  }
+</div>

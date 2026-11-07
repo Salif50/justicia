@@ -1021,6 +1021,17 @@
   &:hover { text-decoration: underline; text-underline-offset: 3px; }
 }
 
+.cited-open {
+  display: inline-block;
+  margin: -.35rem 0 .75rem 2.8rem;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  &:hover { color: var(--brand-orange); }
+  @media (max-width: 600px) { margin-left: .95rem; }
+}
+
 .cited-status {
   margin: -.3rem .95rem .75rem 2.8rem;
   font-size: .76rem;
@@ -1088,7 +1099,18 @@
 @media (max-width: 600px) {
   .cited-head { flex-wrap: wrap; row-gap: .15rem; }
   .cited-doc { flex-basis: calc(100% - 2rem); order: 3; margin-left: 1.95rem; white-space: normal; }
-  .cited-text, .cited-more, .cited-status { margin-left: .95rem; }
+  .cited-text, .cited-more, .cited-open {
+  display: inline-block;
+  margin: -.35rem 0 .75rem 2.8rem;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  &:hover { color: var(--brand-orange); }
+  @media (max-width: 600px) { margin-left: .95rem; }
+}
+
+.cited-status { margin-left: .95rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

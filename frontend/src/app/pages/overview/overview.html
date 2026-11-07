@@ -176,10 +176,59 @@
         <ul class="ov-rows">
           <li><a routerLink="/dashboard/encyclopedia" class="ov-row"><span class="ov-row-main"><strong>Bibliothèque juridique</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
           <li><a routerLink="/dashboard/glossary" class="ov-row"><span class="ov-row-main"><strong>Glossaire juridique</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
+          <li><a routerLink="/dashboard/ohada" class="ov-row"><span class="ov-row-main"><strong>Droit OHADA</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
+          <li><a routerLink="/dashboard/creer-entreprise" class="ov-row"><span class="ov-row-main"><strong>Créer une entreprise</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
           <li><a routerLink="/dashboard/procedures" class="ov-row"><span class="ov-row-main"><strong>Guide des démarches</strong></span><svg class="ov-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></li>
         </ul>
       </section>
     </div>
 
   </div>
+
+  <!-- ── Veille juridique (corpus réel) ───────────────────────────── -->
+  @if (legal(); as l) {
+    <section class="ov-legal" aria-labelledby="ov-legal-title">
+      <header class="ov-legal-head">
+        <h2 id="ov-legal-title">Veille juridique</h2>
+        <p>{{ l.textes_en_vigueur.toLocaleString('fr-FR') }} textes en vigueur · {{ l.articles.toLocaleString('fr-FR') }} articles ·
+          {{ l.decisions }} décisions · {{ l.numeros_jo }} numéros du Journal officiel</p>
+      </header>
+      <div class="ov-legal-grid">
+        <section class="ov-panel">
+          <header class="ov-panel-head"><h3>Journal officiel</h3><a routerLink="/dashboard/journal-officiel">Tous les numéros</a></header>
+          <ul class="ov-rows">
+            @for (j of l.derniers_jo; track j.id) {
+              <li><a [routerLink]="['/dashboard/journal-officiel', j.id]" class="ov-row">
+                <span class="ov-row-main"><strong>N° {{ j.numero }}{{ j.special ? ' (spécial)' : '' }}</strong>
+                  <small>{{ j.theme || (j.nb_textes + ' texte' + (j.nb_textes > 1 ? 's' : '')) }}</small></span>
+                <span class="ov-row-meta">{{ frDate(j.date) }}</span>
+              </a></li>
+            }
+          </ul>
+        </section>
+        <section class="ov-panel">
+          <header class="ov-panel-head"><h3>Derniers textes publiés</h3><a routerLink="/dashboard/encyclopedia" [queryParams]="{ vue: 'actes' }">Décrets et arrêtés</a></header>
+          <ul class="ov-rows">
+            @for (t of l.derniers_textes.slice(0, 5); track t.doc_id) {
+              <li><a [routerLink]="['/dashboard/encyclopedia', t.doc_id]" class="ov-row">
+                <span class="ov-row-main"><strong class="ov-clamp">{{ objet(t.nom) }}</strong><small>{{ t.type }} · {{ t.famille_label }}</small></span>
+                <span class="ov-row-meta">{{ frDate(t.date) }}</span>
+              </a></li>
+            }
+          </ul>
+        </section>
+        <section class="ov-panel">
+          <header class="ov-panel-head"><h3>Jurisprudence récente</h3><a routerLink="/dashboard/case-law">Toutes les décisions</a></header>
+          <ul class="ov-rows">
+            @for (d of l.dernieres_decisions; track d.id) {
+              <li><a [routerLink]="['/dashboard/case-law', d.id]" class="ov-row">
+                <span class="ov-row-main"><strong class="ov-clamp">{{ d.objet || d.titre }}</strong><small>{{ d.juridiction }}</small></span>
+                <span class="ov-row-meta">{{ frDate(d.date) }}</span>
+              </a></li>
+            }
+          </ul>
+        </section>
+      </div>
+    </section>
+  }
 </div>

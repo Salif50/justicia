@@ -13,7 +13,7 @@
       #searchInput
       class="gs-input"
       type="text"
-      placeholder="Rechercher dans conversations, procès, documents…"
+      placeholder="Rechercher un texte, un article, une décision, une conversation…"
       [value]="query"
       (input)="onInput($any($event.target).value)"
       autocomplete="off"
@@ -40,7 +40,7 @@
     @if (!query) {
       <div class="gs-empty">
         <div class="gs-empty-icon">Recherche</div>
-        <p>Tapez pour rechercher dans tous vos contenus</p>
+        <p>Codes, lois, décrets, jurisprudence et vos propres contenus</p>
         <div class="gs-shortcuts">
           <span><kbd>↑</kbd><kbd>↓</kbd> Naviguer</span>
           <span><kbd>Entrée</kbd> Ouvrir</span>
@@ -56,6 +56,49 @@
         <p>Aucun résultat pour <strong>« {{ query }} »</strong></p>
         <p class="gs-sub">Essayez d'autres mots clés</p>
       </div>
+    }
+
+    <!-- Droit guinéen ──────────────────────────────────── -->
+    @if (legal(); as l) {
+      @if (l.textes.length) {
+        <div class="gs-group">
+          <div class="gs-group-label"><span>T</span> Textes <span class="gs-count">{{ l.textes.length }}</span></div>
+          @for (t of l.textes; track t.doc_id) {
+            <button class="gs-result-item" (click)="navigate('/dashboard/encyclopedia/' + t.doc_id)">
+              <div class="gsr-icon gsr-icon--doc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+              <div class="gsr-text"><span class="gsr-title">{{ t.nom }}</span>
+                <span class="gsr-meta">{{ t.type }}{{ t.numero ? ' · ' + t.numero : '' }}{{ t.annee ? ' · ' + t.annee : '' }}</span></div>
+              <svg class="gsr-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          }
+        </div>
+      }
+      @if (l.articles.length) {
+        <div class="gs-group">
+          <div class="gs-group-label"><span>A</span> Articles <span class="gs-count">{{ l.articles.length }}</span></div>
+          @for (a of l.articles; track a.doc_id + a.index) {
+            <button class="gs-result-item" (click)="navigate('/dashboard/encyclopedia/' + a.doc_id + '?i=' + a.index)">
+              <div class="gsr-icon gsr-icon--note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+              <div class="gsr-text"><span class="gsr-title">{{ a.article_ref }} · {{ a.nom }}</span>
+                <span class="gsr-meta">{{ a.extrait }}</span></div>
+              <svg class="gsr-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          }
+        </div>
+      }
+      @if (l.decisions.length) {
+        <div class="gs-group">
+          <div class="gs-group-label"><span>J</span> Jurisprudence <span class="gs-count">{{ l.decisions.length }}</span></div>
+          @for (d of l.decisions; track d.id) {
+            <button class="gs-result-item" (click)="navigate('/dashboard/case-law/' + d.id)">
+              <div class="gsr-icon gsr-icon--case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10M12 3v18"/></svg></div>
+              <div class="gsr-text"><span class="gsr-title">{{ d.objet || d.titre }}</span>
+                <span class="gsr-meta">{{ d.juridiction }} · {{ d.date }}</span></div>
+              <svg class="gsr-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          }
+        </div>
+      }
     }
 
     <!-- Conversations ──────────────────────────────────── -->

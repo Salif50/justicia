@@ -185,6 +185,22 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/case-law/case-law').then(m => m.CaseLaw),
       },
       {
+        path: 'journal-officiel',
+        loadComponent: () => import('./pages/journal-officiel/journal-officiel').then(m => m.JournalOfficiel),
+      },
+      {
+        path: 'journal-officiel/:id',
+        loadComponent: () => import('./pages/journal-officiel/journal-officiel').then(m => m.JournalOfficiel),
+      },
+      {
+        path: 'ohada',
+        loadComponent: () => import('./pages/ohada/ohada').then(m => m.Ohada),
+      },
+      {
+        path: 'creer-entreprise',
+        loadComponent: () => import('./pages/company/company').then(m => m.Company),
+      },
+      {
         path: 'case-law/:id',
         loadComponent: () => import('./pages/case-law/case-law').then(m => m.CaseLaw),
       },

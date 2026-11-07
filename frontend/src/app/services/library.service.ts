@@ -7,10 +7,21 @@ import { environment } from '../../environments/environment';
 
 export type TexteStatut = 'en_vigueur' | 'abroge' | 'projet' | 'historique' | 'doublon';
 
+export type Famille = 'code' | 'loi' | 'constitution' | 'traite' | 'convention'
+  | 'reglementaire' | 'organisation' | 'individuel' | 'ratification' | 'promulgation';
+
+export interface JoRef { jo: string; numero: string; date: string; page: number; intitule: string; }
+
 export interface LibraryDoc {
   doc_id:          string;
   nom:             string;
   type:            string;
+  famille:         Famille;
+  famille_label:   string;
+  emetteur:        string;
+  indexe:          boolean;
+  qualite:         string[];
+  journal_officiel: JoRef[];
   numero:          string;
   annee:           number | null;
   date:            string;
@@ -31,13 +42,65 @@ export interface LibraryCatalog {
   documents:       LibraryDoc[];
   total_articles:  number;
   total_documents: number;
+  total_textes:    number;
   total_decisions: number;
+  familles:        { famille: Famille; label: string; count: number }[];
   categories:      string[];
 }
 
+export interface Relation {
+  doc_id: string; type: 'modifie' | 'abroge' | 'applique' | 'cite'; article: string;
+  nom: string; nature: string; date: string; numero: string;
+}
+
+export interface ActsPage {
+  total: number; offset: number; limit: number; items: LibraryDoc[];
+  facets: { familles: { famille: Famille; label: string; count: number }[]; annees: number[]; emetteurs: [string, number][] };
+}
+
+export interface JoIssueSummary {
+  id: string; numero: string; special: boolean; date: string; titre: string; theme: string; source_url: string;
+  nb_textes: number; nb_relies: number; natures: [string, number][]; apercu: string[];
+}
+
+export interface JoEntry {
+  nature: string; intitule: string; page: number; cle: string; doc_id: string | null;
+  famille: string; famille_label: string; indexe: boolean;
+}
+
+export interface JoIssue extends Omit<JoIssueSummary, 'nb_textes' | 'nb_relies' | 'natures' | 'apercu'> { entrees: JoEntry[]; }
+
+export interface JoList { total: number; offset: number; limit: number; annees: number[]; numeros: JoIssueSummary[]; }
+
+export interface OhadaHub {
+  actes: LibraryDoc[]; textes: LibraryDoc[]; decisions_ccja: DecisionSummary[];
+  total_ccja: number; total_articles: number;
+}
+
+export interface LibraryStats {
+  textes_en_vigueur: number; articles: number; textes_total: number; codes_et_lois: number;
+  actes_uniformes: number; decisions: number; numeros_jo: number;
+  derniers_textes: LibraryDoc[]; dernieres_decisions: DecisionSummary[];
+  derniers_jo: { id: string; numero: string; special: boolean; date: string; titre: string; theme: string; nb_textes: number }[];
+}
+
+export interface QuickResults {
+  textes: { doc_id: string; nom: string; type: string; numero: string; annee: number | null; famille_label: string }[];
+  articles: ArticleHit[];
+  decisions: DecisionSummary[];
+}
+
+export type PublicFigures = Pick<LibraryStats, 'textes_en_vigueur' | 'articles' | 'textes_total' | 'codes_et_lois'
+  | 'actes_uniformes' | 'decisions' | 'numeros_jo'> & {
+  principaux_textes: { titre: string; annee: number | null; articles: number }[];
+};
+
 export interface TocEntry { titre: string; niveau: number; index: number; article_ref: string; }
 
-export interface LibraryDocDetail extends LibraryDoc { sommaire: TocEntry[]; }
+export interface LibraryDocDetail extends LibraryDoc {
+  sommaire: TocEntry[];
+  relations: { cite: Relation[]; cite_par: Relation[] };
+}
 
 export interface LibraryArticle {
   index:       number;
@@ -158,6 +221,42 @@ export class LibraryService {
 
   decision(id: string): Observable<DecisionDetail> {
     return this.http.get<DecisionDetail>(`${this.api}/jurisprudence/${encodeURIComponent(id)}`);
+  }
+
+  acts(query: { q?: string; famille?: string; annee?: number | null; emetteur?: string; sort?: string; offset?: number; limit?: number }): Observable<ActsPage> {
+    return this.http.get<ActsPage>(`${this.api}/library/actes`, { params: this.params(query) });
+  }
+
+  ohada(): Observable<OhadaHub> {
+    return this.http.get<OhadaHub>(`${this.api}/library/ohada`);
+  }
+
+  stats(): Observable<LibraryStats> {
+    return this.http.get<LibraryStats>(`${this.api}/library/stats`);
+  }
+
+  quick(q: string): Observable<QuickResults> {
+    return this.http.get<QuickResults>(`${this.api}/library/quick`, { params: { q } });
+  }
+
+  journal(query: { annee?: number | null; q?: string; offset?: number; limit?: number }): Observable<JoList> {
+    return this.http.get<JoList>(`${this.api}/journal-officiel`, { params: this.params(query) });
+  }
+
+  journalIssue(id: string): Observable<JoIssue> {
+    return this.http.get<JoIssue>(`${this.api}/journal-officiel/${encodeURIComponent(id)}`);
+  }
+
+  publicFigures(): Observable<PublicFigures> {
+    return this.http.get<PublicFigures>(`${this.api}/public/corpus-figures`);
+  }
+
+  private params(query: object): HttpParams {
+    let p = new HttpParams();
+    for (const [k, v] of Object.entries(query)) {
+      if (v !== undefined && v !== null && v !== '') p = p.set(k, String(v));
+    }
+    return p;
   }
 
   companyGuide(): Observable<CompanyGuide> {
