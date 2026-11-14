@@ -5,6 +5,8 @@
 backend/.env.*
 !backend/.env.*.example
 data/
+# Données publiques des pages de référencement (exportées, nécessaires à la construction)
+!frontend/src/app/pages/seo/data/
 # ── Backend ─────────────────────────────────────────────────────────────────
 backend/env/
 backend/uploads/
