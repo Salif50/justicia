@@ -1,4 +1,5 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, PLATFORM_ID, signal, computed, effect, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -15,20 +16,23 @@ const META_COLORS = { light: '#FFFFFF', dark: '#0F0F0E' } as const;
  */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly media = window.matchMedia('(prefers-color-scheme: dark)');
-  private readonly systemDark = signal(this.media.matches);
+  /** Au pré-rendu (serveur), pas de fenêtre ni de stockage : le thème est posé par index.html dans le navigateur. */
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly media = this.browser ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  private readonly systemDark = signal(this.media?.matches ?? true);
 
-  readonly mode = signal<ThemeMode>(readStoredMode());
+  readonly mode = signal<ThemeMode>(this.browser ? readStoredMode() : 'dark');
   readonly isDark = computed(() => this.mode() === 'dark' || (this.mode() === 'auto' && this.systemDark()));
   readonly resolved = computed<'light' | 'dark'>(() => (this.isDark() ? 'dark' : 'light'));
 
   constructor() {
+    if (!this.media) return;
     const onChange = (e: MediaQueryListEvent) => this.systemDark.set(e.matches);
     if (typeof this.media.addEventListener === 'function') this.media.addEventListener('change', onChange);
     else this.media.addListener(onChange);
 
     effect(() => {
-      localStorage.setItem(STORAGE_KEY, this.mode());
+      try { localStorage.setItem(STORAGE_KEY, this.mode()); } catch { /* stockage indisponible */ }
       this.apply(this.resolved());
     });
   }
@@ -51,6 +55,7 @@ export class ThemeService {
 }
 
 function readStoredMode(): ThemeMode {
-  const v = localStorage.getItem(STORAGE_KEY);
+  let v: string | null = null;
+  try { v = localStorage.getItem(STORAGE_KEY); } catch { /* navigation privée stricte */ }
   return v === 'light' || v === 'dark' || v === 'auto' ? v : 'dark';
 }

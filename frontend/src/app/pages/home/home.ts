@@ -9,11 +9,33 @@ import { ContentService, Testimonial, Partner, SiteConfig } from '../../services
 import { environment } from '../../../environments/environment';
 import { Reveal } from '../../core/reveal.directive';
 import { GuineaMap } from './guinea-map/guinea-map';
+import { SeoService, faqJsonLd } from '../../core/seo/seo.service';
+import { SITE_URL } from '../../core/seo/public-pages';
+import exportedFigures from '../seo/data/figures.json';
+import exportedGuide from '../seo/data/entreprise.json';
+import exportedJo from '../seo/data/jo-index.json';
+import exportedTextes from '../seo/data/textes.json';
+
+/**
+ * Chiffres exportés du corpus (scripts/export_public_data.py) : la page pré-rendue
+ * les contient d'emblée ; l'API les remplace ensuite par les valeurs du jour.
+ */
+const INITIAL_FIGURES: PublicFigures = {
+  ...exportedFigures,
+  principaux_textes: [...exportedTextes].filter(t => t.famille === 'code' || t.famille === 'loi')
+    .sort((a, b) => b.articles - a.articles).slice(0, 10)
+    .map(t => ({ titre: t.nom, annee: t.annee, articles: t.articles })),
+  creation_entreprise: exportedGuide,
+  journal_recent: exportedJo.recents.slice(0, 4).map(n => ({
+    numero: n.numero, special: n.special, date: n.date, titre: n.titre, nb_textes: n.entrees.length,
+    apercu: n.entrees.slice(0, 3),
+  })),
+};
 
 // Valeurs remplacées au chargement par les chiffres réels du corpus (/public/corpus-figures)
 const LEDGER = [
-  { label: 'Textes en vigueur', value: 984 },
-  { label: 'Articles indexés', value: 39815 },
+  { label: 'Textes en vigueur', value: exportedFigures.textes_en_vigueur },
+  { label: 'Articles indexés', value: exportedFigures.articles },
   { label: 'Réponses sans source', value: 0 },
 ];
 
@@ -132,6 +154,16 @@ const EXAMPLES = [
   },
 ];
 
+/** Questions fréquentes : affichées sur la page et balisées pour les moteurs (FAQPage). */
+const FAQ = [
+  { q: "JusticIA remplace-t-il un avocat ?", a: "Non. JusticIA est un outil d’information juridique. Pour une procédure ou une décision importante, consultez un avocat inscrit au Barreau de Guinée." },
+  { q: "D’où viennent les textes utilisés ?", a: "Des textes officiels de la République de Guinée : codes, lois et décrets publiés. Chaque réponse indique la loi et l’article cités, avec un extrait du texte." },
+  { q: "Et si la réponse n’est pas dans les textes ?", a: "JusticIA vous l’indique explicitement. Il ne complète jamais une réponse par une disposition qui ne figure pas dans le corpus." },
+  { q: "Les textes sont-ils à jour ?", a: "La base suit le Journal officiel : chaque nouveau numéro est relié aux textes qu’il publie. Un texte abrogé reste consultable mais il est signalé comme tel, et JusticIA ne s’appuie pas dessus pour répondre." },
+  { q: "Et le droit des affaires OHADA ?", a: "Les Actes uniformes OHADA (sociétés, commerce, sûretés, recouvrement…) font partie de la base. Comme le prévoit le Traité OHADA, ils priment sur le droit interne contraire : JusticIA les cite en premier lorsqu’ils s’appliquent." },
+  { q: "Que deviennent mes questions ?", a: "Vos conversations et vos dossiers sont stockés sur notre infrastructure et ne sont ni vendus ni utilisés pour entraîner un modèle d’IA. Pour rédiger la réponse, la question et les articles retrouvés sont transmis à un modèle de langage hébergé par notre fournisseur. Le mode éphémère permet de ne rien conserver." },
+];
+
 /** Textes affichés en orbite autour de la question. */
 const ORBIT = [
   { abbr: 'CP',  label: 'Code pénal' },
@@ -146,7 +178,7 @@ const ORBIT = [
 
 /** Sommaire du corpus (nombre d’articles par texte, tel qu’affiché dans l’Encyclopédie). */
 // Remplacé au chargement par les dix plus grands textes du corpus (noms et nombres d'articles réels)
-const CORPUS: { titre: string; annee: number | null; articles: number }[] = [];
+const CORPUS = INITIAL_FIGURES.principaux_textes;
 
 function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 
@@ -162,11 +194,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   readonly tools = TOOLS;
   readonly audiences = AUDIENCES;
   readonly corpus = signal(CORPUS);
-  readonly corpusMax = signal(1);
+  readonly corpusMax = signal(Math.max(1, ...CORPUS.map(c => c.articles)));
   /** Chiffres réels du corpus (aucun contenu) : bibliothèque, jurisprudence, Journal officiel, OHADA. */
-  readonly figures = signal<PublicFigures | null>(null);
+  readonly figures = signal<PublicFigures | null>(INITIAL_FIGURES);
   readonly orbitTiles = ORBIT;
   readonly examples = EXAMPLES;
+  readonly faq = FAQ;
 
   @ViewChild('map') private map?: GuineaMap;
   @ViewChild('hx') private hxRef?: ElementRef<HTMLElement>;
@@ -203,10 +236,33 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     typeof window !== 'undefined' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   private lib = inject(LibraryService);
+  private seo = inject(SeoService);
 
   constructor(private contentService: ContentService, private http: HttpClient, private zone: NgZone) {}
 
   ngOnInit() {
+    this.seo.setJsonLd('page-faq', faqJsonLd(FAQ));
+    this.seo.setJsonLd('page-app', {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'JusticIA',
+      url: SITE_URL + '/',
+      applicationCategory: 'BusinessApplication',
+      applicationSubCategory: 'Assistant juridique',
+      operatingSystem: 'Web',
+      inLanguage: 'fr',
+      description: 'Assistant juridique qui retrouve l’article applicable dans les codes, lois, décrets et Actes uniformes OHADA de la République de Guinée, le cite mot pour mot et l’explique.',
+      featureList: [
+        'Réponses citant l’article exact du texte officiel',
+        'Bibliothèque des codes et lois de Guinée, article par article',
+        'Actes uniformes OHADA et jurisprudence',
+        'Sommaires du Journal officiel',
+        'Rédaction et relecture d’actes et de contrats',
+        'Traduction en pular, malinké et soussou',
+      ],
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'GNF', description: 'Compte gratuit, sans carte bancaire' },
+      publisher: { '@id': SITE_URL + '/#organisation' },
+    });
     this.lib.publicFigures().subscribe({
       next: (f) => {
         this.figures.set(f);
@@ -245,6 +301,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     if (this.toastTimer) clearTimeout(this.toastTimer);
     cancelAnimationFrame(this.scrollRaf);
     if (typeof window !== 'undefined') {

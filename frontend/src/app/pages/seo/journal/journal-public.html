@@ -1,0 +1,75 @@
+<app-header></app-header>
+
+<main id="contenu" tabindex="-1">
+  <header class="pub-hero">
+    <div class="pub-container">
+      <app-seo-crumbs [crumbs]="crumbs" />
+      <p class="pub-eyebrow">Veille juridique</p>
+      @if (annee) {
+        <h1 class="pub-hero-title">Journal officiel de Guinée <em>{{ annee }}.</em></h1>
+        <p class="pub-hero-lead">
+          Les sommaires des {{ yearInfo?.numeros }} numéros publiés en {{ annee }}&nbsp;: {{ fmt(yearInfo?.textes ?? 0) }}
+          lois, ordonnances, décrets et arrêtés, du plus récent au plus ancien.
+        </p>
+      } @else {
+        <h1 class="pub-hero-title">Le Journal officiel <em>de la République de Guinée.</em></h1>
+        <p class="pub-hero-lead">
+          Les sommaires des numéros du Journal officiel&nbsp;: lois, ordonnances, décrets et arrêtés publiés.
+          Dans JusticIA, chaque texte est relié à sa version intégrale et les textes abrogés sont signalés.
+        </p>
+        <dl class="sx-hero-facts">
+          <div><dt>numéros</dt><dd>{{ idx.total_numeros }}</dd></div>
+          <div><dt>textes publiés</dt><dd>{{ fmt(idx.total_textes) }}</dd></div>
+          @if (idx.recents[0]; as r) { <div><dt>dernier numéro</dt><dd>{{ date(r.date) }}</dd></div> }
+        </dl>
+      }
+    </div>
+  </header>
+
+  <section class="sx-section">
+    <div class="pub-container">
+      <nav aria-label="Années">
+        <ul class="sx-years">
+          @for (y of idx.annees; track y.annee) {
+            <li>
+              <a [routerLink]="['/journal-officiel-guinee', y.annee]" [attr.aria-current]="y.annee === annee ? 'page' : null">
+                {{ y.annee }} <small>{{ y.numeros }} n°</small>
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+
+      @if (!annee) { <h2 class="sx-h2">Les derniers numéros</h2><p class="sx-lead">Sommaire complet des trois numéros les plus récents.</p> }
+
+      <ol class="sx-issues">
+        @for (n of issues; track n.titre) {
+          <li class="sx-issue">
+            <header>
+              <h3>{{ label(n) }}</h3>
+              <time [attr.datetime]="n.date">{{ date(n.date) }} · {{ n.entrees.length }} texte{{ n.entrees.length > 1 ? 's' : '' }}</time>
+            </header>
+            @if (n.entrees.length) {
+              <ol>
+                @for (e of n.entrees; track $index) {
+                  <li>@if (e.nature) {<b>{{ e.nature }}</b>}{{ e.intitule }}</li>
+                }
+              </ol>
+            } @else {
+              <p class="sx-note" style="margin:0">Sommaire non disponible pour ce numéro.</p>
+            }
+          </li>
+        }
+      </ol>
+
+      @if (!annee) {
+        <p class="sx-note">Consultez les numéros précédents par année ci-dessus, ou le <a routerLink="/textes-de-loi-guinee">catalogue des codes et lois</a>.</p>
+      }
+    </div>
+  </section>
+
+  <app-seo-cta title="Un décret vous concerne ?"
+    text="Demandez à JusticIA ce que prévoit un texte publié au Journal officiel : il retrouve l’article et vous l’explique." />
+</main>
+
+<app-footer></app-footer>

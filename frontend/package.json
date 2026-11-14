@@ -4,10 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && node scripts/seo-files.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build:vercel": "node scripts/set-env.mjs && ng build --configuration production"
+    "build:vercel": "node scripts/set-env.mjs && ng build --configuration production && node scripts/seo-files.mjs",
+    "export:seo": "cd ../backend && env/bin/python ../frontend/scripts/export_public_data.py"
   },
   "prettier": {
     "printWidth": 100,
@@ -28,7 +29,9 @@
     "@angular/core": "^20.3.0",
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
-    "@angular/router": "^20.3.0",
+    "@angular/platform-server": "^20.3.9",
+    "@angular/router": "^20.3.9",
+    "@angular/ssr": "^20.3.8",
     "marked": "^17.0.4",
     "rxjs": "~7.8.0",
     "three": "^0.169.0",

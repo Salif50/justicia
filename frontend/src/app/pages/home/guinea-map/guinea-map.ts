@@ -187,6 +187,7 @@ export class GuineaMap implements AfterViewInit, OnDestroy {
   setShift(s: number) { this.shift = s; }
 
   ngAfterViewInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     if (typeof window === 'undefined') return;
     this.cityEls = Array.from(this.overlayRef.nativeElement.querySelectorAll<HTMLElement>('[data-city]'));
     this.zone.runOutsideAngular(() => { void this.boot(); });
@@ -439,6 +440,7 @@ export class GuineaMap implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     this.destroyed = true;
     cancelAnimationFrame(this.raf);
     this.ro?.disconnect();

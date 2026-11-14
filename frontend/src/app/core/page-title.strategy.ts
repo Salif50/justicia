@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RouterStateSnapshot, TitleStrategy } from '@angular/router';
+import { isSeoManaged } from './seo/public-pages';
 
 /**
  * Titre d'onglet « Page · JusticIA ». Les routes sans `title`
@@ -14,6 +15,8 @@ export class PageTitleStrategy extends TitleStrategy {
   constructor(private readonly title: Title) { super(); }
 
   override updateTitle(snapshot: RouterStateSnapshot): void {
+    // Pages publiques : titre complet posé par SeoService (référencement)
+    if (isSeoManaged(snapshot.url)) return;
     const page = this.buildTitle(snapshot);
     this.title.setTitle(page ? `${page} · ${PageTitleStrategy.BRAND}` : PageTitleStrategy.DEFAULT);
   }

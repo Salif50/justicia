@@ -280,6 +280,7 @@
             Source&nbsp;: {{ g.sources }}, mises à jour le {{ g.mise_a_jour_source }}.
             Les montants peuvent évoluer&nbsp;: vérifiez-les auprès du guichet unique avant le dépôt.
           </p>
+          <p class="lp-more"><a routerLink="/creer-entreprise-guinee">Guide complet&nbsp;: pièces à fournir, formes juridiques et questions fréquentes →</a></p>
         </div>
       </div>
     </section>
@@ -346,6 +347,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
       </header>
+      <div>
       <ol class="lp-codes" reveal [revealStagger]="40">
         @for (code of corpus(); track code.titre) {
           <li>
@@ -355,6 +357,8 @@
           </li>
         }
       </ol>
+      <p class="lp-more"><a routerLink="/textes-de-loi-guinee">Voir tous les codes et lois de Guinée →</a> · <a routerLink="/droit-ohada-guinee">Droit OHADA →</a></p>
+      </div>
     </div>
   </section>
 
@@ -422,6 +426,7 @@
             </li>
           }
         </ul>
+        <p class="lp-more"><a routerLink="/journal-officiel-guinee">Tous les sommaires du Journal officiel →</a></p>
       </div>
     </section>
   }
@@ -459,30 +464,12 @@
         <p class="lp-intro">Une autre question&nbsp;? <a href="#contact">Écrivez-nous</a>.</p>
       </header>
       <div class="lp-faq">
-        <details>
-          <summary>JusticIA remplace-t-il un avocat&nbsp;?</summary>
-          <p>Non. JusticIA est un outil d’information juridique. Pour une procédure ou une décision importante, consultez un avocat inscrit au Barreau de Guinée.</p>
-        </details>
-        <details>
-          <summary>D’où viennent les textes utilisés&nbsp;?</summary>
-          <p>Des textes officiels de la République de Guinée&nbsp;: codes, lois et décrets publiés. Chaque réponse indique la loi et l’article cités, avec un extrait du texte.</p>
-        </details>
-        <details>
-          <summary>Et si la réponse n’est pas dans les textes&nbsp;?</summary>
-          <p>JusticIA vous l’indique explicitement. Il ne complète jamais une réponse par une disposition qui ne figure pas dans le corpus.</p>
-        </details>
-        <details>
-          <summary>Les textes sont-ils à jour&nbsp;?</summary>
-          <p>La base suit le Journal officiel&nbsp;: chaque nouveau numéro est relié aux textes qu’il publie. Un texte abrogé reste consultable mais il est signalé comme tel, et JusticIA ne s’appuie pas dessus pour répondre.</p>
-        </details>
-        <details>
-          <summary>Et le droit des affaires OHADA&nbsp;?</summary>
-          <p>Les Actes uniformes OHADA (sociétés, commerce, sûretés, recouvrement…) font partie de la base. Comme le prévoit le Traité OHADA, ils priment sur le droit interne contraire&nbsp;: JusticIA les cite en premier lorsqu’ils s’appliquent.</p>
-        </details>
-        <details>
-          <summary>Que deviennent mes questions&nbsp;?</summary>
-          <p>Vos conversations et vos dossiers sont stockés sur notre infrastructure et ne sont ni vendus ni utilisés pour entraîner un modèle d’IA. Pour rédiger la réponse, la question et les articles retrouvés sont transmis à un modèle de langage hébergé par notre fournisseur. Le mode éphémère permet de ne rien conserver.</p>
-        </details>
+        @for (f of faq; track f.q) {
+          <details>
+            <summary>{{ f.q }}</summary>
+            <p>{{ f.a }}</p>
+          </details>
+        }
       </div>
     </div>
   </section>

@@ -760,6 +760,15 @@ $ease: pub.$ease-out;
 .lp-base-title { font-weight: 600; color: var(--ink); }
 .lp-base-text { font-size: 14px; line-height: 1.55; color: var(--muted); }
 
+/* Lien vers la page détaillée d'une section */
+.lp-more {
+  margin: 24px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+  a { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 4px;
+      &:hover { text-decoration-color: var(--ink); } }
+}
+
 /* ═════════════ Exemples réels ═════════════ */
 .lp-ex {
   display: grid;

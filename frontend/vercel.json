@@ -6,8 +6,8 @@
   "outputDirectory": "dist/justicIA/browser",
   "rewrites": [
     {
-      "source": "/((?!.*\\.(?:js|mjs|css|map)).*)",
-      "destination": "/index.html"
+      "source": "/((?!.*\\.(?:js|mjs|css|map|xml|txt|png|jpe?g|webp|svg|ico|json|woff2?)$).*)",
+      "destination": "/index.csr.html"
     }
   ],
   "headers": [
@@ -54,13 +54,32 @@
       ]
     },
     {
-      "source": "/index.html",
+      "source": "/(.*)\\.html",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "no-cache"
         }
       ]
+    },
+    {
+      "source": "/((?!.*\\.).*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(dashboard|admin)(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
-  ]
+  ],
+  "trailingSlash": false
 }

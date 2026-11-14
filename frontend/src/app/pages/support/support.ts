@@ -39,6 +39,7 @@ export class Support implements OnInit, AfterViewInit, OnDestroy {
   constructor(private contentService: ContentService, private http: HttpClient) {}
 
   ngOnInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     this.contentService.getFaq('support').subscribe({ next: (data) => this.faqItems.set(data) });
     this.contentService.getConfig().subscribe({ next: (data) => this.siteConfig.set(data) });
 
@@ -88,6 +89,7 @@ export class Support implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     setTimeout(() => {
       this.scrollSections.forEach((s) => this.observer.observe(s.nativeElement));
       document.querySelectorAll('.scroll-reveal').forEach((el) => this.observer.observe(el));
@@ -95,6 +97,7 @@ export class Support implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     if (this.observer) this.observer.disconnect();
     if (this.toastTimer) clearTimeout(this.toastTimer);
   }

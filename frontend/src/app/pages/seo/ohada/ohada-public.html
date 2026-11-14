@@ -1,0 +1,90 @@
+<app-header></app-header>
+
+<main id="contenu" tabindex="-1">
+  <header class="pub-hero">
+    <div class="pub-container">
+      <app-seo-crumbs [crumbs]="crumbs" />
+      <p class="pub-eyebrow">Droit des affaires</p>
+      <h1 class="pub-hero-title">Le droit OHADA <em>en Guinée.</em></h1>
+      <p class="pub-hero-lead">
+        Sociétés commerciales, commerce, sûretés, recouvrement, procédures collectives, arbitrage&nbsp;:
+        les Actes uniformes de l’OHADA forment le droit des affaires applicable en Guinée.
+        JusticIA les consulte article par article et les cite en priorité lorsqu’ils s’appliquent.
+      </p>
+      <dl class="sx-hero-facts">
+        <div><dt>Actes uniformes en vigueur</dt><dd>{{ o.actes.length }}</dd></div>
+        <div><dt>articles consultables</dt><dd>{{ fmt(actesArticles) }}</dd></div>
+        @if (o.total_ccja) { <div><dt>décisions de la CCJA</dt><dd>{{ o.total_ccja }}</dd></div> }
+      </dl>
+    </div>
+  </header>
+
+  <section class="sx-section" aria-labelledby="oh-prim">
+    <div class="pub-container sx-prose">
+      <h2 class="sx-h2" id="oh-prim">Pourquoi l’OHADA prime sur le droit interne</h2>
+      <p>
+        L’article 10 du Traité relatif à l’harmonisation du droit des affaires en Afrique est sans ambiguïté&nbsp;:
+        «&nbsp;les actes uniformes sont directement applicables et obligatoires dans les Etats Parties,
+        nonobstant toute disposition contraire de droit interne, antérieure ou postérieure&nbsp;».
+      </p>
+      <p>
+        En pratique, pour une société commerciale, une sûreté ou un recouvrement de créance, c’est l’Acte uniforme
+        qu’il faut lire d’abord, avant un texte guinéen plus ancien comme le Code des activités économiques.
+      </p>
+    </div>
+  </section>
+
+  <section class="sx-section" aria-labelledby="oh-actes">
+    <div class="pub-container">
+      <h2 class="sx-h2" id="oh-actes">Les Actes uniformes en vigueur</h2>
+      <p class="sx-lead">Chaque Acte uniforme est consultable article par article, avec son sommaire.</p>
+      <ul class="sx-cards">
+        @for (a of o.actes; track a.nom) {
+          <li>
+            <a [routerLink]="a.slug ? ['/textes-de-loi-guinee', a.slug] : '/droit-ohada-guinee'">
+              <strong>{{ a.nom }}</strong>
+              <small>{{ a.annee }} · {{ fmt(a.articles) }} articles</small>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+
+  @if (o.textes.length) {
+    <section class="sx-section" aria-labelledby="oh-autres">
+      <div class="pub-container">
+        <h2 class="sx-h2" id="oh-autres">Traités, règlements et versions antérieures</h2>
+        <p class="sx-lead">Les versions abrogées ou historiques restent consultables, mais JusticIA ne s’appuie pas dessus pour répondre.</p>
+        <ul class="sx-rows">
+          @for (t of o.textes; track t.nom) {
+            <li>
+              @if (t.slug) {
+                <a [routerLink]="['/textes-de-loi-guinee', t.slug]"><strong>{{ t.nom }}</strong><span>{{ t.statut_label }}</span><small>{{ t.annee }}</small></a>
+              } @else {
+                <a routerLink="/signup"><strong>{{ t.nom }}</strong><span>{{ t.statut_label }}</span><small>{{ t.annee }}</small></a>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+  }
+
+  <section class="sx-section" aria-labelledby="oh-faq">
+    <div class="pub-container">
+      <h2 class="sx-h2" id="oh-faq">Questions fréquentes sur le droit OHADA</h2>
+      <div class="sx-faq">
+        @for (f of faq; track f.q; let i = $index) {
+          <details [open]="i === 0"><summary>{{ f.q }}</summary><p>{{ f.a }}</p></details>
+        }
+      </div>
+      <p class="sx-note">Créer une société&nbsp;? Consultez le <a routerLink="/creer-entreprise-guinee">guide pour créer une entreprise en Guinée</a>.</p>
+    </div>
+  </section>
+
+  <app-seo-cta title="Un litige commercial, une société à créer ?"
+    text="JusticIA applique la primauté de l’OHADA et cite l’article de l’Acte uniforme concerné, puis vous l’explique." />
+</main>
+
+<app-footer></app-footer>

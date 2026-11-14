@@ -28,6 +28,7 @@ export class Terms implements AfterViewInit, OnDestroy {
   ];
 
   ngAfterViewInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     this.observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(e => {
@@ -48,5 +49,8 @@ export class Terms implements AfterViewInit, OnDestroy {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  ngOnDestroy() { if (this.observer) this.observer.disconnect(); }
+  ngOnDestroy() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
+    if (this.observer) this.observer.disconnect();
+  }
 }

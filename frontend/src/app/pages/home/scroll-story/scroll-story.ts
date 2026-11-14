@@ -42,6 +42,7 @@ export class ScrollStory implements AfterViewInit, OnDestroy {
   constructor(private zone: NgZone) {}
 
   ngAfterViewInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     if (typeof window === 'undefined') return;
     // Pas d'épinglage sur petit écran ni en mouvement réduit : étapes empilées
     this.mq = window.matchMedia('(min-width: 961px) and (prefers-reduced-motion: no-preference)');
@@ -56,6 +57,7 @@ export class ScrollStory implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     if (typeof window !== 'undefined') window.removeEventListener('scroll', this.onScroll);
     cancelAnimationFrame(this.raf);
   }

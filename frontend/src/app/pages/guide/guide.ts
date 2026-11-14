@@ -125,6 +125,7 @@ export class Guide implements AfterViewInit, OnDestroy {
   ];
 
   ngAfterViewInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     this.observer = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) this.activeSection.set(e.target.id); }),
       { rootMargin: '-20% 0px -65% 0px' }
@@ -152,5 +153,8 @@ export class Guide implements AfterViewInit, OnDestroy {
     this.openTip.set(this.openTip() === i ? null : i);
   }
 
-  ngOnDestroy() { if (this.observer) this.observer.disconnect(); }
+  ngOnDestroy() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
+    if (this.observer) this.observer.disconnect();
+  }
 }

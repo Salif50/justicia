@@ -25,6 +25,7 @@ export class Pricing implements OnInit, AfterViewInit, OnDestroy {
   constructor(private contentService: ContentService) {}
 
   ngOnInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     this.observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
       { threshold: 0.05, rootMargin: '0px 0px 0px 0px' }
@@ -74,11 +75,15 @@ export class Pricing implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
     setTimeout(() => {
       this.scrollSections.forEach((s) => this.observer.observe(s.nativeElement));
       this.observeAll();
     }, 100);
   }
 
-  ngOnDestroy() { if (this.observer) this.observer.disconnect(); }
+  ngOnDestroy() {
+    if (typeof window === 'undefined') return; // pré-rendu : rien à observer ni animer
+    if (this.observer) this.observer.disconnect();
+  }
 }

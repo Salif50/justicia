@@ -1,0 +1,130 @@
+<app-header></app-header>
+
+<main id="contenu" tabindex="-1">
+  <header class="pub-hero">
+    <div class="pub-container">
+      <app-seo-crumbs [crumbs]="crumbs" />
+      <p class="pub-eyebrow">Guide {{ g.mise_a_jour_source.slice(-4) }} · d’après les fiches du guichet unique</p>
+      <h1 class="pub-hero-title">Créer une entreprise <em>en Guinée.</em></h1>
+      <p class="pub-hero-lead">
+        Frais du guichet unique par forme juridique, pièces à fournir, étapes et délai&nbsp;:
+        tout ce qu’il faut pour immatriculer votre société, selon le droit OHADA applicable en Guinée.
+      </p>
+      <dl class="sx-hero-facts">
+        <div><dt>au guichet unique, dossier complet</dt><dd>72&nbsp;h</dd></div>
+        @if (cheapest) {
+          <div><dt>{{ cheapest.forme }}, frais au guichet</dt><dd>{{ cheapest.frais_guichet }}</dd></div>
+        }
+        <div><dt>étapes, du choix de la forme à la CNSS</dt><dd>{{ g.etapes.length }}</dd></div>
+      </dl>
+      <div class="sx-hero-actions">
+        <a href="#frais" class="pub-btn pub-btn--ink">Voir les frais par forme</a>
+        <a href="#faq" class="pub-btn pub-btn--line">Questions fréquentes</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="sx-section" id="frais" aria-labelledby="co-frais">
+    <div class="pub-container">
+      <h2 class="sx-h2" id="co-frais">Combien coûte la création d’une entreprise en Guinée&nbsp;?</h2>
+      <p class="sx-lead">
+        Montants payés au guichet unique (APIP / Guinea Development Board). Ils couvrent l’immatriculation au RCCM,
+        le NIF avec le numéro Etax, la publication sur SyNERGUI et les frais administratifs.
+      </p>
+      <div class="sx-table" role="region" aria-labelledby="co-frais" tabindex="0">
+        <table>
+          <thead><tr><th scope="col">Forme juridique</th><th scope="col">Frais au guichet</th><th scope="col">Notaire</th></tr></thead>
+          <tbody>
+            @for (f of g.formes; track f.forme) {
+              <tr>
+                <th scope="row">
+                  {{ f.forme }}
+                  <small>{{ f.resume }}</small>
+                  @if (f.capital_minimum) { <small class="sx-accent">Capital minimum&nbsp;: {{ f.capital_minimum }}</small> }
+                </th>
+                <td data-label="Frais">
+                  @if (f.frais_guichet) { <strong>{{ f.frais_guichet }}</strong>@if (f.precision) {<small>{{ f.precision }}</small>} }
+                  @else { <span>Non communiqué</span> }
+                </td>
+                <td data-label="Notaire">{{ f.notaire || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="sx-note">
+        Source&nbsp;: {{ g.sources }}, mises à jour le {{ g.mise_a_jour_source }}.
+        Hors honoraires du notaire et frais bancaires. Les montants peuvent évoluer&nbsp;: vérifiez-les auprès du guichet unique avant le dépôt.
+      </p>
+    </div>
+  </section>
+
+  <section class="sx-section" id="etapes" aria-labelledby="co-etapes">
+    <div class="pub-container">
+      <h2 class="sx-h2" id="co-etapes">Les {{ g.etapes.length }} étapes pour créer votre société</h2>
+      <p class="sx-lead">Délai annoncé&nbsp;: {{ g.delai }}. Prévoyez en plus la rédaction des statuts, le dépôt du capital et, selon la forme, le passage chez le notaire.</p>
+      <ol class="sx-steps">
+        @for (e of g.etapes; track e.num) {
+          <li>
+            <span aria-hidden="true">{{ e.num }}</span>
+            <div><h3>{{ e.titre }}</h3><p>{{ e.description }}</p></div>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="sx-section" aria-labelledby="co-org">
+    <div class="pub-container">
+      <h2 class="sx-h2" id="co-org">Qui fait quoi&nbsp;?</h2>
+      <p class="sx-lead">Les organismes que vous rencontrerez, de la banque au guichet unique.</p>
+      <ul class="sx-cards">
+        @for (o of g.organismes; track o.nom) {
+          <li><div class="sx-card"><strong>{{ o.nom }}</strong><span>{{ o.role }}</span></div></li>
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="sx-section" aria-labelledby="co-textes">
+    <div class="pub-container">
+      <h2 class="sx-h2" id="co-textes">Les textes applicables</h2>
+      <p class="sx-lead">
+        La Guinée applique le droit des affaires OHADA. Ses Actes uniformes priment sur le droit interne contraire&nbsp;:
+        <a routerLink="/droit-ohada-guinee">en savoir plus sur le droit OHADA en Guinée</a>.
+      </p>
+      <ul class="sx-cards">
+        @for (t of g.textes; track t.nom) {
+          <li>
+            @if (t.slug) {
+              <a [routerLink]="['/textes-de-loi-guinee', t.slug]"><strong>{{ t.nom }}</strong><small>Voir le sommaire →</small></a>
+            } @else {
+              <div class="sx-card"><strong>{{ t.nom }}</strong></div>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="sx-section" id="faq" aria-labelledby="co-faq">
+    <div class="pub-container">
+      <h2 class="sx-h2" id="co-faq">Questions fréquentes sur la création d’entreprise</h2>
+      <p class="sx-lead">D’après les fiches {{ g.mise_a_jour_source.slice(-4) }} du guichet unique et le droit OHADA.</p>
+      <div class="sx-faq">
+        @for (f of g.faq; track f.q; let i = $index) {
+          <details [open]="i === 0">
+            <summary>{{ f.q }}</summary>
+            <p>{{ f.a }}</p>
+          </details>
+        }
+      </div>
+    </div>
+  </section>
+
+  <app-seo-cta
+    title="Un cas particulier ? Posez votre question."
+    text="Forme juridique, statuts, capital, associés étrangers : JusticIA répond en citant l’article de l’AUSCGIE ou du droit guinéen applicable." />
+</main>
+
+<app-footer></app-footer>

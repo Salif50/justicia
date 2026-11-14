@@ -1,0 +1,76 @@
+<app-header></app-header>
+
+<main id="contenu" tabindex="-1">
+  @if (t; as t) {
+    <header class="pub-hero">
+      <div class="pub-container">
+        <app-seo-crumbs [crumbs]="crumbs" />
+        <p class="pub-eyebrow">{{ t.categorie }} · En vigueur</p>
+        <h1 class="pub-hero-title">{{ t.nom }}</h1>
+        <p class="pub-hero-lead">
+          @if (t.numero) {{{ t.numero }}@if (t.date) {, }}@if (t.date) {{{ date(t.date) }}}.
+          {{ fmt(t.articles) }} articles, consultables un par un dans JusticIA et cités mot pour mot dans ses réponses.
+        </p>
+        <dl class="sx-hero-facts">
+          <div><dt>articles</dt><dd>{{ fmt(t.articles) }}</dd></div>
+          @if (t.sections) { <div><dt>titres, chapitres et sections</dt><dd>{{ t.sections }}</dd></div> }
+          @if (t.decisions_citant) { <div><dt>décisions de justice qui le citent</dt><dd>{{ t.decisions_citant }}</dd></div> }
+        </dl>
+      </div>
+    </header>
+
+    <section class="sx-section">
+      <div class="pub-container sx-split">
+        <div>
+          @if (t.note) {
+            <p class="sx-lead">{{ t.note }}</p>
+          }
+          @if (t.sommaire.length) {
+            <h2 class="sx-h2">Sommaire</h2>
+            <p class="sx-lead">Structure du texte, avec le premier article de chaque partie.</p>
+            <ol class="sx-toc">
+              @for (s of t.sommaire; track $index) {
+                <li [attr.data-n]="s.n"><span>{{ s.t }}</span>@if (s.a) {<small>{{ s.a }}</small>}</li>
+              }
+            </ol>
+          } @else {
+            <h2 class="sx-h2">Contenu</h2>
+            <p class="sx-lead">Ce texte n’est pas découpé en titres ou chapitres&nbsp;: ses {{ fmt(t.articles) }} articles se lisent à la suite dans la bibliothèque de JusticIA.</p>
+          }
+          @if (t.cite.length || t.cite_par.length) {
+            <h2 class="sx-h2" style="margin-top:48px">Textes liés</h2>
+            <ul class="sx-rows">
+              @for (r of t.cite; track $index) { <li><a routerLink="/signup"><strong>{{ r.nom }}</strong><span>Cité par ce texte@if (r.numero) { · {{ r.numero }}}</span></a></li> }
+              @for (r of t.cite_par; track $index) { <li><a routerLink="/signup"><strong>{{ r.nom }}</strong><span>Cite ce texte@if (r.numero) { · {{ r.numero }}}</span></a></li> }
+            </ul>
+          }
+        </div>
+
+        <aside class="sx-aside">
+          <div class="sx-box">
+            <h2>Fiche du texte</h2>
+            <dl class="sx-dl">
+              <div><dt>Intitulé</dt><dd>{{ t.nom }}</dd></div>
+              @if (t.numero) { <div><dt>Numéro</dt><dd>{{ t.numero }}</dd></div> }
+              @if (t.date) { <div><dt>Date</dt><dd>{{ date(t.date) }}</dd></div> }
+              <div><dt>Matière</dt><dd>{{ t.domaine || t.categorie }}</dd></div>
+              <div><dt>Statut</dt><dd>En vigueur</dd></div>
+              @if (t.source_url) {
+                <div><dt>Source</dt><dd><a [href]="t.source_url" target="_blank" rel="noopener nofollow">{{ host(t.source_url) }}</a></dd></div>
+              }
+            </dl>
+          </div>
+          <div class="sx-box">
+            <h2>Une question sur ce texte&nbsp;?</h2>
+            <p>JusticIA retrouve l’article applicable, le cite mot pour mot et vous l’explique.</p>
+            <a routerLink="/signup" class="pub-btn pub-btn--ink">Poser ma question</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <app-seo-cta />
+  }
+</main>
+
+<app-footer></app-footer>

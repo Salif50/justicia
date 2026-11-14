@@ -3,6 +3,7 @@ import { authGuard } from './guards/auth-guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { guestGuard } from './guards/guest.guard';
 import { freeTierGuard } from './guards/free-tier.guard';
+import { joYearResolver, texteResolver } from './pages/seo/resolvers';
 
 export const routes: Routes = [
 
@@ -31,6 +32,33 @@ export const routes: Routes = [
     path: 'guide',
     loadComponent: () => import('./pages/guide/guide').then(m => m.Guide),
     title: "Guide d'utilisation",
+  },
+  // ── Pages de référencement (pré-rendues, données publiques exportées du corpus) ──
+  {
+    path: 'creer-entreprise-guinee',
+    loadComponent: () => import('./pages/seo/creer-entreprise/creer-entreprise').then(m => m.CreerEntreprise),
+  },
+  {
+    path: 'droit-ohada-guinee',
+    loadComponent: () => import('./pages/seo/ohada/ohada-public').then(m => m.OhadaPublic),
+  },
+  {
+    path: 'textes-de-loi-guinee',
+    loadComponent: () => import('./pages/seo/textes/textes').then(m => m.TextesPublic),
+  },
+  {
+    path: 'textes-de-loi-guinee/:slug',
+    loadComponent: () => import('./pages/seo/texte/texte').then(m => m.TextePublic),
+    resolve: { texte: texteResolver },
+  },
+  {
+    path: 'journal-officiel-guinee',
+    loadComponent: () => import('./pages/seo/journal/journal-public').then(m => m.JournalPublic),
+  },
+  {
+    path: 'journal-officiel-guinee/:annee',
+    loadComponent: () => import('./pages/seo/journal/journal-public').then(m => m.JournalPublic),
+    resolve: { issues: joYearResolver },
   },
   {
     path: 'login',
